@@ -5,12 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import EgiSvg from "@/assets/egi.svg";
-import { FormEvent, useContext } from "react";
-import axios from "axios";
+import { FormEvent, useContext, useEffect } from "react";
 import { getInfoApi } from "@/services/info/getInfoApi";
 import { AuthContext } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { alert } from "@/lib/alert";
 
 function Login() {
@@ -34,16 +32,8 @@ function Login() {
     try {
       await getInfoApi({ endpoint, username, password });
 
-      axios.interceptors.request.use((config) => {
-        config.baseURL = endpoint;
-        config.auth = {
-          username,
-          password,
-        };
-        return config;
-      });
-
       setAuthData({
+        authenticated: true,
         user: username,
         password,
         endpoint,
@@ -53,9 +43,11 @@ function Login() {
     }
   }
 
-  if (authData?.user) {
-    navigate("/");
-  }
+  useEffect(() => {
+    if (authData?.authenticated) {
+      navigate("/");
+    }
+  }, [authData]);
 
   return (
     <>
