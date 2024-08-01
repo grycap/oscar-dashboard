@@ -17,8 +17,8 @@ function AppLayout() {
           flex: 1,
           marginTop: 10,
           borderTopLeftRadius: 8,
-          background: ColorWithOpacity(OscarColors.GrayE0, 0.5),
-          border: `1px solid ${OscarColors.GrayD9}`,
+          background: ColorWithOpacity(OscarColors.Gray1, 0.5),
+          border: `1px solid ${OscarColors.Gray2}`,
         }}
       >
         <Outlet />

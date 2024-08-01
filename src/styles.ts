@@ -1,11 +1,14 @@
+/**
+ * Colors with a number are sorted from lightest to darkest
+ */
 enum OscarColors {
   Green1 = "#B8CEB8",
   Green2 = "#9AB99A",
   Green3 = "#95B699",
   Green4 = "#009688",
   Blue = "#1F5FA6",
-  GrayE0 = "#E0E0E0",
-  GrayD9 = "#D9D9D9",
+  Gray1 = "#E0E0E0",
+  Gray2 = "#D9D9D9",
 }
 
 /**
