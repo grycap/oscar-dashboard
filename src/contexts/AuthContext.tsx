@@ -1,8 +1,9 @@
 //auth context with user, password, and endpoint
+import { setAxiosInterceptor } from "@/lib/axiosClient";
 import axios from "axios";
-import React, { createContext, useState } from "react";
+import React, { createContext, useMemo, useState } from "react";
 
-type AuthData = {
+export type AuthData = {
   user: string;
   password: string;
   endpoint: string;
@@ -20,30 +21,30 @@ export const AuthContext = createContext({
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const storedData = localStorage.getItem("authData");
-  const initialData = storedData
-    ? JSON.parse(storedData)
-    : {
+  const initialData = useMemo(() => {
+    const storedData = localStorage.getItem("authData");
+    if (!storedData) {
+      return {
         user: "",
         password: "",
         endpoint: "",
         authenticated: false,
-      };
+      } as AuthData;
+    }
+
+    const parsedData = JSON.parse(storedData) as AuthData;
+
+    setAxiosInterceptor(parsedData);
+
+    return parsedData;
+  }, []);
 
   const [authData, setAuthDataState] = useState(initialData);
 
   function setAuthData(data: AuthData) {
     localStorage.setItem("authData", JSON.stringify(data));
 
-    const { endpoint, user: username, password } = data;
-    axios.interceptors.request.use((config) => {
-      config.baseURL = endpoint;
-      config.auth = {
-        username,
-        password,
-      };
-      return config;
-    });
+    setAxiosInterceptor(data);
 
     setAuthDataState(data);
   }

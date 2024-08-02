@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import EgiSvg from "@/assets/egi.svg";
 import { FormEvent, useContext, useEffect } from "react";
-import { getInfoApi } from "@/services/info/getInfoApi";
+import { getInfoApi } from "@/api/info/getInfoApi";
 import { AuthContext } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { alert } from "@/lib/alert";

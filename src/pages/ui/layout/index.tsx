@@ -1,8 +1,14 @@
 import Sidebar from "@/components/Sidebar";
 import OscarColors, { ColorWithOpacity } from "@/styles";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 function AppLayout() {
+  const location = useLocation();
+
+  if (location.pathname === "/ui") {
+    return <Navigate to="/ui/services" replace />;
+  }
+
   return (
     <main
       style={{

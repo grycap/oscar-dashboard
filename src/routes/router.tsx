@@ -9,6 +9,7 @@ import {
 import Login from "@/pages/login";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import AppLayout from "@/pages/ui/layout";
+import Services from "@/pages/ui/services";
 
 function AppRouter() {
   return (
@@ -22,12 +23,12 @@ function AppRouter() {
             </ProtectedRoute>
           }
         >
-          <Route path="services" element={<h1>Services</h1>} />
+          <Route path="services" element={<Services />} />
           <Route path="minio" element={<h1>Minio</h1>} />
         </Route>
 
         <Route path="/login" element={<Login />} />
-        <Route path="*" element={<Navigate to="/ui" />} />
+        <Route path="*" element={<Navigate to="/ui/services" replace />} />
       </Routes>
     </BrowserRouter>
   );
