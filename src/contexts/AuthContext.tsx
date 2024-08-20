@@ -1,7 +1,6 @@
 //auth context with user, password, and endpoint
 import { setAxiosInterceptor } from "@/lib/axiosClient";
-import axios from "axios";
-import React, { createContext, useMemo, useState } from "react";
+import React, { createContext, useContext, useMemo, useState } from "react";
 
 export type AuthData = {
   user: string;
@@ -60,3 +59,5 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => useContext(AuthContext);

@@ -9,6 +9,12 @@ enum OscarColors {
   Blue = "#1F5FA6",
   Gray1 = "#E0E0E0",
   Gray2 = "#D9D9D9",
+  DarkGrayText = "#757575",
+  Red = "#EC221E",
+}
+
+export enum OscarStyles {
+  border = `1px solid ${OscarColors.Gray2}`,
 }
 
 /**

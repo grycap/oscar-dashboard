@@ -1,15 +1,8 @@
-import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes,
-  createBrowserRouter,
-  createRoutesFromElements,
-} from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Login from "@/pages/login";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import AppLayout from "@/pages/ui/layout";
-import Services from "@/pages/ui/services";
+import ServicesRouter from "@/pages/ui/services/router";
 
 function AppRouter() {
   return (
@@ -23,7 +16,7 @@ function AppRouter() {
             </ProtectedRoute>
           }
         >
-          <Route path="services" element={<Services />} />
+          <Route path="services/*" element={<ServicesRouter />} />
           <Route path="minio" element={<h1>Minio</h1>} />
         </Route>
 

@@ -1,5 +1,5 @@
 import Sidebar from "@/components/Sidebar";
-import OscarColors, { ColorWithOpacity } from "@/styles";
+import OscarColors, { ColorWithOpacity, OscarStyles } from "@/styles";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 function AppLayout() {
@@ -24,7 +24,7 @@ function AppLayout() {
           marginTop: 10,
           borderTopLeftRadius: 8,
           background: ColorWithOpacity(OscarColors.Gray1, 0.5),
-          border: `1px solid ${OscarColors.Gray2}`,
+          border: OscarStyles.border,
         }}
       >
         <Outlet />

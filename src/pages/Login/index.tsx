@@ -5,15 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import EgiSvg from "@/assets/egi.svg";
-import { FormEvent, useContext, useEffect } from "react";
+import { FormEvent, useEffect } from "react";
 import { getInfoApi } from "@/api/info/getInfoApi";
-import { AuthContext } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { alert } from "@/lib/alert";
 
 function Login() {
   const navigate = useNavigate();
-  const { authData, setAuthData } = useContext(AuthContext);
+  const { authData, setAuthData } = useAuth();
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
