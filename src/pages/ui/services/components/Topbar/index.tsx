@@ -1,14 +1,14 @@
-import OscarColors, { OscarStyles } from "@/styles";
+import { OscarStyles } from "@/styles";
 import UserInfo from "./components/UserInfo";
 import ServiceBreadcrumb from "./components/Breadcrumbs";
 import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import ServicesFilterBy from "./components/FilterBy";
 import ServicesOrderBy from "./components/OrderBy";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import CreateServiceButton from "./components/CreateServiceButton";
+import CreateUpdateServiceTabs from "./components/CreateUpdateServiceTabs";
 
-enum TopbarMode {
+export enum ServiceTopbarMode {
   List = "List",
   Create = "Create",
   Update = "Update",
@@ -21,14 +21,15 @@ function ServicesTopbar() {
 
   const mode = useMemo(() => {
     if (!serviceId) {
-      return TopbarMode.List;
+      return ServiceTopbarMode.List;
     }
 
+    console.log(serviceId);
     if (serviceId === "create") {
-      return TopbarMode.Create;
+      return ServiceTopbarMode.Create;
     }
 
-    return TopbarMode.Update;
+    return ServiceTopbarMode.Update;
   }, [pathnames]);
 
   return (
@@ -51,18 +52,14 @@ function ServicesTopbar() {
         }}
       >
         <ServiceBreadcrumb />
-        {mode === TopbarMode.List && (
+        {mode === ServiceTopbarMode.List ? (
           <>
             <ServicesFilterBy />
             <ServicesOrderBy />
-            <Button
-              style={{
-                background: OscarColors.Green4,
-              }}
-            >
-              <Plus className="mr-2 h-5 w-5" /> Create service
-            </Button>
+            <CreateServiceButton />
           </>
+        ) : (
+          <CreateUpdateServiceTabs mode={mode} />
         )}
       </div>
       <UserInfo />

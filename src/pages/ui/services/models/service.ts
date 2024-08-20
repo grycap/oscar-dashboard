@@ -120,3 +120,14 @@ export interface Service {
   storage_providers: StorageProviders;
   clusters: Clusters;
 }
+
+export enum ServiceTab {
+  Settings = 0,
+  Logs = 1,
+}
+
+export enum ServiceFormTab {
+  General,
+  Storage,
+  "Input - Output",
+}

@@ -1,4 +1,4 @@
-import { useMatch, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./style.css";
 import OscarColors, { ColorWithOpacity } from "@/styles";
 
@@ -10,10 +10,10 @@ interface Props {
 
 function SidebarRouteItem({ path, label, icon }: Props) {
   const baseRoute = "/ui";
-  const match = useMatch(baseRoute + path);
+  const location = useLocation();
   const navigate = useNavigate();
 
-  const isActive = match !== null;
+  const isActive = location.pathname.includes(path);
 
   return (
     <div
