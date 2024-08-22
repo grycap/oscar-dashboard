@@ -8,7 +8,7 @@ import ServicesOrderBy from "./components/OrderBy";
 import CreateServiceButton from "./components/CreateServiceButton";
 import CreateUpdateServiceTabs from "./components/CreateUpdateServiceTabs";
 
-export enum ServiceTopbarMode {
+export enum ServiceViewMode {
   List = "List",
   Create = "Create",
   Update = "Update",
@@ -21,15 +21,15 @@ function ServicesTopbar() {
 
   const mode = useMemo(() => {
     if (!serviceId) {
-      return ServiceTopbarMode.List;
+      return ServiceViewMode.List;
     }
 
     console.log(serviceId);
     if (serviceId === "create") {
-      return ServiceTopbarMode.Create;
+      return ServiceViewMode.Create;
     }
 
-    return ServiceTopbarMode.Update;
+    return ServiceViewMode.Update;
   }, [pathnames]);
 
   return (
@@ -52,7 +52,7 @@ function ServicesTopbar() {
         }}
       >
         <ServiceBreadcrumb />
-        {mode === ServiceTopbarMode.List ? (
+        {mode === ServiceViewMode.List ? (
           <>
             <ServicesFilterBy />
             <ServicesOrderBy />

@@ -20,7 +20,7 @@ function ServiceFormTabs({ tab: activeTab, setTab }: Props) {
     >
       {Object.keys(ServiceFormTab)
         .filter((tab) => isNaN(Number(tab)))
-        .map((tab, i) => {
+        .map((tab) => {
           const isSelected = tab === ServiceFormTab[activeTab];
           return (
             <div
@@ -30,14 +30,26 @@ function ServiceFormTabs({ tab: activeTab, setTab }: Props) {
                 alignItems: "center",
                 justifyContent: "center",
                 padding: "0 16px",
-                borderBottom: isSelected ? `1px solid black` : "none",
                 cursor: "pointer",
+                position: "relative",
               }}
               onClick={() =>
                 setTab(ServiceFormTab[tab as keyof typeof ServiceFormTab])
               }
               key={tab}
             >
+              {isSelected && (
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: -1,
+                    left: 0,
+                    height: 1,
+                    width: "100%",
+                    background: "black",
+                  }}
+                ></div>
+              )}
               {tab}
             </div>
           );

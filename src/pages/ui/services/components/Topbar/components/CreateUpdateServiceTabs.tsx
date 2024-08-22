@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { ServiceTopbarMode } from "..";
+import { ServiceViewMode } from "..";
 
 interface Props {
-  mode: ServiceTopbarMode;
+  mode: ServiceViewMode;
 }
 
 function CreateUpdateServiceTabs({ mode }: Props) {
@@ -16,8 +16,12 @@ function CreateUpdateServiceTabs({ mode }: Props) {
         gap: "9px",
       }}
     >
-      <Button>Settings</Button>
-      {mode !== ServiceTopbarMode.Create && <Button>Logs</Button>}
+      {mode === ServiceViewMode.Update && (
+        <>
+          <Button>Settings</Button>
+          <Button>Logs</Button>
+        </>
+      )}
     </div>
   );
 }
