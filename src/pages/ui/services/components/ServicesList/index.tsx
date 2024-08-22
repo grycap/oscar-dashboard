@@ -12,7 +12,8 @@ import useUpdate from "@/hooks/useUpdate";
 import { Link } from "react-router-dom";
 
 function ServicesList() {
-  const { services, setServices, orderBy, filter } = useServicesContext();
+  const { services, setServices, orderBy, filter, setFormService } =
+    useServicesContext();
 
   async function handleGetServices() {
     try {
@@ -72,7 +73,13 @@ function ServicesList() {
                 <Button variant={"link"} size="icon">
                   <Terminal />
                 </Button>
-                <Link to={`/ui/services/${row.name}/settings`}>
+                <Link
+                  to={`/ui/services/${row.name}/settings`}
+                  replace
+                  onClick={() => {
+                    setFormService(row);
+                  }}
+                >
                   <Button variant={"link"} size="icon">
                     <Pencil />
                   </Button>

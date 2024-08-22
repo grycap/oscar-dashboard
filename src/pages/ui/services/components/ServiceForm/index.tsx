@@ -1,37 +1,32 @@
 import { useLastUriParam } from "@/hooks/useLastUriParam";
 import { useMemo, useState } from "react";
-import { ServiceViewMode } from "../Topbar";
 import ServiceFormTabs from "./components/ServiceFormTabs";
 import { ServiceFormTab } from "../../models/service";
 import ServiceGeneralTab from "./components/GeneralTab";
-import { defaultService } from "./utils/initialData";
 import useServicesContext from "../../context/ServicesContext";
-import { useParams } from "react-router-dom";
+import { ServiceViewMode } from "../Topbar";
+import { defaultService } from "./utils/initialData";
 
 function ServiceForm() {
-  const path = useLastUriParam();
-  const { serviceId } = useParams();
-  const { services } = useServicesContext();
+  const { formService, setFormService } = useServicesContext();
 
+  const path = useLastUriParam();
+
+  //will be used by submit function
   const formMode = useMemo(() => {
     const isInCreateMode = path === "create";
 
-    if (isInCreateMode) return ServiceViewMode.Create;
+    if (isInCreateMode) {
+      setFormService(defaultService);
+      return ServiceViewMode.Create;
+    }
 
     return ServiceViewMode.Update;
   }, [path]);
 
-  const initialData = useMemo(() => {
-    if (formMode === ServiceViewMode.Create) {
-      return defaultService;
-    }
-
-    return services.find((s) => s.name === serviceId);
-  }, [formMode]);
-
-  const [service, setService] = useState(initialData);
-
   const [formTab, setFormTab] = useState(ServiceFormTab.General);
+
+  if (!formService) return null;
 
   return (
     <>

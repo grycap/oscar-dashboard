@@ -3,11 +3,11 @@ import { Service } from "../../../models/service";
 export const defaultService: Service = {
   name: "",
   cluster_id: "",
-  memory: "",
-  cpu: "",
+  memory: "256Mi",
+  cpu: "0",
   enable_gpu: false,
-  total_memory: "",
-  total_cpu: "",
+  total_memory: "0",
+  total_cpu: "0",
   synchronous: {
     min_scale: 0,
     max_scale: 0,

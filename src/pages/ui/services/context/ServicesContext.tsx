@@ -3,6 +3,7 @@ import {
   SetStateAction,
   createContext,
   useContext,
+  useEffect,
   useState,
 } from "react";
 import {
@@ -12,6 +13,11 @@ import {
   ServiceTab,
   ServiceOrderBy,
 } from "../models/service";
+import getServicesApi from "@/api/services/getServicesApi";
+import { useFormService } from "../components/ServiceForm/hooks/useFormService";
+import { useLastUriParam } from "@/hooks/useLastUriParam";
+import { useParams } from "react-router-dom";
+import { defaultService } from "../components/ServiceForm/utils/initialData";
 
 interface ServiceContextType {
   filter: ServiceFilter;
@@ -24,6 +30,9 @@ interface ServiceContextType {
 
   formTab: ServiceTab;
   setFormTab: Dispatch<SetStateAction<ServiceTab>>;
+
+  formService: Service;
+  setFormService: Dispatch<SetStateAction<Service>>;
 }
 
 export const ServicesContext = createContext({} as ServiceContextType);
@@ -34,6 +43,7 @@ export const ServicesProvider = ({
   children: React.ReactNode;
 }) => {
   const [services, setServices] = useState([] as Service[]);
+  const { serviceId } = useParams();
 
   // Filter and order TABLE rows
   const [filter, setFilter] = useState({
@@ -44,6 +54,28 @@ export const ServicesProvider = ({
 
   //Active tab in create/update mode
   const [formTab, setFormTab] = useState(ServiceTab.Settings);
+
+  const [formService, setFormService] = useState({} as Service);
+
+  async function handleGetServices() {
+    const response = await getServicesApi();
+    setServices(response);
+
+    handleFormService(response);
+  }
+
+  async function handleFormService(services: Service[]) {
+    console.log("131313 serviceId", serviceId);
+    if (serviceId === "create") setFormService(defaultService);
+
+    const selectedService = services.find((s) => s.name === serviceId);
+    if (!selectedService) return;
+    setFormService(selectedService);
+  }
+
+  useEffect(() => {
+    handleGetServices();
+  }, []);
 
   return (
     <ServicesContext.Provider
@@ -56,6 +88,8 @@ export const ServicesProvider = ({
         setOrderBy,
         formTab,
         setFormTab,
+        formService,
+        setFormService,
       }}
     >
       {children}

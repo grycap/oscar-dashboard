@@ -24,7 +24,6 @@ function ServicesTopbar() {
       return ServiceViewMode.List;
     }
 
-    console.log(serviceId);
     if (serviceId === "create") {
       return ServiceViewMode.Create;
     }
