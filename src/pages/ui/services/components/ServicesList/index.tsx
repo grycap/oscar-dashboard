@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Code, Ellipsis, Pencil, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import useUpdate from "@/hooks/useUpdate";
+import { Link } from "react-router-dom";
 
 function ServicesList() {
   const { services, setServices, orderBy, filter } = useServicesContext();
@@ -71,9 +72,11 @@ function ServicesList() {
                 <Button variant={"link"} size="icon">
                   <Terminal />
                 </Button>
-                <Button variant={"link"} size="icon">
-                  <Pencil />
-                </Button>
+                <Link to={`/ui/services/${row.name}/settings`}>
+                  <Button variant={"link"} size="icon">
+                    <Pencil />
+                  </Button>
+                </Link>
                 <Button variant={"link"} size="icon">
                   <Trash2 color={OscarColors.Red} />
                 </Button>

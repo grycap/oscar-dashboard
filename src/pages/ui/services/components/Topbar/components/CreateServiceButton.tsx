@@ -6,11 +6,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import OscarColors from "@/styles";
-import { Plus, Settings, User } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 function CreateServiceButton() {
@@ -18,13 +16,7 @@ function CreateServiceButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <Button
-          style={{
-            background: OscarColors.Green4,
-            outline: "none",
-            border: "none",
-          }}
-        >
+        <Button variant={"mainGreen"}>
           <Plus className="mr-2 h-5 w-5" /> Create service
         </Button>
       </DropdownMenuTrigger>
