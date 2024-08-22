@@ -47,7 +47,7 @@ function ServicesFilterBy() {
           }));
         }}
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger>
           <SelectValue placeholder="Filter by" />
         </SelectTrigger>
         <SelectContent>
@@ -67,7 +67,7 @@ function ServicesFilterBy() {
           setDebouncedValue(e.target.value);
         }}
         endIcon={<Search size={16} />}
-        style={{ width: 400 }}
+        style={{ maxWidth: 300, minWidth: 200 }}
       />
     </div>
   );

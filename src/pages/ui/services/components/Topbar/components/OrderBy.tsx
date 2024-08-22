@@ -18,7 +18,7 @@ function ServicesOrderBy() {
         setOrderBy(value);
       }}
     >
-      <SelectTrigger className="w-[220px]">
+      <SelectTrigger className="w-[210px]">
         <SelectValue placeholder="Order by" />
       </SelectTrigger>
       <SelectContent>

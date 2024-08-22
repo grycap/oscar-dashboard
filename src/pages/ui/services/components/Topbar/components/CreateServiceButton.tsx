@@ -21,6 +21,8 @@ function CreateServiceButton() {
         <Button
           style={{
             background: OscarColors.Green4,
+            outline: "none",
+            border: "none",
           }}
         >
           <Plus className="mr-2 h-5 w-5" /> Create service
