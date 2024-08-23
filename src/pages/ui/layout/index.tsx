@@ -15,12 +15,14 @@ function AppLayout() {
         display: "flex",
         flexDirection: "row",
         height: "100vh",
+        overflow: "hidden",
       }}
     >
       <Sidebar />
       <section
         style={{
           flex: 1,
+          display: "flex",
           marginTop: 10,
           borderTopLeftRadius: 8,
           background: ColorWithOpacity(OscarColors.Gray1, 0.5),

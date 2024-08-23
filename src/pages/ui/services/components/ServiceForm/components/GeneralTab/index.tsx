@@ -46,6 +46,8 @@ function ServiceGeneralTab() {
       style={{
         display: "flex",
         flexDirection: "column",
+        width: "100%",
+        justifyContent: "flex-start",
       }}
     >
       <GeneralTabCell

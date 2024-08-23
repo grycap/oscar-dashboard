@@ -12,7 +12,7 @@ function GeneralTabCell({ title, subtitle, children }: Props) {
       style={{
         display: "flex",
         flexDirection: "column",
-        flexGrow: 1,
+        width: "100%",
         padding: 18,
         margin: 0,
       }}

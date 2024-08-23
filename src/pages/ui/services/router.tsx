@@ -11,8 +11,16 @@ function ServicesRouter() {
         path="/"
         element={
           <ServicesProvider>
-            <ServicesTopbar />
-            <Outlet />
+            <div
+              style={{
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <ServicesTopbar />
+              <Outlet />
+            </div>
           </ServicesProvider>
         }
       >

@@ -31,11 +31,20 @@ function ServiceForm() {
   return (
     <>
       <ServiceFormTabs tab={formTab} setTab={setFormTab} />
-      {formTab === ServiceFormTab.General && <ServiceGeneralTab />}
-      {formTab === ServiceFormTab.Storage && <h1>St.Storage</h1>}
-      {formTab === ServiceFormTab["Input - Output"] && (
-        <h1>["Input - Output"]</h1>
-      )}
+      <div
+        style={{
+          display: "flex",
+          flexGrow: 1,
+          flexBasis: 0,
+          overflow: "scroll",
+        }}
+      >
+        {formTab === ServiceFormTab.General && <ServiceGeneralTab />}
+        {formTab === ServiceFormTab.Storage && <h1>St.Storage</h1>}
+        {formTab === ServiceFormTab["Input - Output"] && (
+          <h1>["Input - Output"]</h1>
+        )}
+      </div>
     </>
   );
 }
