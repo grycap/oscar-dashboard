@@ -1,5 +1,4 @@
 import { Input } from "@/components/ui/input";
-import GeneralTabCell from "./components/Cell";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import { OscarStyles } from "@/styles";
@@ -12,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import EnviromentVariables from "./components/EnviromentVariables";
+import ServiceFormCell from "../FormCell";
 
 function ServiceGeneralTab() {
   const { formService, setFormService } = useServicesContext();
@@ -50,7 +50,7 @@ function ServiceGeneralTab() {
         justifyContent: "flex-start",
       }}
     >
-      <GeneralTabCell
+      <ServiceFormCell
         title="General Settings"
         subtitle="Configure the service name and a container image to use"
       >
@@ -70,9 +70,9 @@ function ServiceGeneralTab() {
             handleChange(e, "image");
           }}
         />
-      </GeneralTabCell>
+      </ServiceFormCell>
       <Divider />
-      <GeneralTabCell
+      <ServiceFormCell
         title="Service specifications"
         subtitle="Adjust container resources and provide a script for the processing of files"
       >
@@ -110,14 +110,14 @@ function ServiceGeneralTab() {
             <SelectItem value="Gi">Gi</SelectItem>
           </SelectContent>
         </Select>
-      </GeneralTabCell>
+      </ServiceFormCell>
       <Divider />
-      <GeneralTabCell
+      <ServiceFormCell
         title="Enviroment variables"
         subtitle="Provide environment variables to the service adding them here"
       >
         <EnviromentVariables />
-      </GeneralTabCell>
+      </ServiceFormCell>
     </div>
   );
 }

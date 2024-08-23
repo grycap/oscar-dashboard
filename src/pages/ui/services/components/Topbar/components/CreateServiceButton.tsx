@@ -15,7 +15,7 @@ function CreateServiceButton() {
   const navigate = useNavigate();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <Button variant={"mainGreen"}>
           <Plus className="mr-2 h-5 w-5" /> Create service
         </Button>

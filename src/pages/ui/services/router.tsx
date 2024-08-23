@@ -25,9 +25,9 @@ function ServicesRouter() {
         }
       >
         <Route path="" element={<ServicesList />} />
-        <Route path="create" element={<ServiceForm />} />
+        <Route path=":serviceId" element={<ServiceForm />} />
         <Route path=":serviceId/settings" element={<ServiceForm />} />
-        <Route path=":serviceId/logs" element={<ServiceForm />} />
+        <Route path=":serviceId/logs" element={<h1>logs</h1>} />
       </Route>
     </Routes>
   );

@@ -18,6 +18,7 @@ import { useFormService } from "../components/ServiceForm/hooks/useFormService";
 import { useLastUriParam } from "@/hooks/useLastUriParam";
 import { useParams } from "react-router-dom";
 import { defaultService } from "../components/ServiceForm/utils/initialData";
+import useUpdate from "@/hooks/useUpdate";
 
 interface ServiceContextType {
   filter: ServiceFilter;
@@ -65,7 +66,7 @@ export const ServicesProvider = ({
   }
 
   async function handleFormService(services: Service[]) {
-    console.log("131313 serviceId", serviceId);
+    console.log("131313", serviceId);
     if (serviceId === "create") setFormService(defaultService);
 
     const selectedService = services.find((s) => s.name === serviceId);
@@ -76,6 +77,10 @@ export const ServicesProvider = ({
   useEffect(() => {
     handleGetServices();
   }, []);
+
+  useUpdate(() => {
+    handleFormService(services);
+  }, [serviceId]);
 
   return (
     <ServicesContext.Provider

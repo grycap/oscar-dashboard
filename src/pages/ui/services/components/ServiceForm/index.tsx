@@ -6,6 +6,7 @@ import ServiceGeneralTab from "./components/GeneralTab";
 import useServicesContext from "../../context/ServicesContext";
 import { ServiceViewMode } from "../Topbar";
 import { defaultService } from "./utils/initialData";
+import ServicesStorageTab from "./components/StorageTab";
 
 function ServiceForm() {
   const { formService, setFormService } = useServicesContext();
@@ -17,7 +18,7 @@ function ServiceForm() {
     const isInCreateMode = path === "create";
 
     if (isInCreateMode) {
-      setFormService(defaultService);
+      //setFormService(defaultService);
       return ServiceViewMode.Create;
     }
 
@@ -40,7 +41,7 @@ function ServiceForm() {
         }}
       >
         {formTab === ServiceFormTab.General && <ServiceGeneralTab />}
-        {formTab === ServiceFormTab.Storage && <h1>St.Storage</h1>}
+        {formTab === ServiceFormTab.Storage && <ServicesStorageTab />}
         {formTab === ServiceFormTab["Input - Output"] && (
           <h1>["Input - Output"]</h1>
         )}
