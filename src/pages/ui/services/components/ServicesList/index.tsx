@@ -6,7 +6,7 @@ import { alert } from "@/lib/alert";
 import Table from "@/components/Table";
 import { Service, ServiceOrderBy } from "../../models/service";
 import { Button } from "@/components/ui/button";
-import { Code, Ellipsis, Pencil, Terminal, Trash2 } from "lucide-react";
+import { Ellipsis, Pencil, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import useUpdate from "@/hooks/useUpdate";
 import { Link } from "react-router-dom";

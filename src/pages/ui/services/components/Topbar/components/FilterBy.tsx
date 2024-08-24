@@ -4,7 +4,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import useServicesContext from "../../../context/ServicesContext";
 import { ServiceFilterBy } from "../../../models/service";

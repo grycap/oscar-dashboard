@@ -9,12 +9,7 @@ import {
 } from "@/components/ui/select";
 import useServicesContext from "../../../context/ServicesContext";
 import { ServiceOrderBy } from "../../../models/service";
-import {
-  ArrowDownIcon,
-  ArrowDownNarrowWide,
-  ArrowDownWideNarrow,
-  ArrowUpWideNarrow,
-} from "lucide-react";
+import { ArrowDownNarrowWide, ArrowDownWideNarrow } from "lucide-react";
 import { SelectIcon } from "@radix-ui/react-select";
 import { useMediaQuery } from "react-responsive";
 
