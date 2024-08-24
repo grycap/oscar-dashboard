@@ -14,8 +14,6 @@ import {
   ServiceOrderBy,
 } from "../models/service";
 import getServicesApi from "@/api/services/getServicesApi";
-import { useFormService } from "../components/ServiceForm/hooks/useFormService";
-import { useLastUriParam } from "@/hooks/useLastUriParam";
 import { useParams } from "react-router-dom";
 import { defaultService } from "../components/ServiceForm/utils/initialData";
 import useUpdate from "@/hooks/useUpdate";

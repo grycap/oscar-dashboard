@@ -5,11 +5,10 @@ import { ServiceFormTab } from "../../models/service";
 import ServiceGeneralTab from "./components/GeneralTab";
 import useServicesContext from "../../context/ServicesContext";
 import { ServiceViewMode } from "../Topbar";
-import { defaultService } from "./utils/initialData";
 import ServicesStorageTab from "./components/StorageTab";
 
 function ServiceForm() {
-  const { formService, setFormService } = useServicesContext();
+  const { formService } = useServicesContext();
 
   const path = useLastUriParam();
 
