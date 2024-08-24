@@ -9,15 +9,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Plus, Settings } from "lucide-react";
+import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
 
 function CreateServiceButton() {
   const navigate = useNavigate();
+  const isSmallScreen = useMediaQuery({ maxWidth: 799 });
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"mainGreen"}>
-          <Plus className="mr-2 h-5 w-5" /> Create service
+        <Button
+          variant={"mainGreen"}
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 8,
+          }}
+        >
+          <Plus className="h-5 w-5" /> {!isSmallScreen && "Create service"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

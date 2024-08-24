@@ -10,11 +10,14 @@ import useServicesContext from "../../../context/ServicesContext";
 import { ServiceFilterBy } from "../../../models/service";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useMediaQuery } from "react-responsive";
+import { Filter } from "lucide-react";
+import { SelectIcon } from "@radix-ui/react-select";
 
 function ServicesFilterBy() {
   const { filter, setFilter } = useServicesContext();
-
   const [debouncedValue, setDebouncedValue] = useState(filter.value);
+  const isSmallScreen = useMediaQuery({ maxWidth: 1099 });
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -47,8 +50,11 @@ function ServicesFilterBy() {
           }));
         }}
       >
-        <SelectTrigger>
-          <SelectValue placeholder="Filter by" />
+        <SelectTrigger className="w-max">
+          <SelectIcon>
+            <Filter size={16} className="mr-2" />
+          </SelectIcon>
+          {/* <SelectValue placeholder="Filter by" /> */}
         </SelectTrigger>
         <SelectContent>
           {Object.values(ServiceFilterBy).map((value) => {
@@ -67,7 +73,7 @@ function ServicesFilterBy() {
           setDebouncedValue(e.target.value);
         }}
         endIcon={<Search size={16} />}
-        style={{ maxWidth: 300, minWidth: 200 }}
+        style={{ maxWidth: 300, minWidth: isSmallScreen ? 100 : 150 }}
       />
     </div>
   );

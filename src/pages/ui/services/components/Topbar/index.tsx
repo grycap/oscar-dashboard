@@ -48,13 +48,16 @@ function ServicesTopbar() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "0 16px",
+          gap: 10,
         }}
       >
         <ServiceBreadcrumb />
         {mode === ServiceViewMode.List ? (
           <>
-            <ServicesFilterBy />
-            <ServicesOrderBy />
+            <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+              <ServicesFilterBy />
+              <ServicesOrderBy />
+            </div>
             <CreateServiceButton />
           </>
         ) : (
