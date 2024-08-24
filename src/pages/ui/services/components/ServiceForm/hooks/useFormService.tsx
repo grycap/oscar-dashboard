@@ -25,7 +25,6 @@ export function useFormService(services: Service[], setFormService: any) {
 
     if (!services) return;
 
-    console.log("131313 SERVICES", services, serviceId);
     return services.find((s) => s.name === serviceId);
   }, [formMode, services]);
 

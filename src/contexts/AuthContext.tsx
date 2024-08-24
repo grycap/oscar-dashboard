@@ -1,6 +1,14 @@
 //auth context with user, password, and endpoint
+import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { setAxiosInterceptor } from "@/lib/axiosClient";
-import React, { createContext, useContext, useMemo, useState } from "react";
+import { SystemConfig } from "@/models/systemConfig";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 export type AuthData = {
   user: string;
@@ -17,6 +25,7 @@ export const AuthContext = createContext({
     authenticated: false,
   } as AuthData,
   setAuthData: (_: AuthData) => {},
+  systemConfig: null as SystemConfig | null,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -39,6 +48,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const [authData, setAuthDataState] = useState(initialData);
+  const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
+
+  async function handleGetSystemConfig() {
+    if (!authData.authenticated) return;
+
+    const response = await getSystemConfigApi();
+    setSystemConfig(response);
+  }
+
+  useEffect(() => {
+    handleGetSystemConfig();
+  }, [authData]);
 
   function setAuthData(data: AuthData) {
     localStorage.setItem("authData", JSON.stringify(data));
@@ -53,6 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         authData,
         setAuthData,
+        systemConfig,
       }}
     >
       {children}

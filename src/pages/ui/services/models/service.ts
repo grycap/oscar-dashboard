@@ -21,39 +21,51 @@ export enum ServiceOrderBy {
   ImageDesc = "Image (desc)",
 }
 
-interface StorageProvider {
-  id: {
-    access_key: string;
-    secret_key: string;
-    region: string;
-  };
+interface StorageProviders {
+  s3?: Record<string, AWSStorageProvider>;
+  minio?: Record<string, MinioStorageProvider>;
+  onedata?: Record<string, OnedataStorageProvider>;
+  webdav?: Record<string, WebdavStorageProvider>;
 }
 
-interface MinioStorageProvider extends StorageProvider {
-  id: {
-    endpoint: string;
-    region: string;
-    secret_key: string;
-    access_key: string;
-    verify: boolean;
-  };
-}
+export type StorageProviderType = keyof StorageProviders;
 
-interface OnedataStorageProvider {
-  id: {
-    oneprovider_host: string;
-    token: string;
-    space: string;
-  };
-}
+//In frontend the type is specified to improve type checking
+export type StorageProvider = {
+  type: StorageProviderType;
+  id: string;
+} & (
+  | AWSStorageProvider
+  | MinioStorageProvider
+  | OnedataStorageProvider
+  | WebdavStorageProvider
+);
 
-interface WebdavStorageProvider {
-  id: {
-    hostname: string;
-    login: string;
-    password: string;
-  };
-}
+export type AWSStorageProvider = {
+  access_key: string;
+  secret_key: string;
+  region: string;
+};
+
+export type MinioStorageProvider = {
+  endpoint: string;
+  region: string;
+  secret_key: string;
+  access_key: string;
+  verify: boolean;
+};
+
+export type OnedataStorageProvider = {
+  oneprovider_host: string;
+  token: string;
+  space: string;
+};
+
+export type WebdavStorageProvider = {
+  hostname: string;
+  login: string;
+  password: string;
+};
 
 interface Clusters {
   id: {
@@ -84,13 +96,6 @@ interface Replica {
 interface Synchronous {
   min_scale: number;
   max_scale: number;
-}
-
-interface StorageProviders {
-  s3?: StorageProvider;
-  minio?: MinioStorageProvider;
-  onedata?: OnedataStorageProvider;
-  webdav?: WebdavStorageProvider;
 }
 
 export interface Service {

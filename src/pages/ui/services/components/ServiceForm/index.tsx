@@ -26,7 +26,7 @@ function ServiceForm() {
 
   const [formTab, setFormTab] = useState(ServiceFormTab.General);
 
-  if (!formService) return null;
+  if (Object.keys(formService).length === 0) return null;
 
   return (
     <>

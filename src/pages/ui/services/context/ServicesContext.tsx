@@ -17,6 +17,7 @@ import getServicesApi from "@/api/services/getServicesApi";
 import { useParams } from "react-router-dom";
 import { defaultService } from "../components/ServiceForm/utils/initialData";
 import useUpdate from "@/hooks/useUpdate";
+import getSystemConfigApi from "@/api/config/getSystemConfig";
 
 interface ServiceContextType {
   filter: ServiceFilter;
@@ -63,9 +64,22 @@ export const ServicesProvider = ({
     handleFormService(response);
   }
 
+  async function getDefaultService() {
+    const config = await getSystemConfigApi();
+    if (!config) return defaultService;
+
+    return {
+      ...defaultService,
+      storage_providers: {
+        minio: {
+          default: config.minio_provider,
+        },
+      },
+    } as Service;
+  }
+
   async function handleFormService(services: Service[]) {
-    console.log("131313", serviceId);
-    if (serviceId === "create") setFormService(defaultService);
+    if (serviceId === "create") setFormService(await getDefaultService());
 
     const selectedService = services.find((s) => s.name === serviceId);
     if (!selectedService) return;

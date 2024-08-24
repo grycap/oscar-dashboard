@@ -12,7 +12,7 @@ function ServiceFormCell({ title, subtitle, children, button }: Props) {
     <div
       style={{
         display: "flex",
-        flexDirection: "row",
+        flexDirection: "column",
         width: "100%",
         padding: 18,
         margin: 0,
@@ -21,40 +21,43 @@ function ServiceFormCell({ title, subtitle, children, button }: Props) {
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
           width: "100%",
+          marginBottom: 18,
         }}
       >
-        <h2
-          style={{
-            color: OscarColors.DarkGrayText,
-            fontSize: 14,
-          }}
-        >
-          {title}
-        </h2>
-
-        <div
-          style={{
-            fontSize: 16,
-            fontWeight: "bold",
-          }}
-        >
-          {subtitle}
+        <div>
+          <h1
+            style={{
+              color: OscarColors.DarkGrayText,
+              fontSize: 14,
+            }}
+          >
+            {title}
+          </h1>
+          <h2
+            style={{
+              fontSize: 16,
+              fontWeight: "bold",
+            }}
+          >
+            {subtitle}
+          </h2>
         </div>
-        <div
-          style={{
-            padding: "18px 0px 18px 18px",
-            display: "flex",
-            width: "100%",
-            gap: 18,
-            alignItems: "end",
-          }}
-        >
-          {children}
-        </div>
+        {button}
       </div>
-      {button}
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          gap: 18,
+          alignItems: "end",
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
