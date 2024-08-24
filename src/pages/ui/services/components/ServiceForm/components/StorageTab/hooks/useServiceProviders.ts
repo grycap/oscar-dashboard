@@ -2,6 +2,7 @@ import useUpdate from "@/hooks/useUpdate";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import {
   StorageProvider,
+  StorageProviders,
   StorageProviderType,
 } from "@/pages/ui/services/models/service";
 import { useMemo, useState } from "react";
@@ -38,8 +39,7 @@ function useServiceProviders() {
 
   //Updates the service object with the correct model
   async function updateServiceProviders() {
-    //remove type param
-    let newServiceProviders = formService.storage_providers;
+    let newServiceProviders: StorageProviders = {};
     providers.forEach((providerItem) => {
       const { type, ...providerWithoutType } = providerItem;
       newServiceProviders = {

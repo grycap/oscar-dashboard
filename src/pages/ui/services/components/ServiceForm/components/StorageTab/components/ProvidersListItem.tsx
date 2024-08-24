@@ -5,13 +5,22 @@ import {
 import OscarColors, { OscarStyles } from "@/styles";
 import minioLogo from "@/assets/logos/minio.png";
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
 
 interface Props {
   provider: StorageProvider;
+  setSelectedProvider: Dispatch<SetStateAction<StorageProvider | null>>;
+  setSelectedId: Dispatch<SetStateAction<string | null>>;
+  onDelete: (id: string) => void;
 }
 
-function ProvidersListItem({ provider }: Props) {
+function ProvidersListItem({
+  provider,
+  setSelectedProvider,
+  setSelectedId,
+  onDelete,
+}: Props) {
   function getImage() {
     switch (provider.type) {
       case "minio":
@@ -85,16 +94,35 @@ function ProvidersListItem({ provider }: Props) {
           {getSubtitle()}
         </h2>
       </div>
-      <Button
-        style={{
-          minWidth: 40,
-          height: 40,
-        }}
-        size="icon"
-        variant={"ghost"}
-      >
-        <Edit />
-      </Button>
+      <div>
+        <Button
+          style={{
+            minWidth: 40,
+            height: 40,
+          }}
+          size="icon"
+          variant={"ghost"}
+          onClick={() => {
+            setSelectedProvider(provider);
+            setSelectedId(provider.id);
+          }}
+        >
+          <Edit />
+        </Button>
+        <Button
+          style={{
+            minWidth: 40,
+            height: 40,
+          }}
+          size="icon"
+          variant={"ghost"}
+          onClick={() => {
+            onDelete(provider.id);
+          }}
+        >
+          <Trash2 color="red" />
+        </Button>
+      </div>
     </div>
   );
 }

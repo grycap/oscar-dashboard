@@ -21,7 +21,7 @@ export enum ServiceOrderBy {
   ImageDesc = "Image (desc)",
 }
 
-interface StorageProviders {
+export interface StorageProviders {
   s3?: Record<string, AWSStorageProvider>;
   minio?: Record<string, MinioStorageProvider>;
   onedata?: Record<string, OnedataStorageProvider>;

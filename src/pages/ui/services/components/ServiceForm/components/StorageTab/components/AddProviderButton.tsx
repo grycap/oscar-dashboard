@@ -8,9 +8,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { StorageProvider } from "@/pages/ui/services/models/service";
 import { Plus } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
 
-function AddProviderButton() {
+interface Props {
+  setSelectedProvider: Dispatch<SetStateAction<StorageProvider | null>>;
+}
+
+function AddProviderButton({ setSelectedProvider }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -23,7 +29,13 @@ function AddProviderButton() {
         <DropdownMenuLabel>Available providers:</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Minio</DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              setSelectedProvider({ type: "minio" } as StorageProvider);
+            }}
+          >
+            Minio
+          </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
