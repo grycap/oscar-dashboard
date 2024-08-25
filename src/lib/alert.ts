@@ -1,3 +1,4 @@
+import OscarColors from "@/styles";
 import React from "react";
 import { toast } from "sonner";
 
@@ -25,7 +26,7 @@ class ToastAlert {
 
     toast.error(message, {
       style: {
-        backgroundColor: "red",
+        backgroundColor: OscarColors.Red,
         color: "white",
         border: "none",
       },

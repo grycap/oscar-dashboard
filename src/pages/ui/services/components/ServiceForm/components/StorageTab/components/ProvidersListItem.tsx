@@ -120,7 +120,7 @@ function ProvidersListItem({
             onDelete(provider.id);
           }}
         >
-          <Trash2 color="red" />
+          <Trash2 color={OscarColors.Red} />
         </Button>
       </div>
     </div>

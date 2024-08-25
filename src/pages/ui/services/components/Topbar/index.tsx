@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import ServicesFilterBy from "./components/FilterBy";
 import ServicesOrderBy from "./components/OrderBy";
-import CreateServiceButton from "./components/CreateServiceButton";
+import AddServiceButton from "./components/CreateServiceButton";
 import CreateUpdateServiceTabs from "./components/CreateUpdateServiceTabs";
 
 export enum ServiceViewMode {
@@ -58,7 +58,7 @@ function ServicesTopbar() {
               <ServicesFilterBy />
               <ServicesOrderBy />
             </div>
-            <CreateServiceButton />
+            <AddServiceButton />
           </>
         ) : (
           <CreateUpdateServiceTabs mode={mode} />

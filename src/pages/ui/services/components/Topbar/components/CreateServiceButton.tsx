@@ -12,7 +12,7 @@ import { Plus, Settings } from "lucide-react";
 import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
 
-function CreateServiceButton() {
+function AddServiceButton() {
   const navigate = useNavigate();
   const isSmallScreen = useMediaQuery({ maxWidth: 799 });
 
@@ -48,4 +48,4 @@ function CreateServiceButton() {
   );
 }
 
-export default CreateServiceButton;
+export default AddServiceButton;

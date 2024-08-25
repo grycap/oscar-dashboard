@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ServiceViewMode } from "..";
 import { useLastUriParam } from "@/hooks/useLastUriParam";
 import { Link, useParams } from "react-router-dom";
+import { CreateUpdateButton } from "./CreateUpdateButton";
 
 interface Props {
   mode: ServiceViewMode;
@@ -10,6 +11,9 @@ interface Props {
 function CreateUpdateServiceTabs({ mode }: Props) {
   const tab = useLastUriParam();
   const { serviceId } = useParams();
+  const isInCreateMode = mode === ServiceViewMode.Create;
+  const isInUpdateMode = mode === ServiceViewMode.Update;
+
   return (
     <div
       style={{
@@ -20,20 +24,29 @@ function CreateUpdateServiceTabs({ mode }: Props) {
         gap: "9px",
       }}
     >
-      {mode === ServiceViewMode.Update && (
-        <>
+      {isInUpdateMode && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: "9px",
+            marginLeft: "auto",
+          }}
+        >
           <Link to={`/ui/services/${serviceId}/settings`}>
-            <Button variant={tab === "settings" ? "mainGreen" : "ghost"}>
+            <Button variant={tab === "settings" ? "lightGreen" : "ghost"}>
               Settings
             </Button>
           </Link>
           <Link to={`/ui/services/${serviceId}/logs`}>
-            <Button variant={tab === "logs" ? "mainGreen" : "ghost"}>
+            <Button variant={tab === "logs" ? "lightGreen" : "ghost"}>
               Logs
             </Button>
           </Link>
-        </>
+        </div>
       )}
+
+      <CreateUpdateButton isInCreateMode={isInCreateMode} />
     </div>
   );
 }

@@ -112,6 +112,7 @@ export interface Service {
   token: string;
   log_level: string;
   image: string;
+  image_rules: [];
   alpine: boolean;
   script: string;
   image_pull_secrets: string[];
