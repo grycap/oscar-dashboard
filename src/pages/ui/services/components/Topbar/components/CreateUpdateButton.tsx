@@ -25,8 +25,7 @@ export function CreateUpdateButton({ isInCreateMode }: Props) {
       memory: formService.memory,
       name: formService.name,
       output: formService.output,
-      script:
-        '#!/bin/bash\n\necho "SCRIPT: Invoked classify_image.py. File available in $INPUT_FILE_PATH"\nFILE_NAME=`basename "$INPUT_FILE_PATH"`\nOUTPUT_FILE="$TMP_OUTPUT_DIR/$FILE_NAME"\npython2 /opt/plant-classification-theano/classify_image.py "$INPUT_FILE_PATH" -o "$OUTPUT_FILE"\n',
+      script: formService.script,
       valid: true,
     };
   }, [formService]);

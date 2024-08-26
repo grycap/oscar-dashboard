@@ -13,6 +13,7 @@ function ServiceFormCell({ title, subtitle, children, button }: Props) {
       style={{
         display: "flex",
         flexDirection: "column",
+        flexWrap: "wrap",
         width: "100%",
         padding: 18,
         margin: 0,

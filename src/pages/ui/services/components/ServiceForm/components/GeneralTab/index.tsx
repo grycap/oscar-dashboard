@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import EnviromentVariables from "./components/EnviromentVariables";
 import ServiceFormCell from "../FormCell";
+import ScriptButton from "./components/ScriptButton";
 
 function ServiceGeneralTab() {
   const { formService, setFormService } = useServicesContext();
@@ -76,40 +77,60 @@ function ServiceGeneralTab() {
         title="Service specifications"
         subtitle="Adjust container resources and provide a script for the processing of files"
       >
-        <Input
-          value={formService?.cpu}
-          onChange={(e) => {
-            handleChange(e, "cpu");
-          }}
-          label="CPU cores"
-        />
-        <Input
-          value={formService?.memory?.replace("Mi", "")?.replace("Gi", "")}
-          label="Memory"
-          onChange={(e) => {
-            setFormService((service: Service) => {
-              return {
-                ...service,
-                memory: e.target.value + memoryUnits,
-              };
-            });
-          }}
-          type="number"
-        />
-        <Select
-          value={memoryUnits}
-          onValueChange={(value) => {
-            setMemoryUnits(value as "Mi" | "Gi");
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            gap: 10,
           }}
         >
-          <SelectTrigger className="w-[75px]">
-            <SelectValue placeholder="Order by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Mi">Mi</SelectItem>
-            <SelectItem value="Gi">Gi</SelectItem>
-          </SelectContent>
-        </Select>
+          <ScriptButton />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              width: "100%",
+              alignItems: "end",
+              gap: 10,
+            }}
+          >
+            <Input
+              value={formService?.cpu}
+              onChange={(e) => {
+                handleChange(e, "cpu");
+              }}
+              label="CPU cores"
+            />
+            <Input
+              value={formService?.memory?.replace("Mi", "")?.replace("Gi", "")}
+              label="Memory"
+              onChange={(e) => {
+                setFormService((service: Service) => {
+                  return {
+                    ...service,
+                    memory: e.target.value + memoryUnits,
+                  };
+                });
+              }}
+              type="number"
+            />
+            <Select
+              value={memoryUnits}
+              onValueChange={(value) => {
+                setMemoryUnits(value as "Mi" | "Gi");
+              }}
+            >
+              <SelectTrigger className="w-[75px]">
+                <SelectValue placeholder="Order by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Mi">Mi</SelectItem>
+                <SelectItem value="Gi">Gi</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </ServiceFormCell>
       <Divider />
       <ServiceFormCell
