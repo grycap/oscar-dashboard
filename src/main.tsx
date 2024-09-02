@@ -6,10 +6,10 @@ import { Toaster } from "sonner";
 import AppRouter from "./routes/router.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+  <>
     <AuthProvider>
       <Toaster />
       <AppRouter />
     </AuthProvider>
-  </React.StrictMode>
+  </>
 );

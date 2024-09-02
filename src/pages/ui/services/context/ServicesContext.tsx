@@ -35,7 +35,9 @@ interface ServiceContextType {
   setFormService: Dispatch<SetStateAction<Service>>;
 }
 
-export const ServicesContext = createContext({} as ServiceContextType);
+export const ServicesContext = createContext({
+  services: [] as Service[],
+} as ServiceContextType);
 
 export const ServicesProvider = ({
   children,

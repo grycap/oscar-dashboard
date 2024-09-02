@@ -1,5 +1,4 @@
 import { OscarStyles } from "@/styles";
-import UserInfo from "./components/UserInfo";
 import ServiceBreadcrumb from "./components/Breadcrumbs";
 import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
@@ -7,6 +6,7 @@ import ServicesFilterBy from "./components/FilterBy";
 import ServicesOrderBy from "./components/OrderBy";
 import AddServiceButton from "./components/CreateServiceButton";
 import CreateUpdateServiceTabs from "./components/CreateUpdateServiceTabs";
+import UserInfo from "@/components/UserInfo";
 
 export enum ServiceViewMode {
   List = "List",

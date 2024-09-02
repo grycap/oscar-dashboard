@@ -1,11 +1,11 @@
-import { AuthContext, useAuth } from "@/contexts/AuthContext";
-import { useContext, ReactNode } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { authData } = useAuth();
 
-  if (!authData.user || !authData.password || !authData.endpoint) {
+  if (Object.values(authData).some((value) => !value)) {
     return <Navigate to="/login" />;
   }
 

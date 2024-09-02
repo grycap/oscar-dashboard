@@ -45,14 +45,10 @@ function ServicesList() {
     return services;
   }
 
-  useEffect(() => {
-    handleGetServices();
-  }, []);
-
   useUpdate(() => {
     const orderedServices = handleOrderBy(services);
     setServices(orderedServices);
-  }, [orderBy]);
+  }, [orderBy, services]);
 
   return (
     <Table<Service>

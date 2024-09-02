@@ -1,5 +1,5 @@
-//auth context with user, password, and endpoint
 import getSystemConfigApi from "@/api/config/getSystemConfig";
+import { getInfoApi } from "@/api/info/getInfoApi";
 import { setAxiosInterceptor } from "@/lib/axiosClient";
 import { SystemConfig } from "@/models/systemConfig";
 import React, {
@@ -68,6 +68,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     setAuthDataState(data);
   }
+
+  async function checkAuth() {
+    if (!authData.authenticated) return;
+    try {
+      await getInfoApi({
+        endpoint: authData.endpoint,
+        username: authData.user,
+        password: authData.password,
+      });
+    } catch (error) {
+      console.log("131313");
+      setAuthData({
+        user: "",
+        password: "",
+        endpoint: "",
+        authenticated: false,
+      });
+    }
+  }
+
+  useEffect(() => {
+    checkAuth();
+  }, [initialData]);
 
   return (
     <AuthContext.Provider
