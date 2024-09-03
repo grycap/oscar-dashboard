@@ -43,7 +43,7 @@ function Table<T>(props: TableProps<T>) {
 
   return (
     <table className="oscar-table" width={"100%"}>
-      <thead>
+      <thead className="sticky-thead">
         <tr>
           {props.checkbox && (
             <th style={{ width: "64px", padding: "0 20px" }}>

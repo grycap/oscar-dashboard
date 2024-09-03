@@ -51,45 +51,47 @@ function ServicesList() {
   }, [orderBy, services]);
 
   return (
-    <Table<Service>
-      data={services}
-      columns={[
-        { title: "Name", key: "name" },
-        { title: "Image", key: "image" },
-        { title: "CPU", key: "cpu" },
-        { title: "Memory", key: "memory" },
-        {
-          title: "Actions",
-          renderCell: (value, row, index) => {
-            return (
-              <>
-                <Button variant={"link"} size="icon">
-                  <Ellipsis />
-                </Button>
-                <Button variant={"link"} size="icon">
-                  <Terminal />
-                </Button>
-                <Link
-                  to={`/ui/services/${row.name}/settings`}
-                  replace
-                  onClick={() => {
-                    setFormService(row);
-                  }}
-                >
+    <div style={{ flexGrow: 1, flexBasis: 0, overflow: "auto" }}>
+      <Table<Service>
+        data={services}
+        columns={[
+          { title: "Name", key: "name" },
+          { title: "Image", key: "image" },
+          { title: "CPU", key: "cpu" },
+          { title: "Memory", key: "memory" },
+          {
+            title: "Actions",
+            renderCell: (value, row, index) => {
+              return (
+                <>
                   <Button variant={"link"} size="icon">
-                    <Pencil />
+                    <Ellipsis />
                   </Button>
-                </Link>
-                <Button variant={"link"} size="icon">
-                  <Trash2 color={OscarColors.Red} />
-                </Button>
-              </>
-            );
+                  <Button variant={"link"} size="icon">
+                    <Terminal />
+                  </Button>
+                  <Link
+                    to={`/ui/services/${row.name}/settings`}
+                    replace
+                    onClick={() => {
+                      setFormService(row);
+                    }}
+                  >
+                    <Button variant={"link"} size="icon">
+                      <Pencil />
+                    </Button>
+                  </Link>
+                  <Button variant={"link"} size="icon">
+                    <Trash2 color={OscarColors.Red} />
+                  </Button>
+                </>
+              );
+            },
           },
-        },
-      ]}
-      checkbox
-    />
+        ]}
+        checkbox
+      />
+    </div>
   );
 }
 

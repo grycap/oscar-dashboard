@@ -26,3 +26,10 @@
 .oscar-table thead tr th:last-child {
   width: min-content;
 }
+
+.sticky-thead {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 1;
+}
