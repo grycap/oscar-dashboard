@@ -8,6 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AlertTriangle } from "lucide-react";
+import RequestButton from "../RequestButton";
+import { toast } from "sonner";
 
 interface DeleteDialogProps {
   isOpen: boolean;
@@ -25,6 +27,15 @@ export default function DeleteDialog({
   const itemCount = Array.isArray(itemNames) ? itemNames.length : 1;
   const itemText = itemCount === 1 ? "item" : "items";
   const nameText = Array.isArray(itemNames) ? itemNames.join(", ") : itemNames;
+
+  async function handleDelete() {
+    try {
+      await onDelete();
+    } catch (error) {
+      toast.error("Failed to delete item");
+    }
+    onClose();
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -45,9 +56,9 @@ export default function DeleteDialog({
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={onDelete}>
+          <RequestButton variant={"destructive"} request={handleDelete}>
             Delete
-          </Button>
+          </RequestButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

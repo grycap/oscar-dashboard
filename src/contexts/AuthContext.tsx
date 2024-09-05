@@ -78,7 +78,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password: authData.password,
       });
     } catch (error) {
-      console.log("131313");
       setAuthData({
         user: "",
         password: "",

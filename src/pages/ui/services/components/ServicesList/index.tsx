@@ -1,7 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useServicesContext from "../../context/ServicesContext";
 import getServicesApi from "@/api/services/getServicesApi";
+import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
+import DeleteDialog from "@/components/DeleteDialog";
 
 import Table from "@/components/Table";
 import { Service, ServiceOrderBy } from "../../models/service";
@@ -14,6 +16,7 @@ import { Link } from "react-router-dom";
 function ServicesList() {
   const { services, setServices, orderBy, filter, setFormService } =
     useServicesContext();
+  const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
 
   async function handleGetServices() {
     try {
@@ -23,6 +26,21 @@ function ServicesList() {
     } catch (error) {
       alert.error("Error getting services");
       console.error(error);
+    }
+  }
+
+  async function handleDeleteService() {
+    if (serviceToDelete) {
+      try {
+        await deleteServiceApi(serviceToDelete);
+        await handleGetServices();
+        alert.success(`Service ${serviceToDelete.name} deleted successfully`);
+      } catch (error) {
+        alert.error("Error deleting service");
+        console.error(error);
+      } finally {
+        setServiceToDelete(null);
+      }
     }
   }
 
@@ -81,7 +99,11 @@ function ServicesList() {
                       <Pencil />
                     </Button>
                   </Link>
-                  <Button variant={"link"} size="icon">
+                  <Button
+                    variant={"link"}
+                    size="icon"
+                    onClick={() => setServiceToDelete(row)}
+                  >
                     <Trash2 color={OscarColors.Red} />
                   </Button>
                 </>
@@ -90,6 +112,12 @@ function ServicesList() {
           },
         ]}
         checkbox
+      />
+      <DeleteDialog
+        isOpen={!!serviceToDelete}
+        onClose={() => setServiceToDelete(null)}
+        onDelete={handleDeleteService}
+        itemNames={serviceToDelete?.name || ""}
       />
     </div>
   );

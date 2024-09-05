@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ServiceViewMode } from "..";
 import { useLastUriParam } from "@/hooks/useLastUriParam";
 import { Link, useParams } from "react-router-dom";
-import { CreateUpdateButton } from "./CreateUpdateButton";
+import { CreateUpdateServiceButton } from "./CreateUpdateButton";
 
 interface Props {
   mode: ServiceViewMode;
@@ -46,7 +46,7 @@ function CreateUpdateServiceTabs({ mode }: Props) {
         </div>
       )}
 
-      <CreateUpdateButton isInCreateMode={isInCreateMode} />
+      <CreateUpdateServiceButton isInCreateMode={isInCreateMode} />
     </div>
   );
 }
