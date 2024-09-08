@@ -35,7 +35,7 @@ function ServicesTopbar() {
   return (
     <div
       style={{
-        minHeight: "64px",
+        height: "64px",
         borderBottom: OscarStyles.border,
         display: "flex",
         flexDirection: "row",
