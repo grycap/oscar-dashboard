@@ -1,7 +1,6 @@
 import OscarLogo from "@/assets/oscar-big.png";
 import SidebarRouteItem from "./components/SidebarRotueItem";
 import { Codesandbox, Database, LogOut } from "lucide-react";
-import { Button } from "../ui/button";
 import OscarColors, { OscarStyles } from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 

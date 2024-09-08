@@ -7,7 +7,6 @@ import ServicesOrderBy from "./components/OrderBy";
 import AddServiceButton from "./components/CreateServiceButton";
 import CreateUpdateServiceTabs from "./components/CreateUpdateServiceTabs";
 import UserInfo from "@/components/UserInfo";
-import RequestButton from "@/components/RequestButton";
 
 export enum ServiceViewMode {
   List = "List",

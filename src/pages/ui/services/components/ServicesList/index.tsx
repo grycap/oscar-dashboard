@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useServicesContext from "../../context/ServicesContext";
 import getServicesApi from "@/api/services/getServicesApi";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 import GenericTable from "@/components/Table";
 
 function ServicesList() {
-  const { services, setServices, orderBy, filter, setFormService } =
+  const { services, setServices, orderBy, setFormService } =
     useServicesContext();
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
 
@@ -89,14 +89,14 @@ function ServicesList() {
         ]}
         actions={[
           {
-            button: (item) => (
+            button: (_) => (
               <Button variant={"link"} size="icon">
                 <Ellipsis />
               </Button>
             ),
           },
           {
-            button: (item) => (
+            button: (_) => (
               <Button variant={"link"} size="icon">
                 <Terminal />
               </Button>

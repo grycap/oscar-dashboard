@@ -1,15 +1,10 @@
 import { OscarStyles } from "@/styles";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Info, LogOut } from "lucide-react";
-import { useState } from "react";
-import { Button } from "../ui/button";
+import { Copy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "react-router-dom";
-import { Tooltip } from "../ui/tooltip";
 import { alert } from "@/lib/alert";
 
 export default function UserInfo() {
-  const [isHovered, setIsHovered] = useState(false);
   const authContext = useAuth();
   const transition = { duration: 0.2, ease: "easeOut" };
 
@@ -25,8 +20,6 @@ export default function UserInfo() {
         alignItems: "center",
         justifyContent: "center",
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <AnimatePresence mode="popLayout" initial={false}>
         {

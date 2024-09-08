@@ -1,6 +1,5 @@
 import { useLastUriParam } from "@/hooks/useLastUriParam";
 import { useParams } from "react-router-dom";
-import useServicesContext from "../../../context/ServicesContext";
 import { useMemo } from "react";
 import { ServiceViewMode } from "../../Topbar";
 import { defaultService } from "../utils/initialData";

@@ -1,21 +1,21 @@
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
 function ScriptButton() {
-  const { formService, setFormService } = useServicesContext();
+  const { setFormService } = useServicesContext();
 
   const [uploadMethod, setUploadMethod] = useState<"file" | "url">("file");
+
+  //@ts-ignore
   const [fileContent, setFileContent] = useState<string>("");
   const [url, setUrl] = useState<string>("");
 
