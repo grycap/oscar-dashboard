@@ -14,6 +14,7 @@ function ServicesRouter() {
             <div
               style={{
                 flexGrow: 1,
+                flexBasis: 0,
                 display: "flex",
                 flexDirection: "column",
               }}

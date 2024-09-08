@@ -5,13 +5,13 @@ import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
 import DeleteDialog from "@/components/DeleteDialog";
 
-import Table from "@/components/Table";
 import { Service, ServiceOrderBy } from "../../models/service";
 import { Button } from "@/components/ui/button";
 import { Ellipsis, Pencil, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import useUpdate from "@/hooks/useUpdate";
 import { Link } from "react-router-dom";
+import GenericTable from "@/components/Table";
 
 function ServicesList() {
   const { services, setServices, orderBy, filter, setFormService } =
@@ -69,49 +69,66 @@ function ServicesList() {
   }, [orderBy, services]);
 
   return (
-    <div style={{ flexGrow: 1, flexBasis: 0, overflow: "auto" }}>
-      <Table<Service>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: 1,
+        flexBasis: 0,
+        overflow: "hidden",
+      }}
+    >
+      <GenericTable<Service>
         data={services}
+        idKey="name"
         columns={[
-          { title: "Name", key: "name" },
-          { title: "Image", key: "image" },
-          { title: "CPU", key: "cpu" },
-          { title: "Memory", key: "memory" },
+          { header: "Name", accessor: "name" },
+          { header: "Image", accessor: "image" },
+          { header: "CPU", accessor: "cpu" },
+          { header: "Memory", accessor: "memory" },
+        ]}
+        actions={[
           {
-            title: "Actions",
-            renderCell: (value, row, index) => {
-              return (
-                <>
-                  <Button variant={"link"} size="icon">
-                    <Ellipsis />
-                  </Button>
-                  <Button variant={"link"} size="icon">
-                    <Terminal />
-                  </Button>
-                  <Link
-                    to={`/ui/services/${row.name}/settings`}
-                    replace
-                    onClick={() => {
-                      setFormService(row);
-                    }}
-                  >
-                    <Button variant={"link"} size="icon">
-                      <Pencil />
-                    </Button>
-                  </Link>
-                  <Button
-                    variant={"link"}
-                    size="icon"
-                    onClick={() => setServiceToDelete(row)}
-                  >
-                    <Trash2 color={OscarColors.Red} />
-                  </Button>
-                </>
-              );
-            },
+            button: (item) => (
+              <Button variant={"link"} size="icon">
+                <Ellipsis />
+              </Button>
+            ),
+          },
+          {
+            button: (item) => (
+              <Button variant={"link"} size="icon">
+                <Terminal />
+              </Button>
+            ),
+          },
+          {
+            button: (item) => (
+              <Link
+                to={`/ui/services/${item.name}/settings`}
+                replace
+                onClick={() => {
+                  setFormService(item);
+                }}
+              >
+                <Button variant={"link"} size="icon">
+                  <Pencil />
+                </Button>
+              </Link>
+            ),
+          },
+          {
+            button: (item) => (
+              <Button
+                variant={"link"}
+                size="icon"
+                onClick={() => setServiceToDelete(item)}
+              >
+                <Trash2 color={OscarColors.Red} />
+              </Button>
+            ),
           },
         ]}
-        checkbox
       />
       <DeleteDialog
         isOpen={!!serviceToDelete}
