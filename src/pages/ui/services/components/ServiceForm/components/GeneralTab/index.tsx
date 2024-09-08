@@ -13,6 +13,9 @@ import {
 import EnviromentVariables from "./components/EnviromentVariables";
 import ServiceFormCell from "../FormCell";
 import ScriptButton from "./components/ScriptButton";
+import { CopyIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { alert } from "@/lib/alert";
 
 function ServiceGeneralTab() {
   const { formService, setFormService } = useServicesContext();
@@ -55,22 +58,71 @@ function ServiceGeneralTab() {
         title="General Settings"
         subtitle="Configure the service name and a container image to use"
       >
-        <Input
-          flex={1}
-          value={formService?.name}
-          onChange={(e) => {
-            handleChange(e, "name");
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            gap: 10,
           }}
-          label="Service name"
-        />
-        <Input
-          flex={2}
-          value={formService?.image}
-          label="Docker image"
-          onChange={(e) => {
-            handleChange(e, "image");
-          }}
-        />
+        >
+          <section
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              width: "100%",
+              gap: 10,
+            }}
+          >
+            <Input
+              flex={1}
+              value={formService?.name}
+              onChange={(e) => {
+                handleChange(e, "name");
+              }}
+              label="Service name"
+            />
+            <Input
+              flex={2}
+              value={formService?.image}
+              label="Docker image"
+              onChange={(e) => {
+                handleChange(e, "image");
+              }}
+            />
+          </section>
+          {formService.token && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                width: "100%",
+                alignItems: "end",
+                gap: 10,
+              }}
+            >
+              <Input
+                value={formService?.token}
+                readOnly
+                label="Token"
+                type="password"
+                width="60%"
+              />
+              <Button
+                variant="ghost"
+                style={{
+                  height: "39px",
+                }}
+                onClick={() => {
+                  navigator.clipboard.writeText(formService?.token || "");
+                  alert.success("Token copied to clipboard");
+                }}
+              >
+                <CopyIcon />
+              </Button>
+            </div>
+          )}
+        </div>
       </ServiceFormCell>
       <Divider />
       <ServiceFormCell
