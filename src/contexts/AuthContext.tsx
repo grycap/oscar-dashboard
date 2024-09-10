@@ -62,7 +62,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [authData]);
 
   function setAuthData(data: AuthData) {
-    localStorage.setItem("authData", JSON.stringify(data));
+    if (data.authenticated) {
+      localStorage.setItem("authData", JSON.stringify(data));
+    } else {
+      localStorage.removeItem("authData");
+    }
 
     setAxiosInterceptor(data);
 

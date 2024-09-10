@@ -74,7 +74,7 @@ function GenericTable<T extends object>({
   const totalPages = Math.ceil(data.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedData = data.slice(startIndex, endIndex);
+  const paginatedData = data.slice(startIndex, endIndex) ?? [];
 
   return (
     <div className="relative flex flex-col flex-grow flex-basis-0 overflow-y-auto">
@@ -104,7 +104,7 @@ function GenericTable<T extends object>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedData.map((item, rowIndex) => (
+            {paginatedData?.map((item, rowIndex) => (
               <TableRow key={rowIndex}>
                 <TableCell>
                   <Checkbox

@@ -9,6 +9,7 @@ function Sidebar() {
   const authContext = useAuth();
 
   function handleLogout() {
+    localStorage.removeItem("authData");
     authContext.setAuthData({
       user: "",
       password: "",
