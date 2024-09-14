@@ -16,6 +16,7 @@ import ScriptButton from "./components/ScriptButton";
 import { CopyIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { alert } from "@/lib/alert";
+import Divider from "@/components/ui/divider";
 
 function ServiceGeneralTab() {
   const { formService, setFormService } = useServicesContext();
@@ -30,18 +31,6 @@ function ServiceGeneralTab() {
       };
     });
   }
-
-  const Divider = () => {
-    return (
-      <div
-        style={{
-          width: "100%",
-          height: "1px",
-          borderTop: OscarStyles.border,
-        }}
-      ></div>
-    );
-  };
 
   const [memoryUnits, setMemoryUnits] = useState("Mi" as "Mi" | "Gi");
 

@@ -36,11 +36,9 @@ export function CreateUpdateServiceButton({ isInCreateMode }: Props) {
   async function handleAction() {
     try {
       if (isInCreateMode) {
-        const newService = await createServiceApi(
-          createServiceModel as unknown as Service
-        );
+        await createServiceApi(createServiceModel as unknown as Service);
         alert.success("Service created successfully");
-        navigate(`/ui/services/${newService.name}/settings`);
+        navigate(`/ui/services/${createServiceModel.name}/settings`);
       } else {
         await updateServiceApi(formService);
         alert.success("Service updated successfully");

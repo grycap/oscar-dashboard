@@ -80,26 +80,36 @@ function GenericTable<T extends object>({
     <div className="relative flex flex-col flex-grow flex-basis-0 overflow-y-auto">
       <div className="flex-grow">
         <Table>
-          <TableHeader className="sticky top-0 z-10">
+          <TableHeader className="sticky top-0 z-10 h-[34px]">
             <TableRow
               style={{
                 background: "white",
                 padding: 0,
+                height: "34px",
+                borderBottom: OscarStyles.border,
               }}
             >
-              <TableHead className="w-[50px] h-[34px]">
+              <TableHead
+                className="w-[50px] h-[34px]"
+                style={{ height: "34px" }}
+              >
                 <Checkbox
-                  checked={selectedRows.size === data.length}
+                  checked={data.length > 0 && selectedRows.size === data.length}
                   onCheckedChange={toggleAll}
                 />
               </TableHead>
               {columns.map((column, index) => (
-                <TableHead key={index} className="h-[34px]">
+                <TableHead key={index} style={{ height: "34px" }}>
                   {column.header}
                 </TableHead>
               ))}
               {actions && (
-                <TableHead className="text-right pr-6">Actions</TableHead>
+                <TableHead
+                  className="text-right pr-6"
+                  style={{ height: "34px" }}
+                >
+                  Actions
+                </TableHead>
               )}
             </TableRow>
           </TableHeader>

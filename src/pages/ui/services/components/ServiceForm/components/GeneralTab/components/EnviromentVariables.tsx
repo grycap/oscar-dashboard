@@ -23,7 +23,7 @@ function EnviromentVariables() {
     }
 
     return array;
-  }, []);
+  }, [formService]);
 
   const [variablesArray, setVariablesArray] = useState(initialArray);
 

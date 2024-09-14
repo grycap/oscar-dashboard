@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Copy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
+import "./style.css";
 
 export default function UserInfo() {
   const authContext = useAuth();
@@ -25,12 +26,12 @@ export default function UserInfo() {
         {
           <motion.div
             key="text"
+            className="text-decoration-underline-hover"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             whileHover={{
               scale: 1.02,
-              textDecoration: "underline",
             }}
             transition={transition}
             style={{

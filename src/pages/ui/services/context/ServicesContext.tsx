@@ -81,9 +81,12 @@ export const ServicesProvider = ({
   }
 
   async function handleFormService(services: Service[]) {
-    if (serviceId === "create") setFormService(await getDefaultService());
+    if (!serviceId || serviceId === "create") {
+      const defaultService = await getDefaultService();
+      setFormService(defaultService);
+      return;
+    }
 
-    if (!serviceId) return;
     if (!services) return;
     const selectedService = services.find((s) => s.name === serviceId);
     if (!selectedService) return;

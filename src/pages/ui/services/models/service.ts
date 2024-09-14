@@ -76,7 +76,7 @@ interface Clusters {
   };
 }
 
-interface StoragePath {
+export interface StoragePath {
   storage_provider: string;
   path: string;
   suffix: string[];
