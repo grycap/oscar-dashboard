@@ -5,6 +5,8 @@ import ServicesRouter from "@/pages/ui/services/router";
 import Login from "@/pages/Login";
 import { PrivacyPolicy } from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
+import { MinioProvider } from "@/contexts/Minio/MinioContext";
+import MinioRouter from "@/pages/ui/minio/router";
 
 function AppRouter() {
   return (
@@ -14,12 +16,14 @@ function AppRouter() {
           path="/ui"
           element={
             <ProtectedRoute>
-              <AppLayout />
+              <MinioProvider>
+                <AppLayout />
+              </MinioProvider>
             </ProtectedRoute>
           }
         >
           <Route path="services/*" element={<ServicesRouter />} />
-          <Route path="minio" element={<h1>Minio</h1>} />
+          <Route path="minio/*" element={<MinioRouter />} />
           <Route path="info" element={<h1>Info</h1>} />
         </Route>
 

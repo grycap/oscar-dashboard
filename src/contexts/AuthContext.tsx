@@ -54,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!authData.authenticated) return;
 
     const response = await getSystemConfigApi();
+    console.log("response", response);
     setSystemConfig(response);
   }
 

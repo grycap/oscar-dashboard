@@ -132,7 +132,9 @@ function GenericTable<T extends object>({
                 {actions && (
                   <TableCell>
                     <div className="flex justify-end">
-                      {actions.map((action) => action.button(item))}
+                      {actions.map((action, index) => (
+                        <div key={index}>{action.button(item)}</div>
+                      ))}
                     </div>
                   </TableCell>
                 )}
