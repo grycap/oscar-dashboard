@@ -288,7 +288,6 @@ export default function InputOutputEditor() {
 function EditModal({
   item,
   onSave,
-  providers,
 }: {
   item: StoragePath;
   onSave: (item: StoragePath) => void;

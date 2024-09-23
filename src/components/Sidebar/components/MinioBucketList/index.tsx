@@ -3,7 +3,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import "./styles.css";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Button } from "@/components/ui/button";
-import { FolderPlus, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 

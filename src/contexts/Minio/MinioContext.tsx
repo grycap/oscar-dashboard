@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import {
   S3Client,
-  PutObjectCommand,
   ListBucketsCommand,
   Bucket,
   CreateBucketCommand,
