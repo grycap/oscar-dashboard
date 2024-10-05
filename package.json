@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://grycap.github.io/oscar-nui",
+  "homepage": "https://dashboard.oscar.grycap.net",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
