@@ -69,12 +69,12 @@ function Sidebar() {
             padding: "6px 16px",
           }}
         >
-          <Link to={"/terms-of-use"}>
+          <Link to={"/terms-of-use"} target="_blank">
             <span style={{ fontSize: "10px", color: OscarColors.DarkGrayText }}>
               Terms of use
             </span>
           </Link>
-          <Link to={"/privacy-policy"}>
+          <Link to={"/privacy-policy"} target="_blank">
             <span style={{ fontSize: "10px", color: OscarColors.DarkGrayText }}>
               Privacy policy
             </span>

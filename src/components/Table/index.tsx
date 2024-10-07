@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "../ui/select";
 
-type ColumnDef<T> = {
+export type ColumnDef<T> = {
   header: string;
   accessor: keyof T | ((item: T) => React.ReactNode);
 };
