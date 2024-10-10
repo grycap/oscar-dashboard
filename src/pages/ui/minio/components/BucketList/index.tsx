@@ -1,6 +1,6 @@
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { _Object, CommonPrefix } from "@aws-sdk/client-s3";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect,  useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import GenericTable from "@/components/Table"; // Importar GenericTable
 import { Folder } from "lucide-react";
