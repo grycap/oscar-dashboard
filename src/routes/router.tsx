@@ -30,7 +30,7 @@ function AppRouter() {
         <Route path="/login" element={<Login />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="*" element={<Navigate to="/ui/services" replace />} />
+        <Route path="*" element={<Navigate to="/ui" replace />} />
       </Routes>
     </BrowserRouter>
   );
