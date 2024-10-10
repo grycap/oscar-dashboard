@@ -89,14 +89,14 @@ function ServicesList() {
         ]}
         actions={[
           {
-            button: (_) => (
+            button: () => (
               <Button variant={"link"} size="icon">
                 <Ellipsis />
               </Button>
             ),
           },
           {
-            button: (_) => (
+            button: () => (
               <Button variant={"link"} size="icon">
                 <Terminal />
               </Button>

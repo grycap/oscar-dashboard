@@ -1,7 +1,7 @@
 import { Outlet, Route, Routes } from "react-router-dom";
 import MinioTopbar from "./components/Topbar";
+import BucketContent from "./components/BucketContent";
 import BucketList from "./components/BucketList";
-
 function MinioRouter() {
   return (
     <Routes>
@@ -17,12 +17,13 @@ function MinioRouter() {
             }}
           >
             <MinioTopbar />
+
             <Outlet />
           </div>
         }
       >
-        <Route path="" element={<h1>Minio</h1>} />
-        <Route path=":name/*" element={<BucketList />} />
+        <Route path="" element={<BucketList />} />
+        <Route path=":name/*" element={<BucketContent />} />
       </Route>
     </Routes>
   );

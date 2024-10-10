@@ -1,33 +1,29 @@
 import OscarColors, { OscarStyles } from "@/styles";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import UserInfo from "@/components/UserInfo";
+import AddBucketButton from "./AddBucketButton";
+import AddFolderButton from "./AddFolderButton";
+import useSelectedBucket from "../hooks/useSelectedBucket";
+import { ChevronRight } from "lucide-react";
 
 function MinioTopbar() {
-  const { name, folderPath = "" } = useParams();
-  const pathSegments = folderPath ? folderPath.split("/") : [];
+  const { name, path } = useSelectedBucket();
+  const pathSegments = path ? path.split("/").filter((segment) => segment) : [];
+
+  const isOnRoot = name === undefined;
+
   const breadcrumbs = pathSegments.map((segment, index) => {
     const path = pathSegments.slice(0, index + 1).join("/");
+
     return (
-      <Link key={index} to={`/ui/minio/${name}/${path}`}>
-        {segment}
-      </Link>
+      <>
+        <ChevronRight className="pt-[2px]" />
+        <Link key={index} to={`/ui/minio/${name}/${path}`}>
+          {segment}
+        </Link>
+      </>
     );
   });
-
-  /* const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
-  const [_, serviceId] = pathnames; */
-
-  /*  const mode = useMemo(() => {
-    if (!serviceId) {
-      return ServiceViewMode.List;
-    }
-
-    if (serviceId === "create") {
-      return ServiceViewMode.Create;
-    }
-
-    return ServiceViewMode.Update;
-  }, [pathnames]); */
 
   return (
     <div
@@ -49,30 +45,37 @@ function MinioTopbar() {
           gap: 10,
         }}
       >
-        <h1
-          style={{
-            color: OscarColors.DarkGrayText,
-            fontSize: 18,
-            textDecoration: "none",
-          }}
-        >
-          Bucket:{" "}
-          <span style={{ fontWeight: "bold", color: "black" }}>{name}</span>
-        </h1>
-        <nav>{breadcrumbs.length > 0 && <div>{breadcrumbs}</div>}</nav>
-        {/* <ServiceBreadcrumb />
-
-        {mode === ServiceViewMode.List ? (
-          <>
-            <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-              <ServicesFilterBy />
-              <ServicesOrderBy />
-            </div>
-            <AddServiceButton />
-          </>
-        ) : (
-          <CreateUpdateServiceTabs mode={mode} />
-        )} */}
+        <div className="flex flex-row items-center gap-1">
+          <h1
+            style={{
+              color: OscarColors.DarkGrayText,
+              fontSize: 18,
+              textDecoration: "none",
+            }}
+          >
+            {isOnRoot ? (
+              <span>Buckets</span>
+            ) : (
+              <>
+                <span className="mr-2">Bucket:</span>
+                <Link
+                  to={`/ui/minio/${name}`}
+                  style={{
+                    fontWeight: "bold",
+                    color: "black",
+                  }}
+                >
+                  {name}
+                </Link>
+              </>
+            )}
+          </h1>
+          <nav className="flex flex-row items-center gap-1">
+            {breadcrumbs.length > 0 && <>{breadcrumbs}</>}
+          </nav>
+        </div>
+        {isOnRoot && <AddBucketButton />}
+        {!isOnRoot && <AddFolderButton />}
       </div>
       <UserInfo />
     </div>
