@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
-import { Service } from "@/pages/ui/services/models/service";
+import { LOG_LEVEL, Service } from "@/pages/ui/services/models/service";
 import { useState } from "react";
 import {
   Select,
@@ -12,10 +12,11 @@ import {
 import EnviromentVariables from "./components/EnviromentVariables";
 import ServiceFormCell from "../FormCell";
 import ScriptButton from "./components/ScriptButton";
-import { CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { alert } from "@/lib/alert";
 import Divider from "@/components/ui/divider";
+import { Label } from "@/components/ui/label";
 
 function ServiceGeneralTab() {
   const { formService, setFormService } = useServicesContext();
@@ -79,37 +80,107 @@ function ServiceGeneralTab() {
               }}
             />
           </section>
-          {formService.token && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                width: "100%",
-                alignItems: "end",
-                gap: 10,
-              }}
-            >
-              <Input
-                value={formService?.token}
-                readOnly
-                label="Token"
-                type="password"
-                width="60%"
-              />
-              <Button
-                variant="ghost"
+          <div className="flex flex-row w-full items-end">
+            {formService.token && (
+              <div
                 style={{
-                  height: "39px",
-                }}
-                onClick={() => {
-                  navigator.clipboard.writeText(formService?.token || "");
-                  alert.success("Token copied to clipboard");
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "end",
+                  width: "50%",
+                  gap: 10,
                 }}
               >
-                <CopyIcon />
-              </Button>
+                <Input
+                  value={formService?.token}
+                  readOnly
+                  label="Token"
+                  type="password"
+                  width="80%"
+                />
+                <Button
+                  variant="ghost"
+                  style={{
+                    height: "39px",
+                  }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(formService?.token || "");
+                    alert.success("Token copied to clipboard");
+                  }}
+                >
+                  <CopyIcon />
+                </Button>
+              </div>
+            )}
+            <div
+              style={{
+                width: "50%",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.375rem",
+              }}
+            >
+              <Label>Log level</Label>
+              <Select
+                value={formService?.log_level}
+                onValueChange={(value) => {
+                  setFormService((service: Service) => {
+                    return {
+                      ...service,
+                      log_level: value as LOG_LEVEL,
+                    };
+                  });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Log level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(LOG_LEVEL).map((value) => {
+                    return (
+                      <SelectItem key={value} value={value}>
+                        {value}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
-          )}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              gap: 50,
+            }}
+          >
+            <div className="flex flex-row gap-2 items-center">
+              <strong>Alpine:</strong>
+              {formService.alpine ? (
+                <CheckIcon size={16} />
+              ) : (
+                <XIcon size={16} className="pt-[2px]" />
+              )}
+            </div>
+
+            <div className="flex flex-row gap-2 items-center">
+              <strong>Interlink:</strong>
+              {formService.interlink_node_name ? (
+                formService.interlink_node_name
+              ) : (
+                <XIcon size={16} className="pt-[2px]" />
+              )}
+            </div>
+
+            <div className="flex flex-row gap-2 items-center">
+              <strong>Allowed users:</strong>
+              {formService.allowed_users?.length ? (
+                formService.allowed_users.join(", ")
+              ) : (
+                <XIcon size={16} className="pt-[2px]" />
+              )}
+            </div>
+          </div>
         </div>
       </ServiceFormCell>
       <Divider />

@@ -98,7 +98,17 @@ interface Synchronous {
   max_scale: number;
 }
 
+export enum LOG_LEVEL {
+  CRITICAL = "CRITICAL",
+  ERROR = "ERROR",
+  WARNING = "WARNING",
+  INFO = "INFO",
+  DEBUG = "DEBUG",
+  NOTSET = "NOTSET",
+}
+
 export interface Service {
+  allowed_users: string[];
   name: string;
   cluster_id: string;
   memory: string;
@@ -110,8 +120,9 @@ export interface Service {
   replicas: Replica[];
   rescheduler_threshold: string;
   token: string;
-  log_level: string;
+  log_level: LOG_LEVEL;
   image: string;
+  interlink_node_name: string;
   image_rules: [];
   alpine: boolean;
   script: string;
