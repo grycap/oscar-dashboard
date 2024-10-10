@@ -1,4 +1,4 @@
-import { HashRouter, BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { HashRouter,  Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import AppLayout from "@/pages/ui/layout";
 import ServicesRouter from "@/pages/ui/services/router";
