@@ -26,7 +26,6 @@ function AppRouter() {
           <Route path="minio/*" element={<MinioRouter />} />
           <Route path="info" element={<h1>Info</h1>} />
         </Route>
-
         <Route path="/login" element={<Login />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
