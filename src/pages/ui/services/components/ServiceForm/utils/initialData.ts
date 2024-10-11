@@ -1,4 +1,4 @@
-import { Service } from "../../../models/service";
+import { Service, LOG_LEVEL } from "../../../models/service";
 
 export const defaultService: Service = {
   name: "",
@@ -15,7 +15,7 @@ export const defaultService: Service = {
   replicas: [],
   rescheduler_threshold: "",
   token: "",
-  log_level: "INFO",
+  log_level: LOG_LEVEL.INFO,
   image_rules: [],
   image: "",
   alpine: false,
@@ -42,4 +42,6 @@ export const defaultService: Service = {
       ssl_verify: false,
     },
   },
+  interlink_node_name:"",
+  allowed_users:[],
 };
