@@ -15,6 +15,9 @@ import {
   ListObjectsV2CommandInput,
   CommonPrefix,
   _Object,
+  DeleteBucketCommand,
+  PutObjectCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { alert } from "@/lib/alert";
@@ -33,6 +36,10 @@ export type MinioProviderData = {
     folders: CommonPrefix[];
     items: _Object[];
   }>;
+  deleteBucket: (bucketName: string) => Promise<void>;
+  createFolder: (bucketName: string, folderName: string) => Promise<void>;
+  uploadFile: (bucketName: string, path: string, file: File) => Promise<void>;
+  deleteFile: (bucketName: string, path: string) => Promise<void>;
 };
 
 export const MinioContext = createContext({} as MinioProviderData);
@@ -145,6 +152,86 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     updateBuckets();
   }
 
+  async function deleteBucket(bucketName: string) {
+    if (!client) return;
+
+    try {
+      const command = new DeleteBucketCommand({ Bucket: bucketName });
+      await client.send(command);
+      alert.success("Bucket deleted successfully");
+    } catch (error) {
+      console.error(error);
+      alert.error("Error deleting bucket");
+    }
+
+    updateBuckets();
+  }
+
+  async function createFolder(bucketName: string, folderName: string) {
+    if (!client) return;
+
+    const folderKey = folderName.endsWith("/") ? folderName : `${folderName}/`;
+
+    try {
+      await client.send(
+        new PutObjectCommand({
+          Bucket: bucketName,
+          Key: folderKey,
+        })
+      );
+      alert.success("Folder created successfully");
+    } catch (error) {
+      console.error(error);
+      alert.error("Error creating folder");
+    }
+
+    updateBuckets();
+  }
+
+  async function uploadFile(
+    bucketName: string,
+    path: string,
+    file: File
+  ): Promise<void> {
+    if (!client) return;
+
+    const key = path ? `${path}${file.name}` : file.name;
+    console.log(key);
+
+    try {
+      const command = new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: file,
+      });
+      await client.send(command);
+      alert.success("File uploaded successfully");
+    } catch (error) {
+      console.error(error);
+      alert.error("Error uploading file");
+    }
+
+    updateBuckets();
+  }
+
+  async function deleteFile(bucketName: string, path: string) {
+    if (!client) return;
+
+    try {
+      const command = new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: path,
+      });
+      await client.send(command);
+      alert.success("File deleted successfully");
+    } catch (error) {
+      console.error(error);
+      alert.error("Error deleting file");
+    }
+
+    updateBuckets();
+  }
+
   return (
     <MinioContext.Provider
       value={{
@@ -153,8 +240,12 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         buckets,
         setBuckets,
         createBucket,
+        createFolder,
         updateBuckets,
         getBucketItems,
+        deleteBucket,
+        uploadFile,
+        deleteFile,
       }}
     >
       {children}
