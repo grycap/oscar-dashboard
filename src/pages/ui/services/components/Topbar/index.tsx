@@ -1,7 +1,7 @@
 import { OscarStyles } from "@/styles";
 import ServiceBreadcrumb from "./components/Breadcrumbs";
 import { useLocation } from "react-router-dom";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import ServicesFilterBy from "./components/FilterBy";
 import ServicesOrderBy from "./components/OrderBy";
 import AddServiceButton from "./components/CreateServiceButton";
@@ -18,6 +18,10 @@ function ServicesTopbar() {
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
   const [_, serviceId] = pathnames;
+
+  useEffect(() => {
+    document.title = "OSCAR - Services";
+  }, []);
 
   const mode = useMemo(() => {
     if (!serviceId) {

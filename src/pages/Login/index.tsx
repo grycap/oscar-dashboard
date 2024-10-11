@@ -49,6 +49,10 @@ function Login() {
     }
   }, [authData]);
 
+  useEffect(() => {
+    document.title = "OSCAR - Login";
+  }, []);
+
   return (
     <>
       <DocumentTitle value="Login" />

@@ -5,12 +5,17 @@ import AddBucketButton from "./AddBucketButton";
 import AddFolderButton from "./AddFolderButton";
 import useSelectedBucket from "../hooks/useSelectedBucket";
 import { ChevronRight } from "lucide-react";
+import { useEffect } from "react";
 
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
   const pathSegments = path ? path.split("/").filter((segment) => segment) : [];
 
   const isOnRoot = name === undefined;
+
+  useEffect(() => {
+    document.title = "OSCAR - MinIO";
+  }, []);
 
   const breadcrumbs = pathSegments.map((segment, index) => {
     const path = pathSegments.slice(0, index + 1).join("/");
