@@ -1,10 +1,9 @@
 import OscarLogo from "@/assets/oscar-big.png";
 import SidebarRouteItem from "./components/SidebarRouteItem";
-import { Codesandbox, Database, LogOut } from "lucide-react";
+import { Codesandbox, Database, Info, LogOut } from "lucide-react";
 import OscarColors, { OscarStyles } from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
-import { MinioBucketList } from "./components/MinioBucketList";
 
 function Sidebar() {
   const authContext = useAuth();
@@ -50,7 +49,11 @@ function Sidebar() {
           label="Minio"
           icon={<Database size={20} />}
         />
-        <MinioBucketList />
+        <SidebarRouteItem
+          path="/info"
+          label="Info"
+          icon={<Info size={20} />}
+        />
       </ul>
       <div
         style={{

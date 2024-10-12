@@ -7,4 +7,5 @@ export type SystemConfig = {
   gpu_avaliable: boolean;
   serverless_backend: string;
   yunikorn_enable: boolean;
+  interLink_available: boolean;
 };

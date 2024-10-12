@@ -1,4 +1,4 @@
-import { HashRouter,  Navigate, Route, Routes } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import AppLayout from "@/pages/ui/layout";
 import ServicesRouter from "@/pages/ui/services/router";
@@ -7,6 +7,7 @@ import { PrivacyPolicy } from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
 import { MinioProvider } from "@/contexts/Minio/MinioContext";
 import MinioRouter from "@/pages/ui/minio/router";
+import InfoView from "@/pages/ui/info";
 
 function AppRouter() {
   return (
@@ -24,7 +25,7 @@ function AppRouter() {
         >
           <Route path="services/*" element={<ServicesRouter />} />
           <Route path="minio/*" element={<MinioRouter />} />
-          <Route path="info" element={<h1>Info</h1>} />
+          <Route path="info" element={<InfoView />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />

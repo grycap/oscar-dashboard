@@ -24,6 +24,7 @@ export const AuthContext = createContext({
     endpoint: "",
     authenticated: false,
   } as AuthData,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setAuthData: (_: AuthData) => {},
   systemConfig: null as SystemConfig | null,
 });
