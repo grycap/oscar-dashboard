@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { alert } from "@/lib/alert";
 
+import env from "@/env"
+
 function Login() {
   const navigate = useNavigate();
   const { authData, setAuthData } = useAuth();
@@ -38,6 +40,32 @@ function Login() {
         password,
         endpoint,
       });
+    } catch (error) {
+      alert.error("Invalid credentials");
+    }
+  }
+
+  async function handleLoginEGI(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
+    let endpoint = formData.get("endpoint") as string;
+    console.log(endpoint)
+    // Check if the endpoint is a valid URL
+    if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
+      alert.error("Invalid endpoint");
+      return;
+    }
+    try {
+      endpoint = endpoint.endsWith('/') ? endpoint.slice(0, -1) : endpoint;
+      localStorage.setItem("api", endpoint);
+      
+      localStorage.setItem("client_id", env.client_id);
+      localStorage.setItem("provider_url", env.provider_url);
+      localStorage.setItem("url_authorize", env.url_authorize);
+      localStorage.setItem("url_user_info", env.url_user_info);
+      localStorage.setItem("token_endpoint", env.token_endpoint);
+      window.location.replace(env.redirect_uri);
     } catch (error) {
       alert.error("Invalid credentials");
     }
@@ -127,7 +155,13 @@ function Login() {
           >
             <img src={BigLogo} alt="Oscar logo" width={320} />
             <form
-              onSubmit={handleLogin}
+              onSubmit={(e) => {
+                const buttonName = e.nativeEvent.submitter.name;
+                console.log(buttonName)
+                if (buttonName === "normal") handleLogin(e);
+                if (buttonName === "EGI") handleLoginEGI(e);
+              }}
+              //handleLogin(event,this)}
               style={{
                 width: "320px",
                 display: "flex",
@@ -140,6 +174,7 @@ function Login() {
               <Input name="password" type="password" placeholder="Password" />
 
               <Button
+              name="normal"
                 type="submit"
                 size={"sm"}
                 style={{
@@ -148,9 +183,10 @@ function Login() {
               >
                 Login
               </Button>
-            </form>
             <Separator />
             <Button
+              name="EGI"
+              type="submit"
               size="sm"
               style={{
                 width: "100%",
@@ -167,6 +203,8 @@ function Login() {
               />
               Login via EGI Check-in
             </Button>
+            </form>
+            
           </section>
         </div>
       </main>
