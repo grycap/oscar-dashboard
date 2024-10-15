@@ -156,10 +156,13 @@ function Login() {
             <img src={BigLogo} alt="Oscar logo" width={320} />
             <form
               onSubmit={(e) => {
-                const buttonName = e.nativeEvent.submitter.name;
-                console.log(buttonName)
-                if (buttonName === "normal") handleLogin(e);
-                if (buttonName === "EGI") handleLoginEGI(e);
+                let buttonExecuter=(e.nativeEvent as SubmitEvent).submitter
+                if (buttonExecuter != null){
+                  let buttonName=buttonExecuter.getAttribute("name")
+                  console.log(buttonName)
+                  if (buttonName === "normal") handleLogin(e);
+                  if (buttonName === "EGI") handleLoginEGI(e);
+                }
               }}
               //handleLogin(event,this)}
               style={{
