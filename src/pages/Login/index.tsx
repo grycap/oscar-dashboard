@@ -59,7 +59,6 @@ function Login() {
     try {
       endpoint = endpoint.endsWith('/') ? endpoint.slice(0, -1) : endpoint;
       localStorage.setItem("api", endpoint);
-      
       localStorage.setItem("client_id", env.client_id);
       localStorage.setItem("provider_url", env.provider_url);
       localStorage.setItem("url_authorize", env.url_authorize);
