@@ -32,12 +32,14 @@ function Login() {
     }
 
     try {
-      await getInfoApi({ endpoint, username, password });
+      const token=""
+      await getInfoApi({ endpoint, username, password,token });
 
       setAuthData({
         authenticated: true,
         user: username,
         password,
+        token,
         endpoint,
       });
     } catch (error) {

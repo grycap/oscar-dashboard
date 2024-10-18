@@ -14,6 +14,7 @@ export type AuthData = {
   user: string;
   password: string;
   endpoint: string;
+  token: string;
   authenticated?: boolean;
 };
 
@@ -22,6 +23,7 @@ export const AuthContext = createContext({
     user: "",
     password: "",
     endpoint: "",
+    token: "",
     authenticated: false,
   } as AuthData,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -37,6 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user: "",
         password: "",
         endpoint: "",
+        token: "",
         authenticated: false,
       } as AuthData;
     }
@@ -81,12 +84,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         endpoint: authData.endpoint,
         username: authData.user,
         password: authData.password,
+        token: authData.token,
       });
     } catch (error) {
       setAuthData({
         user: "",
         password: "",
         endpoint: "",
+        token: "",
         authenticated: false,
       });
     }
