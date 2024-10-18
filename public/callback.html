@@ -105,7 +105,12 @@
                   localStorage.setItem("yunikorn_enable",response.data.config?.yunikorn_enable);
                   localStorage.setItem("gpu_available",response.data.config?.gpu_available);
                   localStorage.setItem("interLink_available",response.data.config?.interLink_available);
-                  localStorage.setItem("authData",response.data); 
+                  user: { 'access_token': tokens['access_token'], info:users } 
+                  const authData={
+                    "authenticated":true,
+                    "user":{ 'access_token': tokens['access_token'], info:users } ,
+                    "endpoint": localStorage.getItem('api')}
+                  localStorage.setItem("authData",authData); 
                   var url_redirect = window.location.origin + "/#/ui/services"
                   window.location.href = url_redirect
               }).catch(function (error) {
