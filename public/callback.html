@@ -105,7 +105,6 @@
                   localStorage.setItem("yunikorn_enable",response.data.config?.yunikorn_enable);
                   localStorage.setItem("gpu_available",response.data.config?.gpu_available);
                   localStorage.setItem("interLink_available",response.data.config?.interLink_available);
-                  user: { 'access_token': tokens['access_token'], info:users } 
                   const authData={
                     "authenticated":true,
                     "user":{ 'access_token': tokens['access_token'], info:users } ,
