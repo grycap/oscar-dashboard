@@ -14,6 +14,7 @@ function Sidebar() {
       user: "",
       password: "",
       endpoint: "",
+      token: "",
       authenticated: false,
     });
   }
