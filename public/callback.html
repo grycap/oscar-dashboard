@@ -100,11 +100,6 @@
 
                   localStorage.setItem("accessKey",response.data.minio_provider?.access_key)
                   localStorage.setItem("secretKey",response.data.minio_provider?.secret_key)
-
-                  localStorage.setItem("authenticated", true);
-                  localStorage.setItem("yunikorn_enable",response.data.config?.yunikorn_enable);
-                  localStorage.setItem("gpu_available",response.data.config?.gpu_available);
-                  localStorage.setItem("interLink_available",response.data.config?.interLink_available);
                   const authData= JSON.stringify({
                     "authenticated":true,
                     "user":{ 'access_token': tokens['access_token'], info:users } ,
@@ -112,6 +107,11 @@
                     "token": tokens['access_token'],
                     "endpoint": localStorage.getItem('api')})                  
                   localStorage.setItem("authData",authData); 
+                  localStorage.setItem("authenticated", true);
+                  localStorage.setItem("yunikorn_enable",response.data.config?.yunikorn_enable);
+                  localStorage.setItem("gpu_available",response.data.config?.gpu_available);
+                  localStorage.setItem("interLink_available",response.data.config?.interLink_available);
+                  
                   var url_redirect = window.location.origin + "/#/ui/services"
                   window.location.href = url_redirect
               }).catch(function (error) {

@@ -83,14 +83,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         endpoint: authData.endpoint,
         username: authData.user,
         password: authData.password,
-        token: (authData?.token) ? (authData.token) : (undefined),
+        token: authData?.token,
       });
     } catch (error) {
       setAuthData({
         user: "",
         password: "",
         endpoint: "",
-        token:undefined,
         authenticated: false,
       });
     }
