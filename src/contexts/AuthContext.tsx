@@ -14,7 +14,7 @@ export type AuthData = {
   user: string;
   password: string;
   endpoint: string;
-  token: string | undefined;
+  token?: string;
   authenticated?: boolean;
 };
 
@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user: "",
         password: "",
         endpoint: "",
+        token: undefined,
         authenticated: false,
       } as AuthData;
     }
@@ -89,7 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user: "",
         password: "",
         endpoint: "",
-        token:"",
+        token:undefined,
         authenticated: false,
       });
     }

@@ -17,7 +17,7 @@ export async function getInfoApi({
   console.log(password)
   console.log(token)
   let config={}
-  if ( token !== undefined) {
+  if ( token === undefined) {
     config = {
       baseURL: endpoint,
       auth: {

@@ -24,6 +24,7 @@ function Login() {
     const endpoint = formData.get("endpoint") as string;
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
+    const token=undefined
 
     // Check if the endpoint is a valid URL
     if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
@@ -32,14 +33,12 @@ function Login() {
     }
 
     try {
-      const token=""
       await getInfoApi({ endpoint, username, password,token });
 
       setAuthData({
         authenticated: true,
         user: username,
         password,
-        token: undefined,
         endpoint,
       });
     } catch (error) {
