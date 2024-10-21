@@ -110,6 +110,7 @@
                     "user":{ 'access_token': tokens['access_token'], info:users } ,
                     "token": tokens['access_token'],
                     "endpoint": localStorage.getItem('api')})
+                    
                   localStorage.setItem("authData",authData); 
                   var url_redirect = window.location.origin + "/#/ui/services"
                   window.location.href = url_redirect

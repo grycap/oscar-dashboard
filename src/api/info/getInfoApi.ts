@@ -4,24 +4,20 @@ type GetInfoProps = {
   endpoint: string;
   username: string;
   password: string;
-  token: string;
+  token: string | undefined;
 };
 
 export async function getInfoApi({
   endpoint,
   username,
-  password,
   token,
+  password,
 }: GetInfoProps) {
-  let config
-  if (token!=""){
-    config = {
-      baseURL: endpoint,
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
-    }
-  }else{
+  console.log(username)
+  console.log(password)
+  console.log(token)
+  let config={}
+  if ( token !== undefined) {
     config = {
       baseURL: endpoint,
       auth: {
@@ -29,8 +25,19 @@ export async function getInfoApi({
         password,
       },
     }
+  }else{
+    config = {
+      baseURL: endpoint,
+      headers: { Authorization: "Bearer "+token},
+      auth: undefined,
+    }
   }
+  console.log(config)
+
   const response = await axios.get("/system/info", config);
+  console.log(response)
 
   return response.data;
 }
+
+

@@ -39,7 +39,7 @@ function Login() {
         authenticated: true,
         user: username,
         password,
-        token,
+        token: undefined,
         endpoint,
       });
     } catch (error) {
