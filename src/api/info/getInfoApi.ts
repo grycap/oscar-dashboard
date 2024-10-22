@@ -13,9 +13,6 @@ export async function getInfoApi({
   token,
   password,
 }: GetInfoProps) {
-  console.log(username)
-  console.log(password)
-  console.log(token)
   let config={}
   if ( token === undefined) {
     config = {
