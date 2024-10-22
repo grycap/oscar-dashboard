@@ -106,10 +106,10 @@
                   localStorage.setItem("interLink_available",response.data.config?.interLink_available);
                   const authData= JSON.stringify({
                     "authenticated":true,
-                    "user":users,
-                    "password": "tokens['access_token']",
+                    "user":JSON.parse(users).name,
+                    "password": "",
                     "token": tokens['access_token'],
-                    "endpoint": localStorage.getItem('api')})                  
+                    "endpoint": localStorage.getItem('api')})    
                   localStorage.setItem("authData",authData); 
                   var url_redirect = window.location.origin + "/#/ui/services"
                   window.location.href = url_redirect
