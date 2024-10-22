@@ -29,10 +29,8 @@ export async function getInfoApi({
       auth: undefined,
     }
   }
-  console.log(config)
 
   const response = await axios.get("/system/info", config);
-  console.log(response)
 
   return response.data;
 }
