@@ -108,7 +108,7 @@
                   localStorage.setItem("interLink_available",response.data.config?.interLink_available);
                   const authData= JSON.stringify({
                     "authenticated":true,
-                    "user":users.name,
+                    "user":users,
                     "password": "",
                     "token": tokens['access_token'],
                     "endpoint": localStorage.getItem('api')})    
