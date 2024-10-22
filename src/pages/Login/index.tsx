@@ -51,7 +51,6 @@ function Login() {
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     let endpoint = formData.get("endpoint") as string;
-    console.log(endpoint)
     // Check if the endpoint is a valid URL
     if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
       alert.error("Invalid endpoint");
@@ -159,7 +158,6 @@ function Login() {
                 let buttonExecuter=(e.nativeEvent as SubmitEvent).submitter
                 if (buttonExecuter != null){
                   let buttonName=buttonExecuter.getAttribute("name")
-                  console.log(buttonName)
                   if (buttonName === "normal") handleLogin(e);
                   if (buttonName === "EGI") handleLoginEGI(e);
                 }
