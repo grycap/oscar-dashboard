@@ -33,6 +33,11 @@ interface ServiceContextType {
 
   formService: Service;
   setFormService: Dispatch<SetStateAction<Service>>;
+
+  showFDLModal: boolean;
+  setShowFDLModal: Dispatch<SetStateAction<boolean>>;
+
+  refreshServices: () => void;
 }
 
 export const ServicesContext = createContext({
@@ -45,6 +50,7 @@ export const ServicesProvider = ({
   children: React.ReactNode;
 }) => {
   const [services, setServices] = useState([] as Service[]);
+  const [showFDLModal, setShowFDLModal] = useState(false);
   const { serviceId } = useParams();
 
   // Filter and order TABLE rows
@@ -114,6 +120,9 @@ export const ServicesProvider = ({
         setFormTab,
         formService,
         setFormService,
+        showFDLModal,
+        setShowFDLModal,
+        refreshServices: handleGetServices,
       }}
     >
       {children}

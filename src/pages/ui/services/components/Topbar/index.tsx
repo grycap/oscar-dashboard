@@ -17,6 +17,7 @@ export enum ServiceViewMode {
 function ServicesTopbar() {
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, serviceId] = pathnames;
 
   useEffect(() => {

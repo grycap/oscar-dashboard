@@ -8,12 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Settings } from "lucide-react";
+import { FileCode, Plus, Settings } from "lucide-react";
 import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
+import useServicesContext from "../../../context/ServicesContext";
 
 function AddServiceButton() {
   const navigate = useNavigate();
+  const { setShowFDLModal } = useServicesContext();
   const isSmallScreen = useMediaQuery({ maxWidth: 799 });
 
   return (
@@ -41,6 +43,14 @@ function AddServiceButton() {
           >
             <Settings className="mr-2 h-4 w-4" />
             <span>Form</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              setShowFDLModal(true);
+            }}
+          >
+            <FileCode className="mr-2 h-4 w-4" />
+            <span>FDL</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

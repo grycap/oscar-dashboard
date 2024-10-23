@@ -3,6 +3,7 @@ import ServicesTopbar from "./components/Topbar";
 import ServicesList from "./components/ServicesList";
 import { ServicesProvider } from "./context/ServicesContext";
 import ServiceForm from "./components/ServiceForm";
+import FDLForm from "./components/FDL";
 
 function ServicesRouter() {
   return (
@@ -20,6 +21,7 @@ function ServicesRouter() {
               }}
             >
               <ServicesTopbar />
+              <FDLForm />
               <Outlet />
             </div>
           </ServicesProvider>

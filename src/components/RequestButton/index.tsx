@@ -27,6 +27,8 @@ function RequestButton({
   const [ref, bounds] = useMeasure();
 
   async function onClick() {
+    if (props.disabled) return;
+    if (isLoading) return; // Evita múltiples clics
     setIsLoading(true);
     await request();
     setIsLoading(false);
