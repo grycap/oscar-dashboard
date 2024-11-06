@@ -1,16 +1,17 @@
-import { OscarStyles } from "@/styles";
+import OscarColors from "@/styles";
 
 interface DividerProps {
   orientation?: "horizontal" | "vertical";
 }
 
 const Divider = ({ orientation = "horizontal" }: DividerProps) => {
+  const isHorizontal = orientation === "horizontal";
   return (
     <div
       style={{
-        width: orientation === "horizontal" ? "100%" : "1px",
-        height: orientation === "horizontal" ? "1px" : "100%",
-        borderTop: OscarStyles.border,
+        width: isHorizontal ? "100%" : "1px",
+        height: isHorizontal ? "1px" : "100%",
+        backgroundColor: OscarColors.Gray2,
       }}
     ></div>
   );

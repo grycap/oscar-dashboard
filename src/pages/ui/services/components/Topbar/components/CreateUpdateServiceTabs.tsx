@@ -3,6 +3,7 @@ import { ServiceViewMode } from "..";
 import { useLastUriParam } from "@/hooks/useLastUriParam";
 import { Link, useParams } from "react-router-dom";
 import { CreateUpdateServiceButton } from "./CreateUpdateButton";
+import { InvokePopover } from "../../InvokePopover";
 
 interface Props {
   mode: ServiceViewMode;
@@ -13,6 +14,12 @@ function CreateUpdateServiceTabs({ mode }: Props) {
   const { serviceId } = useParams();
   const isInCreateMode = mode === ServiceViewMode.Create;
   const isInUpdateMode = mode === ServiceViewMode.Update;
+
+  function getVariant(label: string) {
+    return tab === label ? "lightGreen" : "ghost";
+  }
+
+  const isSettingsTab = tab === "settings";
 
   return (
     <div
@@ -34,19 +41,29 @@ function CreateUpdateServiceTabs({ mode }: Props) {
           }}
         >
           <Link to={`/ui/services/${serviceId}/settings`}>
-            <Button variant={tab === "settings" ? "lightGreen" : "ghost"}>
-              Settings
-            </Button>
+            <Button variant={getVariant("settings")}>Settings</Button>
           </Link>
+
           <Link to={`/ui/services/${serviceId}/logs`}>
-            <Button variant={tab === "logs" ? "lightGreen" : "ghost"}>
-              Logs
-            </Button>
+            <Button variant={getVariant("logs")}>Logs</Button>
           </Link>
         </div>
       )}
 
-      <CreateUpdateServiceButton isInCreateMode={isInCreateMode} />
+      <div
+        style={{
+          minWidth: "80px",
+          marginLeft: "auto",
+          display: "flex",
+          flexDirection: "row",
+          gap: "10px",
+        }}
+      >
+        {isInUpdateMode && <InvokePopover />}
+        {(isSettingsTab || isInCreateMode) && (
+          <CreateUpdateServiceButton isInCreateMode={isInCreateMode} />
+        )}
+      </div>
     </div>
   );
 }

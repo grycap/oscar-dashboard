@@ -12,6 +12,7 @@ import OscarColors from "@/styles";
 import useUpdate from "@/hooks/useUpdate";
 import { Link } from "react-router-dom";
 import GenericTable from "@/components/Table";
+import { InvokePopover } from "../InvokePopover";
 
 function ServicesList() {
   const { services, setServices, orderBy, setFormService } =
@@ -90,16 +91,21 @@ function ServicesList() {
         actions={[
           {
             button: () => (
-              <Button variant={"link"} size="icon">
+              <Button variant={"link"} size="icon" tooltipLabel="More actions">
                 <Ellipsis />
               </Button>
             ),
           },
           {
-            button: () => (
-              <Button variant={"link"} size="icon">
-                <Terminal />
-              </Button>
+            button: (item) => (
+              <InvokePopover
+                service={item}
+                triggerRenderer={
+                  <Button variant={"link"} size="icon" tooltipLabel="Invoke">
+                    <Terminal />
+                  </Button>
+                }
+              />
             ),
           },
           {
@@ -111,7 +117,7 @@ function ServicesList() {
                   setFormService(item);
                 }}
               >
-                <Button variant={"link"} size="icon">
+                <Button variant={"link"} size="icon" tooltipLabel="Edit">
                   <Pencil />
                 </Button>
               </Link>
@@ -123,6 +129,7 @@ function ServicesList() {
                 variant={"link"}
                 size="icon"
                 onClick={() => setServiceToDelete(item)}
+                tooltipLabel="Delete"
               >
                 <Trash2 color={OscarColors.Red} />
               </Button>

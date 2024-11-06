@@ -38,7 +38,7 @@ function RequestButton({
     <MotionConfig transition={{ duration: 0.2, type: "spring", bounce: 0 }}>
       <Button onClick={onClick} {...props} asChild>
         <motion.div
-          initial={{ width: "max-content" }}
+          initial={{ width: "max-content", minWidth: "80px" }}
           animate={{ width: bounds.width }}
         >
           <div
