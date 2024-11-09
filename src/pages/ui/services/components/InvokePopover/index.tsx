@@ -25,13 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { invokeServiceSync } from "@/api/invoke/invokeServiceSync";
 import useServicesContext from "../../context/ServicesContext";
 import { Service } from "../../models/service";
 import { alert } from "@/lib/alert";
 import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 import RequestButton from "@/components/RequestButton";
+import invokeServiceSync from "@/api/invoke/invokeServiceSync";
 
 type View = "upload" | "editor" | "response";
 
@@ -214,6 +214,10 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
       )}
     </div>
   );
+
+  if (response) {
+    console.log("Response:", response);
+  }
 
   const [responseFileContent, setResponseFileContent] = useState<string>("");
   useEffect(() => {
