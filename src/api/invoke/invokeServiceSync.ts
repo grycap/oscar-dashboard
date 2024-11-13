@@ -22,7 +22,7 @@ function readFile(file: File): Promise<string> {
       reject(new Error("Error reading file."));
     };
 
-    reader.readAsDataURL(file);
+    reader.readAsBinaryString(file);
   });
 }
 
