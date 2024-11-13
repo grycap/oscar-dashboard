@@ -7,18 +7,14 @@ interface InvokeServiceSyncProps {
   endpoint: string;
 }
 
-function readFileAsBase64(file: File): Promise<string> {
+function readFile(file: File): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        const base64String = reader.result.startsWith("data:")
-          ? reader.result.split(",")[1]
-          : reader.result;
-        resolve(base64String);
-      } else {
-        reject(new Error("Failed to read file as a Base64 string."));
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        const base64Data = e.target.result as string;
+        resolve(base64Data);
       }
     };
 
@@ -26,7 +22,7 @@ function readFileAsBase64(file: File): Promise<string> {
       reject(new Error("Error reading file."));
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsDataURL(file);
   });
 }
 
@@ -36,21 +32,18 @@ export default async function invokeServiceSync({
   token,
   endpoint,
 }: InvokeServiceSyncProps) {
-  // Create an Axios instance with the specified base URL
-  const axiosInstance: AxiosInstance = axios.create({
-    baseURL: endpoint,
-  });
+  const axiosInstance: AxiosInstance = axios.create();
 
   try {
-    const base64Data: string = await readFileAsBase64(file);
+    const fileData: string = await readFile(file);
 
-    const url: string = `/run/${serviceName}`;
+    const base64 = btoa(fileData);
 
-    const response = await axiosInstance.post(url, btoa(base64Data), {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+    const response = await axiosInstance({
+      method: "post",
+      url: endpoint + "/run/" + serviceName,
+      headers: { Authorization: `Bearer ${token}` },
+      data: base64,
     });
 
     return response.data;
