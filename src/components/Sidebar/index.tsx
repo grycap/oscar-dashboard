@@ -3,7 +3,6 @@ import SidebarRouteItem from "./components/SidebarRouteItem";
 import { Codesandbox, Database, Info, LogOut } from "lucide-react";
 import OscarColors, { OscarStyles } from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "react-router-dom";
 
 function Sidebar() {
   const authContext = useAuth();
@@ -50,11 +49,7 @@ function Sidebar() {
           label="Minio"
           icon={<Database size={20} />}
         />
-        <SidebarRouteItem
-          path="/info"
-          label="Info"
-          icon={<Info size={20} />}
-        />
+        <SidebarRouteItem path="/info" label="Info" icon={<Info size={20} />} />
       </ul>
       <div
         style={{
@@ -64,7 +59,7 @@ function Sidebar() {
           flexDirection: "column",
         }}
       >
-        <div
+        {/*  <div
           style={{
             width: "100%",
             display: "flex",
@@ -83,7 +78,7 @@ function Sidebar() {
               Privacy policy
             </span>
           </Link>
-        </div>
+        </div> */}
         <div
           style={{
             height: "50px",
