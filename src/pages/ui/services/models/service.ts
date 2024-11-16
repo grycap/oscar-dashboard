@@ -5,10 +5,17 @@ export type ServiceFilter = {
 
 export enum ServiceFilterBy {
   Name = "Name",
-  Type = "Type",
   Image = "Image",
   Owner = "Owner",
+  //Type = "Type",
 }
+
+export const ServiceFilterByKey: Record<ServiceFilterBy, keyof Service> = {
+  [ServiceFilterBy.Name]: "name",
+  [ServiceFilterBy.Image]: "image",
+  [ServiceFilterBy.Owner]: "owner",
+  //[ServiceFilterBy.Type]: "",
+};
 
 export enum ServiceOrderBy {
   NameAsc = "Name (asc)",
@@ -134,6 +141,7 @@ export interface Service {
   labels: Record<string, string>;
   input: StoragePath[];
   output: StoragePath[];
+  owner: string;
   storage_providers: StorageProviders;
   clusters: Clusters;
 }

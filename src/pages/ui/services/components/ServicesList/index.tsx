@@ -1,29 +1,28 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useServicesContext from "../../context/ServicesContext";
 import getServicesApi from "@/api/services/getServicesApi";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
 import DeleteDialog from "@/components/DeleteDialog";
-
-import { Service, ServiceOrderBy } from "../../models/service";
+import { Service } from "../../models/service";
 import { Button } from "@/components/ui/button";
 import { Ellipsis, Pencil, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
-import useUpdate from "@/hooks/useUpdate";
 import { Link } from "react-router-dom";
 import GenericTable from "@/components/Table";
 import { InvokePopover } from "../InvokePopover";
+import { handleOrderBy } from "./domain/sortUtils";
+import { handleFilterServices } from "./domain/filterUtils";
 
 function ServicesList() {
-  const { services, setServices, orderBy, setFormService } =
+  const { services, setServices, orderBy, setFormService, filter } =
     useServicesContext();
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
 
   async function handleGetServices() {
     try {
       const response = await getServicesApi();
-      const orderedResponse = handleOrderBy(response);
-      setServices(orderedResponse);
+      setServices(response);
     } catch (error) {
       alert.error("Error getting services");
       console.error(error);
@@ -45,29 +44,11 @@ function ServicesList() {
     }
   }
 
-  function handleOrderBy(services: Service[]) {
-    switch (orderBy) {
-      case ServiceOrderBy.NameAsc:
-        return services.sort((a, b) => a.name.localeCompare(b.name));
-      case ServiceOrderBy.NameDesc:
-        return services.sort((a, b) => b.name.localeCompare(a.name));
-      case ServiceOrderBy.CPUAsc:
-        return services.sort((a, b) => Number(b.cpu) - Number(a.cpu));
-      case ServiceOrderBy.CPUDesc:
-        return services.sort((a, b) => Number(a.cpu) - Number(b.cpu));
-      case ServiceOrderBy.MemoryAsc:
-        return services.sort((a, b) => Number(b.memory) - Number(a.memory));
-      case ServiceOrderBy.MemoryDesc:
-        return services.sort((a, b) => Number(a.memory) - Number(b.memory));
-    }
-
-    return services;
-  }
-
-  useUpdate(() => {
-    const orderedServices = handleOrderBy(services);
-    setServices(orderedServices);
-  }, [orderBy, services]);
+  const filteredAndOrderedServices = useMemo(() => {
+    const filteredServices = handleFilterServices(services, filter);
+    const orderedAndFilteredServices = handleOrderBy(filteredServices, orderBy);
+    return orderedAndFilteredServices;
+  }, [services, orderBy, filter]);
 
   return (
     <div
@@ -80,7 +61,7 @@ function ServicesList() {
       }}
     >
       <GenericTable<Service>
-        data={services}
+        data={filteredAndOrderedServices}
         idKey="name"
         columns={[
           { header: "Name", accessor: "name" },

@@ -58,7 +58,7 @@ export const ServicesProvider = ({
     value: "",
     type: ServiceFilterBy.Name,
   } as ServiceFilter);
-  const [orderBy, setOrderBy] = useState(ServiceOrderBy.NameDesc);
+  const [orderBy, setOrderBy] = useState(ServiceOrderBy.NameAsc);
 
   //Active tab in create/update mode
   const [formTab, setFormTab] = useState(ServiceTab.Settings);
@@ -67,6 +67,7 @@ export const ServicesProvider = ({
 
   async function handleGetServices() {
     const response = await getServicesApi();
+
     setServices(response);
 
     handleFormService(response);
