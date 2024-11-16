@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { alert } from "@/lib/alert";
 
-import env from "@/env"
+import env from "@/env";
 
 function Login() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ function Login() {
     const endpoint = formData.get("endpoint") as string;
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
-    const token=undefined
+    const token = undefined;
 
     // Check if the endpoint is a valid URL
     if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
@@ -33,7 +33,7 @@ function Login() {
     }
 
     try {
-      await getInfoApi({ endpoint, username, password,token });
+      await getInfoApi({ endpoint, username, password, token });
 
       setAuthData({
         authenticated: true,
@@ -57,7 +57,7 @@ function Login() {
       return;
     }
     try {
-      endpoint = endpoint.endsWith('/') ? endpoint.slice(0, -1) : endpoint;
+      endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
       localStorage.setItem("api", endpoint);
       localStorage.setItem("client_id", env.client_id);
       localStorage.setItem("provider_url", env.provider_url);
@@ -130,12 +130,11 @@ function Login() {
               }}
             >
               <div>
-                © 2021 <a href="https://oscar.grycap.net">Oscar</a>
+                <a href="https://oscar.grycap.net">
+                  Provided by GRyCAP-I3M-UPV
+                </a>
               </div>
-              <div>
-                <a href="https://grycap.upv.es/">GRyCAP-I3M-UPV</a>, Universitat
-                Politècnica de València, Spain.
-              </div>
+              <div>Universitat Politècnica de València, Spain.</div>
             </div>
           </div>
           <section
@@ -155,9 +154,9 @@ function Login() {
             <img src={BigLogo} alt="Oscar logo" width={320} />
             <form
               onSubmit={(e) => {
-                let buttonExecuter=(e.nativeEvent as SubmitEvent).submitter
-                if (buttonExecuter != null){
-                  let buttonName=buttonExecuter.getAttribute("name")
+                const buttonExecuter = (e.nativeEvent as SubmitEvent).submitter;
+                if (buttonExecuter != null) {
+                  const buttonName = buttonExecuter.getAttribute("name");
                   if (buttonName === "normal") handleLogin(e);
                   if (buttonName === "EGI") handleLoginEGI(e);
                 }
@@ -170,42 +169,52 @@ function Login() {
                 gap: "15px",
               }}
             >
-              <Input name="endpoint" placeholder="Endpoint" />
-              <Input name="username" type="text" placeholder="Username" />
-              <Input name="password" type="password" placeholder="Password" />
+              <Input name="endpoint" placeholder="Endpoint" required />
+              <Separator />
+              <Input
+                name="username"
+                type="text"
+                placeholder="Username"
+                required
+              />
+              <Input
+                name="password"
+                type="password"
+                placeholder="Password"
+                required
+              />
 
               <Button
-              name="normal"
+                name="normal"
                 type="submit"
                 size={"sm"}
                 style={{
                   background: OscarColors.Green4,
                 }}
               >
-                Login
+                Sign in
               </Button>
-            <Separator />
-            <Button
-              name="EGI"
-              type="submit"
-              size="sm"
-              style={{
-                width: "100%",
-                background: OscarColors.Blue,
-              }}
-            >
-              <img
-                src={EgiSvg}
-                alt="EGI Check-in"
+              <Separator />
+              <Button
+                name="EGI"
+                type="submit"
+                size="sm"
                 style={{
-                  width: "24px",
-                  marginRight: "10px",
+                  width: "100%",
+                  background: OscarColors.Blue,
                 }}
-              />
-              Login via EGI Check-in
-            </Button>
+              >
+                <img
+                  src={EgiSvg}
+                  alt="EGI Check-in"
+                  style={{
+                    width: "24px",
+                    marginRight: "10px",
+                  }}
+                />
+                Login via EGI Check-in
+              </Button>
             </form>
-            
           </section>
         </div>
       </main>
