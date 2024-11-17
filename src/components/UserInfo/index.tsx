@@ -15,7 +15,6 @@ export default function UserInfo() {
         borderLeft: OscarStyles.border,
         position: "relative",
         padding: "0 16px",
-        width: "16rem",
         overflow: "hidden",
         display: "flex",
         alignItems: "center",
@@ -57,7 +56,7 @@ export default function UserInfo() {
             >
               {`${authContext.authData.user} - ${authContext.authData.endpoint}`}
             </span>
-            <Copy />
+            <Copy className="h-4 w-4" />
           </motion.div>
         }
       </AnimatePresence>
