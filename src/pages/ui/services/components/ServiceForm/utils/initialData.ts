@@ -28,6 +28,7 @@ export const defaultService: Service = {
   labels: {},
   input: [],
   output: [],
+  owner: "",
   storage_providers: {
     s3: undefined,
     minio: undefined,
@@ -42,6 +43,6 @@ export const defaultService: Service = {
       ssl_verify: false,
     },
   },
-  interlink_node_name:"",
-  allowed_users:[],
+  interlink_node_name: "",
+  allowed_users: [],
 };
