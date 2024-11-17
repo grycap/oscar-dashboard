@@ -12,6 +12,8 @@ import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { Filter } from "lucide-react";
 import { SelectIcon } from "@radix-ui/react-select";
+import { Checkbox } from "@/components/ui/checkbox";
+import Divider from "@/components/ui/divider";
 
 function ServicesFilterBy() {
   const { filter, setFilter } = useServicesContext();
@@ -64,6 +66,30 @@ function ServicesFilterBy() {
               </SelectItem>
             );
           })}
+          <Divider />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "6px",
+            }}
+          >
+            <Checkbox
+              id="ownedItems"
+              checked={filter.onlyOwned}
+              onCheckedChange={(checked) => {
+                setFilter((prev) => ({
+                  ...prev,
+                  onlyOwned: checked as boolean,
+                }));
+              }}
+              style={{ fontSize: 16 }}
+            />
+            <label htmlFor="ownedItems" style={{ fontSize: 14 }}>
+              Only owned services
+            </label>
+          </div>
         </SelectContent>
       </Select>
       <Input

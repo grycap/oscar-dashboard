@@ -11,12 +11,13 @@ import OscarColors from "@/styles";
 import { Link } from "react-router-dom";
 import GenericTable from "@/components/Table";
 import { InvokePopover } from "../InvokePopover";
-import { handleOrderBy } from "./domain/sortUtils";
 import { handleFilterServices } from "./domain/filterUtils";
+import { useAuth } from "@/contexts/AuthContext";
 
 function ServicesList() {
-  const { services, setServices, orderBy, setFormService, filter } =
+  const { services, setServices, setFormService, filter } =
     useServicesContext();
+  const { authData } = useAuth();
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
 
   async function handleGetServices() {
@@ -44,11 +45,14 @@ function ServicesList() {
     }
   }
 
-  const filteredAndOrderedServices = useMemo(() => {
-    const filteredServices = handleFilterServices(services, filter);
-    const orderedAndFilteredServices = handleOrderBy(filteredServices, orderBy);
-    return orderedAndFilteredServices;
-  }, [services, orderBy, filter]);
+  const filteredServices = useMemo(() => {
+    const filteredServices = handleFilterServices({
+      filter,
+      services,
+      user: authData.user,
+    });
+    return filteredServices;
+  }, [services, filter, authData?.user]);
 
   return (
     <div
@@ -61,7 +65,7 @@ function ServicesList() {
       }}
     >
       <GenericTable<Service>
-        data={filteredAndOrderedServices}
+        data={filteredServices}
         idKey="name"
         columns={[
           { header: "Name", accessor: "name" },

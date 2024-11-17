@@ -11,6 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { OscarStyles } from "@/styles";
 import { Button } from "../ui/button";
 import {
+  ArrowDownAZ,
+  ArrowUpAZ,
   ChevronFirst,
   ChevronLast,
   ChevronLeft,
@@ -74,7 +76,41 @@ function GenericTable<T extends object>({
   const totalPages = Math.ceil(data.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedData = data.slice(startIndex, endIndex) ?? [];
+
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof T;
+    direction: "asc" | "desc";
+  } | null>(null);
+
+  const sortedData = React.useMemo(() => {
+    if (sortConfig !== null) {
+      return [...data].sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        if (aValue < bValue) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return data;
+  }, [data, sortConfig]);
+
+  const paginatedData = sortedData.slice(startIndex, endIndex) ?? [];
+
+  const handleHeaderClick = (column: ColumnDef<T>) => {
+    if (sortConfig?.key === column.accessor) {
+      setSortConfig({
+        key: column.accessor as keyof T,
+        direction: sortConfig.direction === "asc" ? "desc" : "asc",
+      });
+    } else {
+      setSortConfig({ key: column.accessor as keyof T, direction: "asc" });
+    }
+  };
 
   return (
     <div className="relative flex flex-col flex-grow flex-basis-0 overflow-y-auto">
@@ -99,8 +135,20 @@ function GenericTable<T extends object>({
                 />
               </TableHead>
               {columns.map((column, index) => (
-                <TableHead key={index} style={{ height: "34px" }}>
-                  {column.header}
+                <TableHead
+                  key={index}
+                  style={{ height: "34px" }}
+                  onClick={() => handleHeaderClick(column)}
+                >
+                  <div className="flex items-center gap-1 cursor-pointer">
+                    {column.header}
+                    {sortConfig?.key === column.accessor &&
+                      (sortConfig.direction === "asc" ? (
+                        <ArrowDownAZ size={20} />
+                      ) : (
+                        <ArrowUpAZ size={20} />
+                      ))}
+                  </div>
                 </TableHead>
               ))}
               {actions && (

@@ -3,7 +3,6 @@ import ServiceBreadcrumb from "./components/Breadcrumbs";
 import { useLocation } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import ServicesFilterBy from "./components/FilterBy";
-import ServicesOrderBy from "./components/OrderBy";
 import AddServiceButton from "./components/CreateServiceButton";
 import CreateUpdateServiceTabs from "./components/CreateUpdateServiceTabs";
 import UserInfo from "@/components/UserInfo";
@@ -62,7 +61,6 @@ function ServicesTopbar() {
           <>
             <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
               <ServicesFilterBy />
-              <ServicesOrderBy />
             </div>
             <AddServiceButton />
           </>

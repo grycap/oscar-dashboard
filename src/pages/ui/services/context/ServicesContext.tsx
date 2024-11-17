@@ -11,7 +11,6 @@ import {
   ServiceFilter,
   ServiceFilterBy,
   ServiceTab,
-  ServiceOrderBy,
 } from "../models/service";
 import getServicesApi from "@/api/services/getServicesApi";
 import { useParams } from "react-router-dom";
@@ -25,8 +24,6 @@ interface ServiceContextType {
 
   services: Service[];
   setServices: Dispatch<SetStateAction<Service[]>>;
-  orderBy: ServiceOrderBy;
-  setOrderBy: Dispatch<SetStateAction<ServiceOrderBy>>;
 
   formTab: ServiceTab;
   setFormTab: Dispatch<SetStateAction<ServiceTab>>;
@@ -57,8 +54,8 @@ export const ServicesProvider = ({
   const [filter, setFilter] = useState({
     value: "",
     type: ServiceFilterBy.Name,
+    onlyOwned: false,
   } as ServiceFilter);
-  const [orderBy, setOrderBy] = useState(ServiceOrderBy.NameAsc);
 
   //Active tab in create/update mode
   const [formTab, setFormTab] = useState(ServiceTab.Settings);
@@ -115,8 +112,6 @@ export const ServicesProvider = ({
         setFilter,
         services,
         setServices,
-        orderBy,
-        setOrderBy,
         formTab,
         setFormTab,
         formService,

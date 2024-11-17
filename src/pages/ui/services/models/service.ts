@@ -1,6 +1,7 @@
 export type ServiceFilter = {
   value: string;
   type: ServiceFilterBy;
+  onlyOwned: boolean;
 };
 
 export enum ServiceFilterBy {
@@ -16,17 +17,6 @@ export const ServiceFilterByKey: Record<ServiceFilterBy, keyof Service> = {
   [ServiceFilterBy.Owner]: "owner",
   //[ServiceFilterBy.Type]: "",
 };
-
-export enum ServiceOrderBy {
-  NameAsc = "Name (asc)",
-  NameDesc = "Name (desc)",
-  CPUAsc = "CPU (asc)",
-  CPUDesc = "CPU (desc)",
-  MemoryAsc = "Memory (asc)",
-  MemoryDesc = "Memory (desc)",
-  ImageAsc = "Image (asc)",
-  ImageDesc = "Image (desc)",
-}
 
 export interface StorageProviders {
   s3?: Record<string, AWSStorageProvider>;
