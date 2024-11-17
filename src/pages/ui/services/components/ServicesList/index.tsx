@@ -18,7 +18,7 @@ function ServicesList() {
   const { services, setServices, setFormService, filter } =
     useServicesContext();
   const { authData } = useAuth();
-  const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
+  const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
 
   async function handleGetServices() {
     try {
@@ -31,17 +31,43 @@ function ServicesList() {
   }
 
   async function handleDeleteService() {
-    if (serviceToDelete) {
-      try {
-        await deleteServiceApi(serviceToDelete);
-        await handleGetServices();
-        alert.success(`Service ${serviceToDelete.name} deleted successfully`);
-      } catch (error) {
-        alert.error("Error deleting service");
-        console.error(error);
-      } finally {
-        setServiceToDelete(null);
+    if (servicesToDelete.length > 0) {
+      const deletePromises = servicesToDelete.map((service) =>
+        deleteServiceApi(service).then(
+          () => ({ status: "fulfilled", service }),
+          (error) => ({ status: "rejected", service, error })
+        )
+      );
+
+      const results = await Promise.allSettled(deletePromises);
+
+      const succeededServices = results
+        .filter((result) => result.status === "fulfilled")
+        .map((result) => result.value.service);
+
+      const failedServices = results
+        .filter((result) => result.status === "rejected")
+        .map((result) => (result as PromiseRejectedResult).reason.service);
+
+      await handleGetServices();
+
+      if (succeededServices.length > 0) {
+        alert.success("Services deleted successfully");
       }
+
+      if (failedServices.length > 0) {
+        alert.error(
+          `Error deleting the following services: ${failedServices
+            .map((service) => service.name)
+            .join(", ")}`
+        );
+      }
+
+      if (succeededServices.length === 0) {
+        alert.error("Error deleting all services");
+      }
+
+      setServicesToDelete([]);
     }
   }
 
@@ -113,7 +139,7 @@ function ServicesList() {
               <Button
                 variant={"link"}
                 size="icon"
-                onClick={() => setServiceToDelete(item)}
+                onClick={() => setServicesToDelete([item])}
                 tooltipLabel="Delete"
               >
                 <Trash2 color={OscarColors.Red} />
@@ -121,12 +147,34 @@ function ServicesList() {
             ),
           },
         ]}
+        bulkActions={[
+          {
+            button: (items) => {
+              return (
+                <div>
+                  <Button
+                    variant={"destructive"}
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      gap: 8,
+                    }}
+                    onClick={() => setServicesToDelete(items)}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete services
+                  </Button>
+                </div>
+              );
+            },
+          },
+        ]}
       />
       <DeleteDialog
-        isOpen={!!serviceToDelete}
-        onClose={() => setServiceToDelete(null)}
+        isOpen={servicesToDelete.length > 0}
+        onClose={() => setServicesToDelete([])}
         onDelete={handleDeleteService}
-        itemNames={serviceToDelete?.name || ""}
+        itemNames={servicesToDelete.map((service) => service.name)}
       />
     </div>
   );

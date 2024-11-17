@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -39,6 +39,7 @@ type GenericTableProps<T> = {
   data: T[];
   columns: ColumnDef<T>[];
   actions?: ActionButton<T>[];
+  bulkActions?: ActionButton<T[]>[];
   idKey: keyof T;
 };
 
@@ -46,29 +47,16 @@ function GenericTable<T extends object>({
   data,
   columns,
   actions,
+  bulkActions,
   idKey,
 }: GenericTableProps<T>) {
   const [selectedRows, setSelectedRows] = useState<Set<T[typeof idKey]>>(
     new Set()
   );
 
-  const toggleAll = () => {
-    if (selectedRows.size === data.length) {
-      setSelectedRows(new Set());
-    } else {
-      setSelectedRows(new Set(data.map((item) => item[idKey])));
-    }
-  };
-
-  const toggleRow = (id: T[typeof idKey]) => {
-    const newSelected = new Set(selectedRows);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedRows(newSelected);
-  };
+  useEffect(() => {
+    setSelectedRows(new Set());
+  }, [data.length]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -112,6 +100,24 @@ function GenericTable<T extends object>({
     }
   };
 
+  const toggleAll = () => {
+    if (selectedRows.size === paginatedData.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(paginatedData.map((item) => item[idKey])));
+    }
+  };
+
+  const toggleRow = (id: T[typeof idKey]) => {
+    const newSelected = new Set(selectedRows);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedRows(newSelected);
+  };
+
   return (
     <div className="relative flex flex-col flex-grow flex-basis-0 overflow-y-auto">
       <div className="flex-grow">
@@ -130,7 +136,10 @@ function GenericTable<T extends object>({
                 style={{ height: "34px" }}
               >
                 <Checkbox
-                  checked={data.length > 0 && selectedRows.size === data.length}
+                  checked={
+                    paginatedData.length > 0 &&
+                    selectedRows.size === paginatedData.length
+                  }
                   onCheckedChange={toggleAll}
                 />
               </TableHead>
@@ -222,6 +231,16 @@ function GenericTable<T extends object>({
             </SelectContent>
           </Select>
         </div>
+        {bulkActions && selectedRows.size > 0 && (
+          <div className="flex items-center gap-1">
+            {bulkActions.map((action, index) => {
+              const idKeys = Array.from(selectedRows.values());
+              const items = data.filter((item) => idKeys.includes(item[idKey]));
+
+              return <div key={index}>{action.button(items)}</div>;
+            })}
+          </div>
+        )}
         <div className="flex items-center gap-1">
           <Button
             size="icon"
