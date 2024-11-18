@@ -161,7 +161,6 @@ function Login() {
                   if (buttonName === "EGI") handleLoginEGI(e);
                 }
               }}
-              //handleLogin(event,this)}
               style={{
                 width: "320px",
                 display: "flex",
@@ -175,13 +174,11 @@ function Login() {
                 name="username"
                 type="text"
                 placeholder="Username"
-                required
               />
               <Input
                 name="password"
                 type="password"
                 placeholder="Password"
-                required
               />
 
               <Button
