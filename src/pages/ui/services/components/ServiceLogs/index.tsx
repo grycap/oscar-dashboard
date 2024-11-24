@@ -4,9 +4,13 @@ import Log from "../../models/log";
 import { getServiceLogsApi } from "@/api/logs/getServiceLogs";
 import GenericTable from "@/components/Table";
 import { Badge, BadgeProps } from "@/components/ui/badge";
-import { Eye, Loader } from "lucide-react";
+import { Eye, Loader, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LogDetailsPopover from "./components/LogDetailsPopover";
+import DeleteDialog from "@/components/DeleteDialog";
+import { deleteLogApi } from "@/api/logs/deleteLog";
+import { alert } from "@/lib/alert";
+import deleteServiceLogsApi from "@/api/logs/deleteServiceLogs";
 
 export type LogWithName = Log & { name: string };
 
@@ -23,11 +27,15 @@ export default function ServiceLogs() {
   );
 
   const [selectedLog, setSelectedLog] = useState<LogWithName | null>(null);
+  const [logsToDelete, setLogsToDelete] = useState<LogWithName[]>([]);
+
+  function fetchServices() {
+    if (!formService?.name) return;
+    getServiceLogsApi(formService.name).then(setLogs);
+  }
 
   useEffect(() => {
-    if (!formService?.name) return;
-
-    getServiceLogsApi(formService.name).then(setLogs);
+    fetchServices();
   }, [formService?.name]);
 
   function renderStatus(status: Log["status"]) {
@@ -70,12 +78,75 @@ export default function ServiceLogs() {
     );
   }
 
+  async function handleDeleteLogs() {
+    if (!formService?.name) return;
+
+    const failedLogs: string[] = [];
+    const deletedLogs: string[] = [];
+
+    try {
+      const promises = logsToDelete.map((log) =>
+        deleteLogApi(formService.name, log.name)
+          .then(() => deletedLogs.push(log.name))
+          .catch(() => failedLogs.push(log.name))
+      );
+
+      await Promise.all(promises);
+
+      if (deletedLogs.length === 1) {
+        alert.success(`The log "${deletedLogs[0]}" was deleted successfully!`);
+      } else if (failedLogs.length === logsToDelete.length) {
+        console.error("All logs failed to delete");
+        alert.error("Failed to delete all logs. Please try again later.");
+      } else if (deletedLogs.length === logsToDelete.length) {
+        alert.success("All logs were deleted successfully!");
+      } else {
+        alert.error(
+          `Failed to delete the following logs: ${failedLogs.join(", ")}`
+        );
+      }
+
+      fetchServices();
+    } catch (error) {
+      alert.error("An unexpected error occurred while deleting logs");
+    } finally {
+      setLogsToDelete([]);
+    }
+  }
+
+  const [deleteAllLogs, setDeleteAllLogs] = useState(false);
+
+  function handleDeleteAllLogs() {
+    deleteServiceLogsApi(formService?.name)
+      .then(() => {
+        alert.success("Service logs were deleted successfully!");
+        fetchServices();
+      })
+      .catch(() => {
+        alert.error("Failed to delete service logs.");
+      })
+      .finally(() => {
+        setDeleteAllLogs(false);
+      });
+  }
   return (
     <div className="flex flex-grow">
       <LogDetailsPopover
         log={selectedLog}
         serviceName={formService?.name}
         onClose={() => setSelectedLog(null)}
+      />
+      <DeleteDialog
+        isOpen={deleteAllLogs}
+        onClose={() => setDeleteAllLogs(false)}
+        onDelete={handleDeleteAllLogs}
+        itemNames={[`All service logs (${logsWithName.length})`]}
+      />
+      <DeleteDialog
+        isOpen={logsToDelete.length > 0}
+        onClose={() => setLogsToDelete([])}
+        onDelete={handleDeleteLogs}
+        itemNames={logsToDelete.map((log) => log.name)}
       />
       <GenericTable<LogWithName>
         data={logsWithName}
@@ -121,6 +192,46 @@ export default function ServiceLogs() {
                 </Button>
               );
             },
+          },
+          {
+            button(item) {
+              return (
+                <Button
+                  variant="link"
+                  size="sm"
+                  tooltipLabel="Delete"
+                  className="text-red-500"
+                  onClick={() => setLogsToDelete([...logsToDelete, item])}
+                >
+                  <Trash2 />
+                </Button>
+              );
+            },
+          },
+        ]}
+        bulkActions={[
+          {
+            button: (items) => (
+              <Button
+                variant="destructive"
+                onClick={() => setLogsToDelete(items)}
+              >
+                <Trash2 className="h-5 w-5 mr-2"></Trash2> Delete selected logs
+                ({items.length})
+              </Button>
+            ),
+          },
+        ]}
+        globalActions={[
+          {
+            button: () => (
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteAllLogs(true)}
+              >
+                <Trash2 className="h-5 w-5 mr-2"></Trash2> Delete all logs
+              </Button>
+            ),
           },
         ]}
       />

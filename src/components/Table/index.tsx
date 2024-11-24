@@ -41,6 +41,7 @@ type GenericTableProps<T> = {
   columns: ColumnDef<T>[];
   actions?: ActionButton<T>[];
   bulkActions?: ActionButton<T[]>[];
+  globalActions?: ActionButton<T[]>[];
   idKey: keyof T;
 };
 
@@ -49,6 +50,7 @@ function GenericTable<T extends object>({
   columns,
   actions,
   bulkActions,
+  globalActions,
   idKey,
 }: GenericTableProps<T>) {
   const [selectedRows, setSelectedRows] = useState<Set<T[typeof idKey]>>(
@@ -189,7 +191,7 @@ function GenericTable<T extends object>({
                 ))}
                 {actions && (
                   <TableCell>
-                    <div className="flex justify-end">
+                    <div className="flex justify-end items-center">
                       {actions.map((action, index) => (
                         <div key={index}>{action.button(item)}</div>
                       ))}
@@ -234,8 +236,42 @@ function GenericTable<T extends object>({
         </div>
 
         <AnimatePresence mode="popLayout">
+          {globalActions && (
+            <motion.div
+              key="global-actions"
+              layout
+              layoutId="global-actions"
+              initial={{
+                opacity: 0,
+                x: -20,
+              }}
+              animate={{
+                opacity: 1,
+                x: 0,
+              }}
+              exit={{
+                opacity: 0,
+                x: 20,
+              }}
+              transition={{
+                duration: 0.2,
+                ease: "easeOut",
+              }}
+              className="flex items-center gap-1"
+            >
+              {globalActions.map((action, index) => {
+                return (
+                  <motion.div layout key={index}>
+                    {action.button(data)}
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
           {bulkActions && selectedRows.size > 0 && (
             <motion.div
+              key="bulk-actions"
+              layoutId="bulk-actions"
               initial={{
                 opacity: 0,
                 x: -20,
@@ -260,7 +296,11 @@ function GenericTable<T extends object>({
                   idKeys.includes(item[idKey])
                 );
 
-                return <div key={index}>{action.button(items)}</div>;
+                return (
+                  <motion.div layout key={index}>
+                    {action.button(items)}
+                  </motion.div>
+                );
               })}
             </motion.div>
           )}
