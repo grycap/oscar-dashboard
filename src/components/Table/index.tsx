@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { AnimatePresence, motion } from "framer-motion";
 
 export type ColumnDef<T> = {
   header: string;
@@ -231,16 +232,40 @@ function GenericTable<T extends object>({
             </SelectContent>
           </Select>
         </div>
-        {bulkActions && selectedRows.size > 0 && (
-          <div className="flex items-center gap-1">
-            {bulkActions.map((action, index) => {
-              const idKeys = Array.from(selectedRows.values());
-              const items = data.filter((item) => idKeys.includes(item[idKey]));
 
-              return <div key={index}>{action.button(items)}</div>;
-            })}
-          </div>
-        )}
+        <AnimatePresence mode="popLayout">
+          {bulkActions && selectedRows.size > 0 && (
+            <motion.div
+              initial={{
+                opacity: 0,
+                x: -20,
+              }}
+              animate={{
+                opacity: 1,
+                x: 0,
+              }}
+              exit={{
+                opacity: 0,
+                x: 20,
+              }}
+              transition={{
+                duration: 0.2,
+                ease: "easeOut",
+              }}
+              className="flex items-center gap-1"
+            >
+              {bulkActions.map((action, index) => {
+                const idKeys = Array.from(selectedRows.values());
+                const items = data.filter((item) =>
+                  idKeys.includes(item[idKey])
+                );
+
+                return <div key={index}>{action.button(items)}</div>;
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="flex items-center gap-1">
           <Button
             size="icon"

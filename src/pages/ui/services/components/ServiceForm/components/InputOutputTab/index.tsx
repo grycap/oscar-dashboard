@@ -262,7 +262,7 @@ export default function InputOutputEditor() {
       </ServiceFormCell>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
+        <DialogContent style={{ width: "500px" }}>
           <DialogHeader>
             <DialogTitle>
               {editingItem ? "Edit" : "Create"}{" "}

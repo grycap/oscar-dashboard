@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Trash2,
   ArrowRight,
+  Terminal,
 } from "lucide-react";
 import {
   Select,
@@ -333,7 +334,12 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {triggerRenderer ?? <Button variant="outline">Invoke</Button>}
+        {triggerRenderer ?? (
+          <Button variant="outline">
+            <Terminal className="h-4 w-4 mr-2" />
+            Invoke
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-fit">
         <DialogHeader>

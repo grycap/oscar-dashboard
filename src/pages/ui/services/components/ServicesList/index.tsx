@@ -6,19 +6,21 @@ import { alert } from "@/lib/alert";
 import DeleteDialog from "@/components/DeleteDialog";
 import { Service } from "../../models/service";
 import { Button } from "@/components/ui/button";
-import { Ellipsis, Pencil, Terminal, Trash2 } from "lucide-react";
+import { Pencil, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import GenericTable from "@/components/Table";
 import { InvokePopover } from "../InvokePopover";
 import { handleFilterServices } from "./domain/filterUtils";
 import { useAuth } from "@/contexts/AuthContext";
+import MoreActionsPopover from "./components/MoreActionsPopover";
 
 function ServicesList() {
   const { services, setServices, setFormService, filter } =
     useServicesContext();
   const { authData } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
+  const navigate = useNavigate();
 
   async function handleGetServices() {
     try {
@@ -101,10 +103,22 @@ function ServicesList() {
         ]}
         actions={[
           {
-            button: () => (
-              <Button variant={"link"} size="icon" tooltipLabel="More actions">
-                <Ellipsis />
-              </Button>
+            button: (item) => (
+              <MoreActionsPopover
+                service={item}
+                handleDeleteService={() => setServicesToDelete([item])}
+                handleEditService={() => {
+                  setFormService(item);
+                  navigate(`/ui/services/${item.name}/settings`);
+                }}
+                handleInvokeService={() => {
+                  setFormService(item);
+                }}
+                handleLogs={() => {
+                  setFormService(item);
+                  navigate(`/ui/services/${item.name}/logs`);
+                }}
+              />
             ),
           },
           {

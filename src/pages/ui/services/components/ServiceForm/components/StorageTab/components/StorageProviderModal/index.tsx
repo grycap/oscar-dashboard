@@ -24,7 +24,7 @@ function CreateUpdateStorageProviderModal({
 }: Props) {
   return (
     <Dialog defaultOpen onOpenChange={onClose}>
-      <DialogContent style={{ paddingBottom: "1rem" }}>
+      <DialogContent style={{ paddingBottom: "1rem", width: "500px" }}>
         <DialogHeader>
           <DialogTitle>
             {selectedProvider.type.charAt(0).toUpperCase() +
