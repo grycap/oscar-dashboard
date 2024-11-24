@@ -1,7 +1,6 @@
 import { Outlet, Route, Routes } from "react-router-dom";
 import ServicesTopbar from "./components/Topbar";
 import ServicesList from "./components/ServicesList";
-import { ServicesProvider } from "./context/ServicesContext";
 import ServiceForm from "./components/ServiceForm";
 import FDLForm from "./components/FDL";
 import ServiceLogs from "./components/ServiceLogs";
@@ -12,20 +11,18 @@ function ServicesRouter() {
       <Route
         path="/"
         element={
-          <ServicesProvider>
-            <div
-              style={{
-                flexGrow: 1,
-                flexBasis: 0,
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <ServicesTopbar />
-              <FDLForm />
-              <Outlet />
-            </div>
-          </ServicesProvider>
+          <div
+            style={{
+              flexGrow: 1,
+              flexBasis: 0,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <ServicesTopbar />
+            <FDLForm />
+            <Outlet />
+          </div>
         }
       >
         <Route path="" element={<ServicesList />} />
