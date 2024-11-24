@@ -1,4 +1,5 @@
-import Sidebar from "@/components/Sidebar";
+import AppSidebar from "@/components/Sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import OscarColors, { ColorWithOpacity, OscarStyles } from "@/styles";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
@@ -18,19 +19,21 @@ function AppLayout() {
         overflow: "hidden",
       }}
     >
-      <Sidebar />
-      <section
-        style={{
-          flex: 1,
-          display: "flex",
-          marginTop: 10,
-          borderTopLeftRadius: 8,
-          background: ColorWithOpacity(OscarColors.Gray1, 0.5),
-          border: OscarStyles.border,
-        }}
-      >
-        <Outlet />
-      </section>
+      <SidebarProvider>
+        <AppSidebar />
+        <main
+          style={{
+            flex: 1,
+            display: "flex",
+            marginTop: 10,
+            borderTopLeftRadius: 8,
+            background: ColorWithOpacity(OscarColors.Gray1, 0.5),
+            border: OscarStyles.border,
+          }}
+        >
+          <Outlet />
+        </main>
+      </SidebarProvider>
     </main>
   );
 }
