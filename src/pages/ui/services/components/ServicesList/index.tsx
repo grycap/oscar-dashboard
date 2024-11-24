@@ -95,6 +95,10 @@ function ServicesList() {
       <GenericTable<Service>
         data={filteredServices}
         idKey="name"
+        onRowClick={(item) => {
+          setFormService(item);
+          navigate(`/ui/services/${item.name}/settings`);
+        }}
         columns={[
           { header: "Name", accessor: "name" },
           { header: "Image", accessor: "image" },

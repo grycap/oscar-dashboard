@@ -39,6 +39,7 @@ type ActionButton<T> = {
 type GenericTableProps<T> = {
   data: T[];
   columns: ColumnDef<T>[];
+  onRowClick?: (item: T) => void;
   actions?: ActionButton<T>[];
   bulkActions?: ActionButton<T[]>[];
   globalActions?: ActionButton<T[]>[];
@@ -51,6 +52,7 @@ function GenericTable<T extends object>({
   actions,
   bulkActions,
   globalActions,
+  onRowClick,
   idKey,
 }: GenericTableProps<T>) {
   const [selectedRows, setSelectedRows] = useState<Set<T[typeof idKey]>>(
@@ -175,11 +177,18 @@ function GenericTable<T extends object>({
           </TableHeader>
           <TableBody>
             {paginatedData?.map((item, rowIndex) => (
-              <TableRow key={rowIndex}>
+              <TableRow
+                key={rowIndex}
+                onClick={() => onRowClick?.(item)}
+                className="cursor-pointer"
+              >
                 <TableCell>
                   <Checkbox
                     checked={selectedRows.has(item[idKey])}
-                    onCheckedChange={() => toggleRow(item[idKey])}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleRow(item[idKey]);
+                    }}
                   />
                 </TableCell>
                 {columns.map((column, colIndex) => (
@@ -193,7 +202,9 @@ function GenericTable<T extends object>({
                   <TableCell>
                     <div className="flex justify-end items-center">
                       {actions.map((action, index) => (
-                        <div key={index}>{action.button(item)}</div>
+                        <div key={index} onClick={(e) => e.stopPropagation()}>
+                          {action.button(item)}
+                        </div>
                       ))}
                     </div>
                   </TableCell>
