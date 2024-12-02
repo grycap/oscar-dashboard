@@ -1,5 +1,8 @@
 import { Button } from "@/components/ui/button";
-import {
+import { StorageProvider } from "@/pages/ui/services/models/service";
+import { Plus } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
+/* import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -7,10 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { StorageProvider } from "@/pages/ui/services/models/service";
-import { Plus } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
+} from "@/components/ui/dropdown-menu"; */
 
 interface Props {
   setSelectedProvider: Dispatch<SetStateAction<StorageProvider | null>>;
@@ -18,6 +18,16 @@ interface Props {
 
 function AddProviderButton({ setSelectedProvider }: Props) {
   return (
+    <Button
+      onClick={() => {
+        setSelectedProvider({ type: "minio" } as StorageProvider);
+      }}
+    >
+      <Plus className="h-4 w-4 mr-2" />
+      Add provider
+    </Button>
+  );
+  /*  return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button>
@@ -38,8 +48,8 @@ function AddProviderButton({ setSelectedProvider }: Props) {
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
-    </DropdownMenu>
-  );
+    </DropdownMenu> 
+  );*/
 }
 
 export default AddProviderButton;
