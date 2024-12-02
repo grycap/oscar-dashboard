@@ -52,15 +52,6 @@ function InfoView() {
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <InfoItem label="Password" value={password} isPassword enableCopy />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
-        <InfoItem
-          label="Password"
-          value={
-            "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJQVVlPaXJBM1ktZF9kR3BkajRpSkRIdzR6SGE4SVktYmhaZGFFajByamJVIn0.eyJleHAiOjE3MzMxOTk4NDEsImlhdCI6MTczMzE2NDY5NCwiYXV0aF90aW1lIjoxNzMzMTYzODQxLCJqdGkiOiI2NjVkMzk0Yi1lNDNmLTQ0M2YtOTQ3ZS1mYjc1ZGI0YmQ2NDgiLCJpc3MiOiJodHRwczovL2FhaS5lZ2kuZXUvYXV0aC9yZWFsbXMvZWdpIiwic3ViIjoiNjdlZDk3M2M2NWQ3YjhhYWM1MTYzYzQ4ODU4M2Y0NGJlODJlMjcxOTIyZGJmMGQxNGIxYmE3ZDQyZDUyMTYyMEBlZ2kuZXUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiI0M2RmZTdiMi1lMDYzLTRmZTktODQyZS03YjQwYWQ3MzZkZWIiLCJzZXNzaW9uX3N0YXRlIjoiYWI2NmM4OTktMTZlZS00MzhjLTkyNTYtZDJkM2FjYTk5NDliIiwic2NvcGUiOiJvcGVuaWQgZWR1cGVyc29uX2VudGl0bGVtZW50IHByb2ZpbGUgZW1haWwiLCJzaWQiOiJhYjY2Yzg5OS0xNmVlLTQzOGMtOTI1Ni1kMmQzYWNhOTk0OWIiLCJhdXRoZW50aWNhdGluZ19hdXRob3JpdHkiOiJodHRwczovL3d3dy5yZWRpcmlzLmVzL3Npci91cHZpZHAifQ.MGaU4KDNpwf8rRb7nTeX9SxRwAOITCeH9e1ZqqZL7YgQMXi4pvTurntPoR_fSeK0pSzjtW1lPKhI9XWbuvRMAHzCYhBtOe-_JZ6YdThOYLuBF0La5FMYp5bNB0Hqr5ywBVrkTRiuZIJuMZXWCe2yaYtrrVil0dSmiqsuLNOAe1Um2a7uZNkrN4hGm50SlpqocGA3cVE4rWbB6yw99RIAGopGoKTPiZr2SmqK_3eBTiIW4noLRL2e7lPpzPNb2dXUAwU1gU4G2J3GQMFsye8wm1d3UYcDNmROBkCHCnHbxX2THfcF2p9oTcx5FjftBVi5eN6hUAU_EGJe4GzGWQ6pFw"
-          }
-          isPassword
-          enableCopy
-        />
-        <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         {authData.token && (
           <>
             <InfoItem
