@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -13,10 +14,11 @@ import {
   ServiceTab,
 } from "../models/service";
 import getServicesApi from "@/api/services/getServicesApi";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { defaultService } from "../components/ServiceForm/utils/initialData";
 import useUpdate from "@/hooks/useUpdate";
 import getSystemConfigApi from "@/api/config/getSystemConfig";
+import { ServiceViewMode } from "../components/Topbar";
 
 interface ServiceContextType {
   filter: ServiceFilter;
@@ -35,6 +37,7 @@ interface ServiceContextType {
   setShowFDLModal: Dispatch<SetStateAction<boolean>>;
 
   refreshServices: () => void;
+  formMode: ServiceViewMode;
 }
 
 export const ServicesContext = createContext({
@@ -48,7 +51,10 @@ export const ServicesProvider = ({
 }) => {
   const [services, setServices] = useState([] as Service[]);
   const [showFDLModal, setShowFDLModal] = useState(false);
-  const { serviceId } = useParams();
+  const location = useLocation();
+  const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, serviceId] = pathnames;
 
   // Filter and order TABLE rows
   const [filter, setFilter] = useState({
@@ -59,6 +65,18 @@ export const ServicesProvider = ({
 
   //Active tab in create/update mode
   const [formTab, setFormTab] = useState(ServiceTab.Settings);
+
+  const formMode = useMemo(() => {
+    if (!serviceId) {
+      return ServiceViewMode.List;
+    }
+
+    if (serviceId === "create") {
+      return ServiceViewMode.Create;
+    }
+
+    return ServiceViewMode.Update;
+  }, [pathnames]);
 
   const [formService, setFormService] = useState({} as Service);
 
@@ -108,6 +126,7 @@ export const ServicesProvider = ({
   return (
     <ServicesContext.Provider
       value={{
+        formMode,
         filter,
         setFilter,
         services,

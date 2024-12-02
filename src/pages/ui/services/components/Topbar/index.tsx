@@ -1,11 +1,11 @@
 import { OscarStyles } from "@/styles";
 import ServiceBreadcrumb from "./components/Breadcrumbs";
-import { useLocation } from "react-router-dom";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import ServicesFilterBy from "./components/FilterBy";
 import AddServiceButton from "./components/CreateServiceButton";
 import CreateUpdateServiceTabs from "./components/CreateUpdateServiceTabs";
 import UserInfo from "@/components/UserInfo";
+import useServicesContext from "../../context/ServicesContext";
 
 export enum ServiceViewMode {
   List = "List",
@@ -14,26 +14,11 @@ export enum ServiceViewMode {
 }
 
 function ServicesTopbar() {
-  const location = useLocation();
-  const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, serviceId] = pathnames;
+  const { formMode } = useServicesContext();
 
   useEffect(() => {
     document.title = "OSCAR - Services";
   }, []);
-
-  const mode = useMemo(() => {
-    if (!serviceId) {
-      return ServiceViewMode.List;
-    }
-
-    if (serviceId === "create") {
-      return ServiceViewMode.Create;
-    }
-
-    return ServiceViewMode.Update;
-  }, [pathnames]);
 
   return (
     <div
@@ -57,7 +42,7 @@ function ServicesTopbar() {
       >
         <ServiceBreadcrumb />
 
-        {mode === ServiceViewMode.List ? (
+        {formMode === ServiceViewMode.List ? (
           <>
             <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
               <ServicesFilterBy />
@@ -65,7 +50,7 @@ function ServicesTopbar() {
             <AddServiceButton />
           </>
         ) : (
-          <CreateUpdateServiceTabs mode={mode} />
+          <CreateUpdateServiceTabs mode={formMode} />
         )}
       </div>
       <UserInfo />

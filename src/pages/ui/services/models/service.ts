@@ -144,5 +144,4 @@ export enum ServiceTab {
 export enum ServiceFormTab {
   General,
   Storage,
-  "Input - Output",
 }

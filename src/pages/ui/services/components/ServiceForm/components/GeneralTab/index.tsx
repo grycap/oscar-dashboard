@@ -17,9 +17,12 @@ import { Button } from "@/components/ui/button";
 import { alert } from "@/lib/alert";
 import Divider from "@/components/ui/divider";
 import { Label } from "@/components/ui/label";
+import { ServiceViewMode } from "../../../Topbar";
+import InputOutputEditor from "../InputOutputTab";
 
 function ServiceGeneralTab() {
-  const { formService, setFormService } = useServicesContext();
+  const { formService, setFormService, formMode } = useServicesContext();
+
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement>,
     key: keyof Service
@@ -40,7 +43,6 @@ function ServiceGeneralTab() {
         display: "flex",
         flexDirection: "column",
         width: "100%",
-        justifyContent: "flex-start",
       }}
     >
       <ServiceFormCell
@@ -80,14 +82,14 @@ function ServiceGeneralTab() {
               }}
             />
           </section>
-          <div className="flex flex-row w-full items-end">
+          <div className="flex flex-row w-full items-end gap-5">
             {formService.token && (
               <div
                 style={{
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "end",
-                  width: "50%",
+
                   gap: 10,
                 }}
               >
@@ -96,7 +98,7 @@ function ServiceGeneralTab() {
                   readOnly
                   label="Token"
                   type="password"
-                  width="80%"
+                  width="600px"
                 />
                 <Button
                   variant="ghost"
@@ -132,7 +134,7 @@ function ServiceGeneralTab() {
                   });
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-[250px]">
                   <SelectValue placeholder="Log level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -147,40 +149,44 @@ function ServiceGeneralTab() {
               </Select>
             </div>
           </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: 50,
-            }}
-          >
-            <div className="flex flex-row gap-2 items-center">
-              <strong>Alpine:</strong>
-              {formService.alpine ? (
-                <CheckIcon size={16} />
-              ) : (
-                <XIcon size={16} className="pt-[2px]" />
-              )}
-            </div>
 
-            <div className="flex flex-row gap-2 items-center">
-              <strong>Interlink:</strong>
-              {formService.interlink_node_name ? (
-                formService.interlink_node_name
-              ) : (
-                <XIcon size={16} className="pt-[2px]" />
-              )}
-            </div>
+          {formMode === ServiceViewMode.Update && (
+            <div
+              style={{
+                marginTop: 10,
+                display: "flex",
+                flexDirection: "row",
+                gap: 50,
+              }}
+            >
+              <div className="flex flex-row gap-2 items-center">
+                <strong>Alpine:</strong>
+                {formService.alpine ? (
+                  <CheckIcon size={16} />
+                ) : (
+                  <XIcon size={16} className="pt-[2px]" />
+                )}
+              </div>
 
-            <div className="flex flex-row gap-2 items-center">
-              <strong>Allowed users:</strong>
-              {formService.allowed_users?.length ? (
-                formService.allowed_users.join(", ")
-              ) : (
-                <XIcon size={16} className="pt-[2px]" />
-              )}
+              <div className="flex flex-row gap-2 items-center">
+                <strong>Interlink:</strong>
+                {formService.interlink_node_name ? (
+                  formService.interlink_node_name
+                ) : (
+                  <XIcon size={16} className="pt-[2px]" />
+                )}
+              </div>
+
+              <div className="flex flex-row gap-2 items-center">
+                <strong>Allowed users:</strong>
+                {formService.allowed_users?.length ? (
+                  formService.allowed_users.join(", ")
+                ) : (
+                  <XIcon size={16} className="pt-[2px]" />
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </ServiceFormCell>
       <Divider />
@@ -250,6 +256,8 @@ function ServiceGeneralTab() {
       >
         <EnviromentVariables />
       </ServiceFormCell>
+      <Divider />
+      <InputOutputEditor />
     </div>
   );
 }

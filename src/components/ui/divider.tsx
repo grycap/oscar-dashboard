@@ -11,6 +11,8 @@ const Divider = ({ orientation = "horizontal" }: DividerProps) => {
       style={{
         width: isHorizontal ? "100%" : "1px",
         height: isHorizontal ? "1px" : "100%",
+        minHeight: isHorizontal ? "1px" : "100%",
+        minWidth: isHorizontal ? "100%" : "1px",
         backgroundColor: OscarColors.Gray2,
       }}
     ></div>

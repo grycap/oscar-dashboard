@@ -120,6 +120,11 @@ export default function InputOutputEditor() {
               <h3 style={{ fontSize: 12, color: OscarColors.DarkGrayText }}>
                 Prefixes:
               </h3>
+              {!item.prefix?.length && (
+                <h3 style={{ fontSize: 12, color: OscarColors.DarkGrayText }}>
+                  None
+                </h3>
+              )}
               {item.prefix?.slice(0, 3).map((prefix, prefixIndex) => (
                 <Badge
                   key={`prefix-${prefixIndex}`}
@@ -148,6 +153,11 @@ export default function InputOutputEditor() {
               <h3 style={{ fontSize: 12, color: OscarColors.DarkGrayText }}>
                 Suffixes:
               </h3>
+              {!item.suffix?.length && (
+                <h3 style={{ fontSize: 12, color: OscarColors.DarkGrayText }}>
+                  None
+                </h3>
+              )}
               {item.suffix?.slice(0, 3).map((suffix, suffixIndex) => (
                 <Badge
                   key={`suffix-${suffixIndex}`}
@@ -206,13 +216,11 @@ export default function InputOutputEditor() {
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "row",
         flexGrow: 1,
-        flexBasis: 0,
-        overflow: "auto",
       }}
     >
-      <div style={{ width: "100%", minHeight: "50%" }}>
+      <div style={{ flexGrow: 1 }}>
         <ServiceFormCell
           title="Inputs"
           subtitle="Define the input paths for your service."
@@ -236,30 +244,35 @@ export default function InputOutputEditor() {
         </ServiceFormCell>
       </div>
 
-      <Divider />
+      <Divider orientation="vertical" />
 
-      <ServiceFormCell
-        title="Outputs"
-        subtitle="Define the output paths for your service."
-        button={
-          <Button variant="default" onClick={() => openCreateModal("outputs")}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Output
-          </Button>
-        }
-      >
-        <div
-          style={{
-            display: "flex",
-            flexGrow: 1,
-            flexDirection: "row",
-            gap: 16,
-            flexWrap: "wrap",
-          }}
+      <div style={{ flexGrow: 1 }}>
+        <ServiceFormCell
+          title="Outputs"
+          subtitle="Define the output paths for your service."
+          button={
+            <Button
+              variant="default"
+              onClick={() => openCreateModal("outputs")}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Output
+            </Button>
+          }
         >
-          {renderIOItems("outputs", formService.output)}
-        </div>
-      </ServiceFormCell>
+          <div
+            style={{
+              display: "flex",
+              flexGrow: 1,
+              flexDirection: "row",
+              gap: 16,
+              flexWrap: "wrap",
+            }}
+          >
+            {renderIOItems("outputs", formService.output)}
+          </div>
+        </ServiceFormCell>
+      </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent style={{ width: "500px" }}>

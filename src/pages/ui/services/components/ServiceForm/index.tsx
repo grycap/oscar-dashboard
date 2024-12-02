@@ -4,7 +4,6 @@ import { ServiceFormTab } from "../../models/service";
 import ServiceGeneralTab from "./components/GeneralTab";
 import useServicesContext from "../../context/ServicesContext";
 import ServicesStorageTab from "./components/StorageTab";
-import ServicesInputOutputTab from "./components/InputOutputTab";
 
 function ServiceForm() {
   const { formService } = useServicesContext();
@@ -21,14 +20,11 @@ function ServiceForm() {
           display: "flex",
           flexGrow: 1,
           flexBasis: 0,
-          overflow: "scroll",
+          overflow: "auto",
         }}
       >
         {formTab === ServiceFormTab.General && <ServiceGeneralTab />}
         {formTab === ServiceFormTab.Storage && <ServicesStorageTab />}
-        {formTab === ServiceFormTab["Input - Output"] && (
-          <ServicesInputOutputTab />
-        )}
       </div>
     </>
   );
