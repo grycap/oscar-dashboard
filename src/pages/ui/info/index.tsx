@@ -51,6 +51,19 @@ function InfoView() {
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <InfoItem label="Password" value={password} isPassword enableCopy />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
+        {authData.token && (
+          <>
+            <InfoItem
+              label="Token"
+              value={authData.token}
+              isPassword
+              enableCopy
+            />
+            <div
+              style={{ borderTop: OscarStyles.border, margin: "0px 16px" }}
+            />
+          </>
+        )}
         <div
           style={{
             padding: "16px",

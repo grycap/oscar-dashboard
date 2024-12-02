@@ -110,10 +110,11 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
       type: file?.type ?? "text/plain",
     });
     try {
+      const token = authData.token ?? currentService?.token;
       const response = await invokeServiceSync({
         file: modifiedFile,
         serviceName: currentService?.name,
-        token: currentService?.token,
+        token,
         endpoint: authData.endpoint,
       });
 
