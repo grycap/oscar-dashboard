@@ -134,6 +134,11 @@ export interface Service {
   owner: string;
   storage_providers: StorageProviders;
   clusters: Clusters;
+  vo: string;
+  mount?: {
+    path: string;
+    storage_provider: string;
+  };
 }
 
 export enum ServiceTab {

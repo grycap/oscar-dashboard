@@ -11,11 +11,10 @@ import {
 import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import { Input } from "@/components/ui/input";
-import YAML from "yaml";
-import { Service } from "../../models/service";
 import createServiceApi from "@/api/services/createServiceApi";
 import { alert } from "@/lib/alert";
 import RequestButton from "@/components/RequestButton";
+import yamlToServices from "./utils/yamlToService";
 
 function FDLForm() {
   const { showFDLModal, setShowFDLModal, refreshServices } =
@@ -36,25 +35,6 @@ function FDLForm() {
     reader.readAsText(file);
   }
 
-  const prepareServices = () => {
-    const obj = YAML.parse(fdl);
-    const services: Service[] = [];
-    const scriptContent = script;
-    if (obj.functions && obj.functions.oscar) {
-      obj.functions.oscar.forEach((service: Record<string, Service>) => {
-        console.log(service);
-        const serviceKey = Object.keys(service)[0];
-        const serviceParams = service[serviceKey];
-        serviceParams.script = scriptContent;
-        serviceParams.storage_providers = obj.storage_providers || {};
-        serviceParams.clusters = obj.clusters || {};
-        services.push(serviceParams);
-      });
-    }
-
-    return services;
-  };
-
   async function handleSave() {
     if (!fdl) {
       alert.error("Please fill the FDL file");
@@ -66,7 +46,7 @@ function FDLForm() {
       return;
     }
 
-    const services = prepareServices();
+    const services = yamlToServices(fdl, script);
 
     const promises = services.map(async (service) => {
       const response = await createServiceApi(service);
