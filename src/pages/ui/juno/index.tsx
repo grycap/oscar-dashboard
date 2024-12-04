@@ -38,6 +38,7 @@ function JunoView() {
   const namePrefixSlice = namePrefix?.slice(0, 6);
 
   const { services, refreshServices } = useServicesContext();
+  const initialVo = localStorage.getItem("oidc_groups") as string;
 
   const junoService = services.find(
     (service) => service.name === `juno${namePrefixSlice}`
@@ -50,7 +51,7 @@ function JunoView() {
     memoryRam: "2",
     memoryUnit: "Gi",
     bucket: "",
-    vo: "",
+    vo: initialVo ?? "",
   });
 
   const handleDeploy = async () => {
