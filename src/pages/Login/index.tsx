@@ -122,7 +122,7 @@ function Login() {
               style={{
                 flex: 1,
                 display: "flex",
-                justifyContent: "space-between",
+                justifyContent: "center",
                 alignItems: "center",
                 fontSize: "10px",
                 color: "rgba(0,0,0,0.5)",
@@ -130,11 +130,8 @@ function Login() {
               }}
             >
               <div>
-                <a href="https://oscar.grycap.net">
-                  Provided by GRyCAP-I3M-UPV
-                </a>
+                Powered by <a href="https://oscar.grycap.net">OSCAR</a>
               </div>
-              <div>Universitat Politècnica de València, Spain.</div>
             </div>
           </div>
           <section
@@ -170,16 +167,8 @@ function Login() {
             >
               <Input name="endpoint" placeholder="Endpoint" required />
               <Separator />
-              <Input
-                name="username"
-                type="text"
-                placeholder="Username"
-              />
-              <Input
-                name="password"
-                type="password"
-                placeholder="Password"
-              />
+              <Input name="username" type="text" placeholder="Username" />
+              <Input name="password" type="password" placeholder="Password" />
 
               <Button
                 name="normal"
@@ -209,7 +198,7 @@ function Login() {
                     marginRight: "10px",
                   }}
                 />
-                Login via EGI Check-in
+                Sign in via EGI Check-in
               </Button>
             </form>
           </section>
