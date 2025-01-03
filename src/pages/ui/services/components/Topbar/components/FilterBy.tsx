@@ -86,8 +86,11 @@ function ServicesFilterBy() {
               }}
               style={{ fontSize: 16 }}
             />
-            <label htmlFor="ownedItems" style={{ fontSize: 14 }}>
-              Only owned services
+            <label
+              htmlFor="ownedItems"
+              style={{ fontSize: 14, marginTop: "1px" }}
+            >
+              My services
             </label>
           </div>
         </SelectContent>

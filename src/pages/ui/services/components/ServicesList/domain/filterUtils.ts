@@ -1,3 +1,4 @@
+import { AuthData } from "@/contexts/AuthContext";
 import {
   Service,
   ServiceFilter,
@@ -7,12 +8,25 @@ import {
 interface Props {
   services: Service[];
   filter: ServiceFilter;
-  user: string;
+  authData: AuthData;
 }
 
-function handleFilterServices({ services, filter, user }: Props) {
+function handleFilterServices({ services, filter, authData }: Props) {
   return services.filter((service) => {
-    if (filter.onlyOwned && service.owner !== user) return false;
+    if (filter.onlyOwned) {
+      const token = authData.token;
+
+      if (!token) {
+        return (
+          service.allowed_users.includes(authData.user) ||
+          service.owner === authData.user
+        );
+      }
+
+      if (token && !service.allowed_users.includes(token)) {
+        return false;
+      }
+    }
 
     const param = service[ServiceFilterByKey[filter.type]] as string;
 

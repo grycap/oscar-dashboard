@@ -77,7 +77,7 @@ function ServicesList() {
     const filteredServices = handleFilterServices({
       filter,
       services,
-      user: authData.user,
+      authData,
     });
     return filteredServices;
   }, [services, filter, authData?.user]);

@@ -50,7 +50,7 @@ export default function AddBucketButton() {
       <PopoverContent className="w-80">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium leading-none">Create MinIO Bucket</h4>
+            <h4 className="font-medium leading-none">Create bucket</h4>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="bucketName">Bucket Name</Label>
