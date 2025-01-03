@@ -16,7 +16,6 @@ function handleFilterServices({ services, filter, authData }: Props) {
     if (filter.onlyOwned) {
       const egiUserId = authData.egiSession?.sub;
 
-      console.log("EGI User Id", authData, egiUserId);
       if (!egiUserId) {
         return (
           service.allowed_users.includes(authData.user) ||
