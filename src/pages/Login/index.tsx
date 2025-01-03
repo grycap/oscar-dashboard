@@ -8,14 +8,19 @@ import EgiSvg from "@/assets/egi.svg";
 import { FormEvent, useEffect } from "react";
 import { getInfoApi } from "@/api/info/getInfoApi";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { alert } from "@/lib/alert";
 
 import env from "@/env";
 
 function Login() {
   const navigate = useNavigate();
+
   const { authData, setAuthData } = useAuth();
+
+  const [searchParams] = useSearchParams();
+  const endpoint = searchParams.get("endpoint");
+
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -165,7 +170,12 @@ function Login() {
                 gap: "15px",
               }}
             >
-              <Input name="endpoint" placeholder="Endpoint" required />
+              <Input
+                name="endpoint"
+                placeholder="Endpoint"
+                defaultValue={endpoint ?? ""}
+                required
+              />
               <Separator />
               <Input name="username" type="text" placeholder="Username" />
               <Input name="password" type="password" placeholder="Password" />
