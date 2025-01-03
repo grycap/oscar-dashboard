@@ -31,19 +31,19 @@ function AppSidebar() {
       path: "/services",
     },
     {
-      title: "Minio",
+      title: "Buckets",
       icon: <Database size={20} />,
       path: "/minio",
+    },
+    {
+      title: "Notebooks",
+      icon: <Notebook size={20} />,
+      path: "/notebooks",
     },
     {
       title: "Info",
       icon: <Info size={20} />,
       path: "/info",
-    },
-    {
-      title: "Jupyter Notebook",
-      icon: <Notebook size={20} />,
-      path: "/jupyter-notebook",
     },
   ];
 

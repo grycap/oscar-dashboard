@@ -30,7 +30,7 @@ function AppRouter() {
           <Route path="services/*" element={<ServicesRouter />} />
           <Route path="minio/*" element={<MinioRouter />} />
           <Route path="info" element={<InfoView />} />
-          <Route path="jupyter-notebook" element={<JunoView />} />
+          <Route path="notebooks" element={<JunoView />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />
