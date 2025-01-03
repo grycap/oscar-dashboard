@@ -14,16 +14,17 @@ interface Props {
 function handleFilterServices({ services, filter, authData }: Props) {
   return services.filter((service) => {
     if (filter.onlyOwned) {
-      const token = authData.token;
+      const egiUserId = authData.egiSession?.sub;
 
-      if (!token) {
+      console.log("EGI User Id", authData, egiUserId);
+      if (!egiUserId) {
         return (
           service.allowed_users.includes(authData.user) ||
           service.owner === authData.user
         );
       }
 
-      if (token && !service.allowed_users.includes(token)) {
+      if (!service.allowed_users.includes(egiUserId)) {
         return false;
       }
     }

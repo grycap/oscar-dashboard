@@ -109,7 +109,9 @@
                     "user":users?.name,
                     "password": "tokens['access_token']",
                     "token": tokens['access_token'],
-                    "endpoint": localStorage.getItem('api')})                  
+                    "endpoint": localStorage.getItem('api'),
+                    "egiSession": users
+                  })                  
                   localStorage.setItem("authData",authData); 
                   var url_redirect = window.location.origin + "/#/ui/services"
                   window.location.href = url_redirect

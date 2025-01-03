@@ -10,12 +10,26 @@ import React, {
   useState,
 } from "react";
 
+type EGISessionInfo = {
+  eduperson_assurance: string[]; // Lista de URLs para los niveles de garantía
+  eduperson_entitlement: string[]; // Lista de valores de derechos
+  email: string; // Correo electrónico del usuario
+  email_verified: boolean; // Indica si el correo está verificado
+  family_name: string; // Apellido del usuario
+  given_name: string; // Nombre del usuario
+  name: string; // Nombre completo del usuario
+  preferred_username: string; // Nombre de usuario preferido
+  sub: string; // Identificador único del usuario
+  voperson_verified_email: string[]; // Lista de correos electrónicos verificados
+};
+
 export type AuthData = {
   user: string;
   password: string;
   endpoint: string;
   token?: string;
   authenticated?: boolean;
+  egiSession?: EGISessionInfo;
 };
 
 export const AuthContext = createContext({
@@ -91,6 +105,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password: "",
         endpoint: "",
         authenticated: false,
+        egiSession: undefined,
       });
     }
   }
