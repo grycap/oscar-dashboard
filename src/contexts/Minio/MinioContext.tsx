@@ -18,6 +18,7 @@ import {
   DeleteBucketCommand,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { alert } from "@/lib/alert";
@@ -40,6 +41,7 @@ export type MinioProviderData = {
   createFolder: (bucketName: string, folderName: string) => Promise<void>;
   uploadFile: (bucketName: string, path: string, file: File) => Promise<void>;
   deleteFile: (bucketName: string, path: string) => Promise<void>;
+  getFileUrl: (bucketName: string, path: string) => Promise<string | undefined>;
 };
 
 export const MinioContext = createContext({} as MinioProviderData);
@@ -232,6 +234,23 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     updateBuckets();
   }
 
+  async function getFileUrl(bucketName: string, path: string) {
+    if (!client) return;
+
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: path,
+    });
+    const response = await client.send(command);
+    const byteArray = await response.Body?.transformToByteArray();
+    if (!byteArray) {
+      throw new Error("Failed to transform response body to byte array");
+    }
+    const url = URL.createObjectURL(new Blob([byteArray]));
+
+    return url;
+  }
+
   return (
     <MinioContext.Provider
       value={{
@@ -246,6 +265,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         deleteBucket,
         uploadFile,
         deleteFile,
+        getFileUrl,
       }}
     >
       {children}
