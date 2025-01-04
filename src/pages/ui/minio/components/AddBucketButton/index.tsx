@@ -44,7 +44,7 @@ export default function AddBucketButton() {
       <PopoverTrigger asChild>
         <Button variant="mainGreen">
           <Plus size={20} className="mr-2" />
-          Create MinIO Bucket
+          Create bucket
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
