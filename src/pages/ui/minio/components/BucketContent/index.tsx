@@ -3,7 +3,14 @@ import { _Object, CommonPrefix } from "@aws-sdk/client-s3";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import GenericTable from "@/components/Table"; // Importar GenericTable
-import { AlertCircle, Eye, Folder, Trash } from "lucide-react";
+import {
+  AlertCircle,
+  Eye,
+  Folder,
+  Trash,
+  Download,
+  DownloadIcon,
+} from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import OscarColors from "@/styles";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,6 +18,12 @@ import useSelectedBucket from "../../hooks/useSelectedBucket";
 import { Button } from "@/components/ui/button";
 import DeleteDialog from "@/components/DeleteDialog";
 import FilePreviewModal from "./FilePreview";
+import JSZip from "jszip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export type BucketItem =
   | {
@@ -29,7 +42,8 @@ export type BucketItem =
 export default function BucketContent() {
   const { name: bucketName, path } = useSelectedBucket();
 
-  const { getBucketItems, buckets, uploadFile, deleteFile } = useMinio();
+  const { getBucketItems, buckets, uploadFile, deleteFile, getFileUrl } =
+    useMinio();
 
   const [items, setItems] = useState<BucketItem[]>([]);
 
@@ -86,6 +100,48 @@ export default function BucketContent() {
   };
 
   const [itemsToDelete, setItemsToDelete] = useState<BucketItem[]>([]);
+
+  const handleDownloadFile = async (item: BucketItem) => {
+    if (item.Type === "file") {
+      try {
+        const url = await getFileUrl(item.BucketName, item.Key.Key!);
+        if (url) {
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = item.Name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      } catch (error) {
+        console.error("Error al descargar el archivo:", error);
+      }
+    }
+  };
+
+  const handleBulkDownload = async (items: BucketItem[]) => {
+    const zip = new JSZip();
+
+    for (const item of items) {
+      if (item.Type === "file") {
+        const url = await getFileUrl(item.BucketName, item.Key.Key!);
+        if (url) {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          zip.file(item.Name, blob);
+        }
+      }
+    }
+
+    zip.generateAsync({ type: "blob" }).then((content) => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(content);
+      a.download = `${bucketName}_files.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  };
 
   return (
     <>
@@ -202,15 +258,24 @@ export default function BucketContent() {
                 return (
                   <>
                     {item.Type === "file" && (
-                      <Button
-                        variant="link"
-                        size="icon"
-                        onClick={() => {
-                          setPreviewFile(item);
-                        }}
-                      >
-                        <Eye color={OscarColors.Blue} />
-                      </Button>
+                      <>
+                        <Button
+                          variant="link"
+                          size="icon"
+                          onClick={() => {
+                            setPreviewFile(item);
+                          }}
+                        >
+                          <Eye color={OscarColors.Blue} />
+                        </Button>
+                        <Button
+                          variant="link"
+                          size="icon"
+                          onClick={() => handleDownloadFile(item)}
+                        >
+                          <Download />
+                        </Button>
+                      </>
                     )}
                     <Button
                       variant={"ghost"}
@@ -220,6 +285,33 @@ export default function BucketContent() {
                       <Trash color={OscarColors.Red} />
                     </Button>
                   </>
+                );
+              },
+            },
+          ]}
+          bulkActions={[
+            {
+              button: (items) => {
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <Button
+                          className="mt-[2px]"
+                          onClick={() => handleBulkDownload(items)}
+                          disabled={items.some(
+                            (item) => item.Type === "folder"
+                          )}
+                        >
+                          <DownloadIcon className="w-4 h-4 mr-2" />
+                          Download
+                        </Button>
+                      </div>
+                    </TooltipTrigger>
+                    {items.some((item) => item.Type === "folder") && (
+                      <TooltipContent>Cannot download folders</TooltipContent>
+                    )}
+                  </Tooltip>
                 );
               },
             },
