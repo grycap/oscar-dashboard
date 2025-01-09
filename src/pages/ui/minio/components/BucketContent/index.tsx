@@ -18,7 +18,6 @@ import useSelectedBucket from "../../hooks/useSelectedBucket";
 import { Button } from "@/components/ui/button";
 import DeleteDialog from "@/components/DeleteDialog";
 import FilePreviewModal from "./FilePreview";
-import JSZip from "jszip";
 import {
   Tooltip,
   TooltipContent,
@@ -42,8 +41,14 @@ export type BucketItem =
 export default function BucketContent() {
   const { name: bucketName, path } = useSelectedBucket();
 
-  const { getBucketItems, buckets, uploadFile, deleteFile, getFileUrl } =
-    useMinio();
+  const {
+    getBucketItems,
+    downloadAndZipFolders,
+    buckets,
+    uploadFile,
+    deleteFile,
+    getFileUrl,
+  } = useMinio();
 
   const [items, setItems] = useState<BucketItem[]>([]);
 
@@ -120,27 +125,30 @@ export default function BucketContent() {
   };
 
   const handleBulkDownload = async (items: BucketItem[]) => {
-    const zip = new JSZip();
+    const bucketName = items[0].BucketName;
 
-    for (const item of items) {
-      if (item.Type === "file") {
-        const url = await getFileUrl(item.BucketName, item.Key.Key!);
-        if (url) {
-          const response = await fetch(url);
-          const blob = await response.blob();
-          zip.file(item.Name, blob);
-        }
-      }
-    }
+    const folders = items
+      .filter((item) => item.Type === "folder")
+      .map((item) => item.Key as CommonPrefix);
 
-    zip.generateAsync({ type: "blob" }).then((content) => {
+    const singleFiles = items
+      .filter((item) => item.Type === "file")
+      .map((item) => item.Key as _Object);
+
+    const zipBlob = await downloadAndZipFolders(
+      bucketName,
+      folders,
+      singleFiles
+    );
+
+    if (zipBlob) {
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(content);
+      a.href = URL.createObjectURL(zipBlob);
       a.download = `${bucketName}_files.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    });
+    }
   };
 
   return (
@@ -299,9 +307,9 @@ export default function BucketContent() {
                         <Button
                           className="mt-[2px]"
                           onClick={() => handleBulkDownload(items)}
-                          disabled={items.some(
+                          /*  disabled={items.some(
                             (item) => item.Type === "folder"
-                          )}
+                          )} */
                         >
                           <DownloadIcon className="w-4 h-4 mr-2" />
                           Download
