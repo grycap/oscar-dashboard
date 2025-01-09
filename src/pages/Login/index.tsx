@@ -8,7 +8,7 @@ import EgiSvg from "@/assets/egi.svg";
 import { FormEvent, useEffect } from "react";
 import { getInfoApi } from "@/api/info/getInfoApi";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { alert } from "@/lib/alert";
 
 import env from "@/env";
@@ -127,7 +127,7 @@ function Login() {
               style={{
                 flex: 1,
                 display: "flex",
-                justifyContent: "center",
+                justifyContent: "space-between",
                 alignItems: "center",
                 fontSize: "10px",
                 color: "rgba(0,0,0,0.5)",
@@ -136,6 +136,10 @@ function Login() {
             >
               <div>
                 Powered by <a href="https://oscar.grycap.net">OSCAR</a>
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <Link to="/terms-of-use">Terms of use</Link>
+                <Link to="/privacy-policy">Privacy Policy</Link>
               </div>
             </div>
           </div>
