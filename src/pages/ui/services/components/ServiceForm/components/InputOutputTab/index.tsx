@@ -223,7 +223,6 @@ export default function InputOutputEditor() {
       <div style={{ flexGrow: 1 }}>
         <ServiceFormCell
           title="Inputs"
-          subtitle="Define the input paths for your service."
           button={
             <Button variant="default" onClick={() => openCreateModal("inputs")}>
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -249,7 +248,6 @@ export default function InputOutputEditor() {
       <div style={{ flexGrow: 1 }}>
         <ServiceFormCell
           title="Outputs"
-          subtitle="Define the output paths for your service."
           button={
             <Button
               variant="default"

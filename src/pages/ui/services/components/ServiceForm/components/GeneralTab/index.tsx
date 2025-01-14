@@ -45,10 +45,7 @@ function ServiceGeneralTab() {
         width: "100%",
       }}
     >
-      <ServiceFormCell
-        title="General Settings"
-        subtitle="Configure the service name and a container image to use"
-      >
+      <ServiceFormCell title="General Settings">
         <div
           style={{
             display: "flex",
@@ -190,10 +187,7 @@ function ServiceGeneralTab() {
         </div>
       </ServiceFormCell>
       <Divider />
-      <ServiceFormCell
-        title="Service specifications"
-        subtitle="Adjust container resources and provide a script for the processing of files"
-      >
+      <ServiceFormCell title="Service specifications">
         <div
           style={{
             display: "flex",
@@ -250,10 +244,7 @@ function ServiceGeneralTab() {
         </div>
       </ServiceFormCell>
       <Divider />
-      <ServiceFormCell
-        title="Enviroment variables"
-        subtitle="Provide environment variables to the service adding them here"
-      >
+      <ServiceFormCell title="Enviroment variables">
         <EnviromentVariables />
       </ServiceFormCell>
       <Divider />
