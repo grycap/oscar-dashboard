@@ -19,9 +19,12 @@ import Divider from "@/components/ui/divider";
 import { Label } from "@/components/ui/label";
 import { ServiceViewMode } from "../../../Topbar";
 import InputOutputEditor from "../InputOutputTab";
+import { useAuth } from "@/contexts/AuthContext";
 
 function ServiceGeneralTab() {
   const { formService, setFormService, formMode } = useServicesContext();
+  const { systemConfig } = useAuth();
+  const voGroups = systemConfig?.config.oidc_groups;
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement>,
@@ -80,37 +83,41 @@ function ServiceGeneralTab() {
             />
           </section>
           <div className="flex flex-row w-full items-end gap-5">
-            {formService.token && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "end",
-
-                  gap: 10,
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.375rem",
+                minWidth: "200px",
+              }}
+            >
+              <Label>VO</Label>
+              <Select
+                value={formService?.vo}
+                onValueChange={(value) => {
+                  setFormService((service: Service) => {
+                    return {
+                      ...service,
+                      vo: value,
+                    };
+                  });
                 }}
               >
-                <Input
-                  value={formService?.token}
-                  readOnly
-                  label="Token"
-                  type="password"
-                  width="600px"
-                />
-                <Button
-                  variant="ghost"
-                  style={{
-                    height: "39px",
-                  }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(formService?.token || "");
-                    alert.success("Token copied to clipboard");
-                  }}
-                >
-                  <CopyIcon />
-                </Button>
-              </div>
-            )}
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an V0" />
+                </SelectTrigger>
+                <SelectContent>
+                  {voGroups?.map((vo) => {
+                    return (
+                      <SelectItem key={vo} value={vo}>
+                        {vo}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div
               style={{
                 width: "50%",
@@ -145,6 +152,37 @@ function ServiceGeneralTab() {
                 </SelectContent>
               </Select>
             </div>
+            {formService.token && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "end",
+
+                  gap: 10,
+                }}
+              >
+                <Input
+                  value={formService?.token}
+                  readOnly
+                  label="Token"
+                  type="password"
+                  width="600px"
+                />
+                <Button
+                  variant="ghost"
+                  style={{
+                    height: "39px",
+                  }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(formService?.token || "");
+                    alert.success("Token copied to clipboard");
+                  }}
+                >
+                  <CopyIcon />
+                </Button>
+              </div>
+            )}
           </div>
 
           {formMode === ServiceViewMode.Update && (

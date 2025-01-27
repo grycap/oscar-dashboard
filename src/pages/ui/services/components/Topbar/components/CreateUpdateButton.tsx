@@ -7,6 +7,7 @@ import { Service } from "../../../models/service";
 import getServicesApi from "@/api/services/getServicesApi";
 import { useNavigate } from "react-router-dom";
 import RequestButton from "@/components/RequestButton";
+import { AxiosError } from "axios";
 
 interface Props {
   isInCreateMode: boolean;
@@ -47,10 +48,15 @@ export function CreateUpdateServiceButton({ isInCreateMode }: Props) {
       const newServices = await getServicesApi();
       setServices(newServices);
     } catch (error) {
+      const message = (error as AxiosError).response?.data;
       if (isInCreateMode) {
-        alert.error("Failed to create service");
+        alert.error(
+          "Failed to create service" + (message ? ": " + message : "")
+        );
       } else {
-        alert.error("Failed to update service");
+        alert.error(
+          "Failed to update service" + (message ? ": " + message : "")
+        );
       }
     }
   }
