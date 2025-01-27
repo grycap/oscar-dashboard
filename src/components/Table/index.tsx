@@ -70,6 +70,10 @@ function GenericTable<T extends object>({
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [data.length]);
+
   const [sortConfig, setSortConfig] = useState<{
     key: keyof T;
     direction: "asc" | "desc";
