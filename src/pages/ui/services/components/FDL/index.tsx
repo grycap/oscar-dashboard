@@ -30,7 +30,12 @@ function FDLForm() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      setFdl(e.target?.result as string);
+      const result = e.target?.result as string;
+      if (selectedTab === "fdl") {
+        setFdl(result);
+      } else {
+        setScript(result);
+      }
     };
     reader.readAsText(file);
   }
@@ -146,7 +151,7 @@ function FDLForm() {
             <Editor
               key={`script-${editorKey}`}
               language="javascript"
-              defaultValue={script}
+              value={script}
               onChange={(e) => {
                 setScript(e || "");
               }}
