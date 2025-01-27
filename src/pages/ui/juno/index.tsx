@@ -34,7 +34,9 @@ function JunoView() {
   const { buckets } = useMinio();
   const { systemConfig } = useAuth();
   const { authData } = useAuth();
-  const namePrefix = authData?.token ?? authData?.user;
+
+  const namePrefix =
+    authData?.egiSession?.sub ?? authData?.token ?? authData?.user;
   const namePrefixSlice = namePrefix?.slice(0, 6);
 
   const oidcGroups = systemConfig?.config.oidc_groups ?? [];
@@ -192,7 +194,7 @@ function JunoView() {
                     }
                   >
                     <SelectTrigger className="w-[80px]">
-                      <SelectValue placeholder="Unit" />
+                      <SelectValue id="memory-unit" placeholder="Unit" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Gi">Gi</SelectItem>
@@ -210,7 +212,10 @@ function JunoView() {
                   }
                 >
                   <SelectTrigger id="bucket">
-                    <SelectValue placeholder="Select a bucket" />
+                    <SelectValue
+                      id="bucket-value"
+                      placeholder="Select a bucket"
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {buckets.map((bucket) => (
@@ -254,7 +259,9 @@ function JunoView() {
         </CardContent>
         <CardFooter className="flex justify-end space-x-2">
           {!isDeployed ? (
-            <RequestButton request={handleDeploy}>Deploy</RequestButton>
+            <RequestButton id="juno-deploy-button" request={handleDeploy}>
+              Deploy
+            </RequestButton>
           ) : (
             <>
               <Link
@@ -266,12 +273,16 @@ function JunoView() {
                 }`}
                 target="_blank"
               >
-                <Button>
+                <Button id="juno-visit-button">
                   <ExternalLink className="w-5 h-5 mr-2" />
                   Visit
                 </Button>
               </Link>
-              <RequestButton variant={"destructive"} request={handleDelete}>
+              <RequestButton
+                id="juno-delete-button"
+                variant={"destructive"}
+                request={handleDelete}
+              >
                 Delete
               </RequestButton>
             </>
