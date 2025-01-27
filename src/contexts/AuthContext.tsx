@@ -2,6 +2,7 @@ import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { getInfoApi } from "@/api/info/getInfoApi";
 import { setAxiosInterceptor } from "@/lib/axiosClient";
 import { SystemConfig } from "@/models/systemConfig";
+import { MinioStorageProvider } from "@/pages/ui/services/models/service";
 import React, {
   createContext,
   useContext,
@@ -41,7 +42,10 @@ export const AuthContext = createContext({
   } as AuthData,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setAuthData: (_: AuthData) => {},
-  systemConfig: null as SystemConfig | null,
+  systemConfig: null as {
+    config: SystemConfig;
+    minio_provider: MinioStorageProvider;
+  } | null,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -65,7 +69,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const [authData, setAuthDataState] = useState(initialData);
-  const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
+  const [systemConfig, setSystemConfig] = useState<{
+    config: SystemConfig;
+    minio_provider: MinioStorageProvider;
+  } | null>(null);
 
   async function handleGetSystemConfig() {
     if (!authData.authenticated) return;

@@ -21,7 +21,7 @@ import { useMinio } from "@/contexts/Minio/MinioContext";
 import { alert } from "@/lib/alert";
 
 import { Check, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import yamlToServices from "../services/components/FDL/utils/yamlToService";
 import { useAuth } from "@/contexts/AuthContext";
 import { Service } from "../services/models/service";
@@ -32,13 +32,15 @@ import deleteServiceApi from "@/api/services/deleteServiceApi";
 
 function JunoView() {
   const { buckets } = useMinio();
-
+  const { systemConfig } = useAuth();
   const { authData } = useAuth();
   const namePrefix = authData?.token ?? authData?.user;
   const namePrefixSlice = namePrefix?.slice(0, 6);
 
+  const oidcGroups = systemConfig?.config.oidc_groups ?? [];
+
   const { services, refreshServices } = useServicesContext();
-  const initialVo = localStorage.getItem("oidc_groups") as string;
+  const initialVo = oidcGroups[0];
 
   const junoService = services.find(
     (service) => service.name === `juno${namePrefixSlice}`
@@ -111,6 +113,12 @@ function JunoView() {
       alert.error("Error deploying Jupyter Notebook instance");
     }
   };
+
+  useEffect(() => {
+    if (oidcGroups.length) {
+      setFormData({ ...formData, vo: oidcGroups[0] });
+    }
+  }, [oidcGroups.length]);
 
   async function handleDelete() {
     if (!junoService) return;
@@ -215,15 +223,23 @@ function JunoView() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="vo">VO</Label>
-                <Input
-                  id="vo"
-                  type="text"
-                  placeholder="Enter VO"
+                <Select
                   value={formData.vo}
-                  onChange={(e) =>
-                    setFormData({ ...formData, vo: e.target.value })
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, vo: value })
                   }
-                />
+                >
+                  <SelectTrigger id="vo">
+                    <SelectValue placeholder="Select a VO" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {oidcGroups.map((group) => (
+                      <SelectItem key={group} value={group}>
+                        {group}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </form>
           ) : (
