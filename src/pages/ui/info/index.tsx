@@ -74,16 +74,16 @@ function InfoView() {
         >
           <InfoBooleanItem
             label="GPU"
-            enabled={Boolean(systemConfig?.gpu_avaliable)}
+            enabled={Boolean(systemConfig?.config.gpu_avaliable)}
           />
 
           <InfoBooleanItem
             label="InterLink"
-            enabled={Boolean(systemConfig?.interLink_available)}
+            enabled={Boolean(systemConfig?.config.interLink_available)}
           />
           <InfoBooleanItem
             label="Yunikorn"
-            enabled={Boolean(systemConfig?.yunikorn_enable)}
+            enabled={Boolean(systemConfig?.config.yunikorn_enable)}
           />
         </div>
       </div>
