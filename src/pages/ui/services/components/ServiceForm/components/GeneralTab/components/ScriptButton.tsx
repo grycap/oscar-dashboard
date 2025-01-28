@@ -54,7 +54,7 @@ function ScriptButton() {
       }}
     >
       <div>
-        <Label>Script upload method</Label>
+        <Label>Script upload method*</Label>
         <Select
           value={uploadMethod}
           onValueChange={(value) => setUploadMethod(value as "file" | "url")}

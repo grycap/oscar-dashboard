@@ -1,4 +1,6 @@
-import useServicesContext from "../../../context/ServicesContext";
+import useServicesContext, {
+  serviceSchema,
+} from "../../../context/ServicesContext";
 import createServiceApi from "@/api/services/createServiceApi";
 import { alert } from "@/lib/alert";
 import updateServiceApi from "@/api/services/updateServiceApi";
@@ -14,7 +16,8 @@ interface Props {
 }
 
 export function CreateUpdateServiceButton({ isInCreateMode }: Props) {
-  const { formService, setServices } = useServicesContext();
+  const { formService, setServices, formFunctions } = useServicesContext();
+  const { setErrors } = formFunctions;
 
   const createServiceModel = useMemo(() => {
     return {
@@ -34,7 +37,24 @@ export function CreateUpdateServiceButton({ isInCreateMode }: Props) {
   }, [formService]);
   const navigate = useNavigate();
 
+  const validateForm = () => {
+    const result = serviceSchema.safeParse(formService);
+    if (!result.success) {
+      setErrors(
+        result.error.flatten().fieldErrors as Partial<
+          Record<keyof Service, string>
+        >
+      );
+      alert.error(Object.values(result.error.flatten().fieldErrors).join(", "));
+    }
+
+    return result.success;
+  };
+
   async function handleAction() {
+    if (!validateForm()) {
+      return;
+    }
     try {
       if (isInCreateMode) {
         await createServiceApi(createServiceModel as unknown as Service);

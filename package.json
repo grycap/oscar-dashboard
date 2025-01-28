@@ -43,7 +43,8 @@
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "yaml": "^2.6.0"
+    "yaml": "^2.6.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^20.14.11",

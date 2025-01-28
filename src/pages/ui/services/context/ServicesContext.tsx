@@ -19,6 +19,7 @@ import { defaultService } from "../components/ServiceForm/utils/initialData";
 import useUpdate from "@/hooks/useUpdate";
 import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { ServiceViewMode } from "../components/Topbar";
+import { z } from "zod";
 
 interface ServiceContextType {
   filter: ServiceFilter;
@@ -38,7 +39,29 @@ interface ServiceContextType {
 
   refreshServices: () => void;
   formMode: ServiceViewMode;
+
+  formFunctions: FormFunctions;
 }
+
+type FormFunctions = {
+  handleChange: (
+    e: React.ChangeEvent<HTMLInputElement>,
+    key: SchemaKeys
+  ) => void;
+  onBlur: (key: SchemaKeys) => void;
+  errors: Partial<Record<keyof Service, string>>;
+  setErrors: Dispatch<SetStateAction<Partial<Record<keyof Service, string>>>>;
+};
+
+export const serviceSchema = z.object({
+  name: z.string().min(1, "Service name is required"),
+  image: z.string().min(1, "Docker image is required"),
+  cpu: z.string().min(1, "CPU cores is required"),
+  memory: z.string().min(1, "Memory is required"),
+  script: z.string().min(1, "Script is required"),
+});
+
+type SchemaKeys = keyof typeof serviceSchema.shape;
 
 export const ServicesContext = createContext({
   services: [] as Service[],
@@ -79,6 +102,49 @@ export const ServicesProvider = ({
   }, [pathnames]);
 
   const [formService, setFormService] = useState({} as Service);
+
+  const [errors, setErrors] = useState<Partial<Record<keyof Service, string>>>(
+    {}
+  );
+
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+    key: SchemaKeys
+  ) {
+    setFormService((service: Service) => {
+      return {
+        ...service,
+        [key]: e.target.value,
+      };
+    });
+
+    // Validar el campo específico
+    try {
+      serviceSchema.shape[key].parse(e.target.value);
+      setErrors((prevErrors) => ({ ...prevErrors, [key]: undefined }));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [key]: error.errors[0].message,
+        }));
+      }
+    }
+  }
+
+  function onBlur(key: SchemaKeys) {
+    try {
+      serviceSchema.shape[key].parse(formService[key]);
+      setErrors((prevErrors) => ({ ...prevErrors, [key]: undefined }));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [key]: error.errors[0].message,
+        }));
+      }
+    }
+  }
 
   async function handleGetServices() {
     const response = await getServicesApi();
@@ -138,6 +204,12 @@ export const ServicesProvider = ({
         showFDLModal,
         setShowFDLModal,
         refreshServices: handleGetServices,
+        formFunctions: {
+          handleChange,
+          onBlur,
+          errors,
+          setErrors,
+        },
       }}
     >
       {children}

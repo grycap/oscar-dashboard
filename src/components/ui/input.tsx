@@ -10,10 +10,11 @@ export interface InputProps
   endIcon?: React.ReactNode;
   label?: string;
   flex?: string | number;
+  error?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, endIcon, label, ...props }, ref) => {
+  ({ className, type, required, endIcon, label, ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
 
     const togglePasswordVisibility = () => {
@@ -28,7 +29,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           flex: props.flex,
         }}
       >
-        {label && <Label>{label}</Label>}
+        <div className="flex flex-row gap-1.5">
+          {label && <Label>{label + (required ? "*" : "")}</Label>}
+          {label && props.error && <Label>-</Label>}
+          {props.error && <Label className="text-red-500">{props.error}</Label>}
+        </div>
         <input
           type={type === "password" && showPassword ? "text" : type}
           className={cn(

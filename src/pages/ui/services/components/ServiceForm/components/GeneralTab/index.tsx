@@ -22,21 +22,12 @@ import InputOutputEditor from "../InputOutputTab";
 import { useAuth } from "@/contexts/AuthContext";
 
 function ServiceGeneralTab() {
-  const { formService, setFormService, formMode } = useServicesContext();
+  const { formService, setFormService, formMode, formFunctions } =
+    useServicesContext();
+
+  const { handleChange, onBlur, errors } = formFunctions;
   const { systemConfig } = useAuth();
   const voGroups = systemConfig?.config.oidc_groups;
-
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement>,
-    key: keyof Service
-  ) {
-    setFormService((service: Service) => {
-      return {
-        ...service,
-        [key]: e.target.value,
-      };
-    });
-  }
 
   const [memoryUnits, setMemoryUnits] = useState("Mi" as "Mi" | "Gi");
 
@@ -63,6 +54,7 @@ function ServiceGeneralTab() {
               flexDirection: "row",
               width: "100%",
               gap: 10,
+              alignItems: "top",
             }}
           >
             <Input
@@ -72,6 +64,9 @@ function ServiceGeneralTab() {
                 handleChange(e, "name");
               }}
               label="Service name"
+              error={errors.name}
+              onBlur={() => onBlur("name")}
+              required
             />
             <Input
               flex={2}
@@ -80,6 +75,9 @@ function ServiceGeneralTab() {
               onChange={(e) => {
                 handleChange(e, "image");
               }}
+              error={errors.image}
+              onBlur={() => onBlur("image")}
+              required
             />
           </section>
           <div className="flex flex-row w-full items-end gap-5">
@@ -250,6 +248,7 @@ function ServiceGeneralTab() {
                 handleChange(e, "cpu");
               }}
               label="CPU cores"
+              error={errors.cpu}
             />
             <Input
               value={formService?.memory?.replace("Mi", "")?.replace("Gi", "")}
@@ -261,8 +260,10 @@ function ServiceGeneralTab() {
                     memory: e.target.value + memoryUnits,
                   };
                 });
+                handleChange(e, "memory");
               }}
               type="number"
+              error={errors.memory}
             />
             <Select
               value={memoryUnits}
