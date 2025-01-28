@@ -59,7 +59,10 @@ function ScriptButton() {
           value={uploadMethod}
           onValueChange={(value) => setUploadMethod(value as "file" | "url")}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger
+            id="script-upload-method-select-trigger"
+            className="w-[180px]"
+          >
             <SelectValue placeholder="Select upload method" />
           </SelectTrigger>
           <SelectContent>
@@ -71,10 +74,16 @@ function ScriptButton() {
 
       {uploadMethod === "file" ? (
         <div>
-          <Input type="file" onChange={handleFileUpload} className="bg-white" />
+          <Input
+            id="script-file-input"
+            type="file"
+            onChange={handleFileUpload}
+            className="bg-white"
+          />
         </div>
       ) : (
         <Input
+          id="script-url-input"
           type="url"
           placeholder="Enter script URL"
           value={url}

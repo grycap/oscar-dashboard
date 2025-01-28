@@ -185,6 +185,7 @@ export default function InputOutputEditor() {
           </div>
           <div style={{ display: "flex", flexDirection: "row" }}>
             <Button
+              id={`edit-input-output-button-${index}`}
               style={{
                 minWidth: 40,
                 height: 40,
@@ -196,6 +197,7 @@ export default function InputOutputEditor() {
               <Pencil />
             </Button>
             <Button
+              id={`delete-input-output-button-${index}`}
               style={{
                 minWidth: 40,
                 height: 40,
@@ -224,7 +226,11 @@ export default function InputOutputEditor() {
         <ServiceFormCell
           title="Inputs"
           button={
-            <Button variant="default" onClick={() => openCreateModal("inputs")}>
+            <Button
+              id="add-input-button"
+              variant="default"
+              onClick={() => openCreateModal("inputs")}
+            >
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Input
             </Button>
@@ -250,6 +256,7 @@ export default function InputOutputEditor() {
           title="Outputs"
           button={
             <Button
+              id="add-output-button"
               variant="default"
               onClick={() => openCreateModal("outputs")}
             >
@@ -426,6 +433,7 @@ function EditModal({
             <Badge key={index} variant="outline">
               {suffix}
               <Button
+                id={`remove-suffix-button-${index}`}
                 variant="ghost"
                 size="sm"
                 className="ml-1 h-4 w-4 p-0"

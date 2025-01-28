@@ -58,6 +58,7 @@ function ServiceGeneralTab() {
             }}
           >
             <Input
+              id="service-name-input"
               flex={1}
               value={formService?.name}
               onChange={(e) => {
@@ -69,6 +70,7 @@ function ServiceGeneralTab() {
               required
             />
             <Input
+              id="docker-image-input"
               flex={2}
               value={formService?.image}
               label="Docker image"
@@ -101,7 +103,7 @@ function ServiceGeneralTab() {
                   });
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger id="vo-select-trigger">
                   <SelectValue placeholder="Select an V0" />
                 </SelectTrigger>
                 <SelectContent>
@@ -136,7 +138,10 @@ function ServiceGeneralTab() {
                   });
                 }}
               >
-                <SelectTrigger className="w-[250px]">
+                <SelectTrigger
+                  className="w-[250px]"
+                  id="log-level-select-trigger"
+                >
                   <SelectValue placeholder="Log level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -161,6 +166,7 @@ function ServiceGeneralTab() {
                 }}
               >
                 <Input
+                  id="token-input"
                   value={formService?.token}
                   readOnly
                   label="Token"
@@ -168,6 +174,7 @@ function ServiceGeneralTab() {
                   width="600px"
                 />
                 <Button
+                  id="copy-token-button"
                   variant="ghost"
                   style={{
                     height: "39px",
@@ -243,6 +250,7 @@ function ServiceGeneralTab() {
             }}
           >
             <Input
+              id="cpu-input"
               value={formService?.cpu}
               onChange={(e) => {
                 handleChange(e, "cpu");
@@ -251,6 +259,7 @@ function ServiceGeneralTab() {
               error={errors.cpu}
             />
             <Input
+              id="memory-input"
               value={formService?.memory?.replace("Mi", "")?.replace("Gi", "")}
               label="Memory"
               onChange={(e) => {
@@ -271,7 +280,7 @@ function ServiceGeneralTab() {
                 setMemoryUnits(value as "Mi" | "Gi");
               }}
             >
-              <SelectTrigger className="w-[75px]">
+              <SelectTrigger id="memory-units-select" className="w-[75px]">
                 <SelectValue placeholder="Order by" />
               </SelectTrigger>
               <SelectContent>
