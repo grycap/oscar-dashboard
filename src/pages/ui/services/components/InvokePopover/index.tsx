@@ -106,7 +106,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   };
 
   const invokeService = async () => {
-    const modifiedFile = new File([fileContent], file?.name ?? "file.txt", {
+    const modifiedFile = new File([fileType === "image" ? file! : fileContent], file?.name ?? "file.txt", {
       type: file?.type ?? "text/plain",
     });
     try {
