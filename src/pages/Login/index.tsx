@@ -36,8 +36,6 @@ function Login() {
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
     const token = undefined;
-    console.log(username)
-    console.log(password)
     // Check if the endpoint is a valid URL
     if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
       alert.error("Invalid endpoint");
