@@ -32,11 +32,12 @@ function Login() {
 
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
-    const endpoint = isDeployContainer() ? window.location.origin : formData.get("endpoint") as string
+    const endpoint = isDeployContainer() ? window.location.origin : formData.get("endpoint") as string;
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
     const token = undefined;
-
+    console.log(username)
+    console.log(password)
     // Check if the endpoint is a valid URL
     if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
       alert.error("Invalid endpoint");

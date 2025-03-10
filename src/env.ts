@@ -5,7 +5,6 @@ const env = {
     "url_authorize": "$EGI_CHECKIN_ISSUER/protocol/openid-connect/auth",
     "url_user_info": "$EGI_CHECKIN_ISSUER/protocol/openid-connect/userinfo",
     "token_endpoint": "$EGI_CHECKIN_ISSUER/protocol/openid-connect/token",
-    "api" : "",
     "deploy_container" : "false",
     "minio_local_endpoint" :"localhost",
     "minio_local_port": "30300",
