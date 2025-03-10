@@ -10,7 +10,8 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "deploy_container": "sed -i '/deploy_container/c\\ \\ \\ \\ \"deploy_container\" : \"true\",' src/env.ts && sed -i '/api/c\\ \\ \\ \\ \"api\" : \"\",' src/env.ts && npm install && npm run build"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.654.0",
@@ -61,6 +62,6 @@
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.6",
     "typescript": "^5.2.2",
-    "vite": "^5.3.4"
+    "vite": "^6.2.1"
   }
 }

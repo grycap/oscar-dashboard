@@ -20,13 +20,19 @@ function Login() {
 
   const [searchParams] = useSearchParams();
   const endpoint = searchParams.get("endpoint");
+  
+  function isDeployContainer(){
+    if (env.deploy_container ==="true"){
+      return true
+    }else return false
+  }
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
-    const endpoint = formData.get("endpoint") as string;
+    const endpoint = isDeployContainer() ? window.location.origin : formData.get("endpoint") as string
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
     const token = undefined;
@@ -34,6 +40,7 @@ function Login() {
     // Check if the endpoint is a valid URL
     if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
       alert.error("Invalid endpoint");
+      console.log(endpoint)
       return;
     }
 
@@ -56,23 +63,29 @@ function Login() {
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     let endpoint = formData.get("endpoint") as string;
-    // Check if the endpoint is a valid URL
-    if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
-      alert.error("Invalid endpoint");
-      return;
+    if (isDeployContainer()){
+      const oscarEndpoint = window.location.origin
+      window.location.replace(env.external_ui+"/#/login?endpoint="+oscarEndpoint);
+    }else{
+      // Check if the endpoint is a valid URL
+      if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
+        alert.error("Invalid endpoint");
+        return;
+      }
+      try {
+        endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
+        localStorage.setItem("api", endpoint);
+        localStorage.setItem("client_id", env.client_id);
+        localStorage.setItem("provider_url", env.provider_url);
+        localStorage.setItem("url_authorize", env.url_authorize);
+        localStorage.setItem("url_user_info", env.url_user_info);
+        localStorage.setItem("token_endpoint", env.token_endpoint);
+        window.location.replace(env.redirect_uri);
+      } catch (error) {
+        alert.error("Invalid credentials");
+      }
     }
-    try {
-      endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
-      localStorage.setItem("api", endpoint);
-      localStorage.setItem("client_id", env.client_id);
-      localStorage.setItem("provider_url", env.provider_url);
-      localStorage.setItem("url_authorize", env.url_authorize);
-      localStorage.setItem("url_user_info", env.url_user_info);
-      localStorage.setItem("token_endpoint", env.token_endpoint);
-      window.location.replace(env.redirect_uri);
-    } catch (error) {
-      alert.error("Invalid credentials");
-    }
+  
   }
 
   useEffect(() => {
@@ -174,14 +187,16 @@ function Login() {
                 gap: "15px",
               }}
             >
-              <Input
+              { isDeployContainer()  ?      
+              <></> :<>
+              <Input  
                 name="endpoint"
                 placeholder="Endpoint"
                 defaultValue={endpoint ?? ""}
                 required
               />
-              <Separator />
-              <Input name="username" type="text" placeholder="Username" />
+              <Separator /> </> }
+              <Input name="username" type="text" placeholder="Username" />             
               <Input name="password" type="password" placeholder="Password" />
 
               <Button
