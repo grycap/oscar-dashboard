@@ -196,7 +196,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       const command = new PutObjectCommand({
         Bucket: bucketName,
         Key: key,
-        Body: file?.name,
+        Body: file,
       });
       await client.send(command);
       alert.success("File uploaded successfully");
