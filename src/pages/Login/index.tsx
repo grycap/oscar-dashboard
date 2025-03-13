@@ -103,7 +103,6 @@ function Login() {
           localStorage.setItem("url_user_info", env.AI4EOSC_ISSUER + env.url_user_info);
           localStorage.setItem("token_endpoint", env.AI4EOSC_ISSUER + env.token_endpoint);
           window.location.replace(env.redirect_uri);
-
         }
         
       } catch (error) {
