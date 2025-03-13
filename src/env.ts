@@ -1,5 +1,6 @@
 const env = {
     "EGI_ISSUER": "$EGI_CHECKIN_ISSUER",
+    "AI4EOSC_ISSUER":"https://login.cloud.ai4eosc.eu/realms/ai4eosc",
     "provider_url": "/protocol/",
     "client_id": "$EGI_CHECKIN_CLIENT_ID",
     "redirect_uri" : `${location.origin}/callback.html`,
