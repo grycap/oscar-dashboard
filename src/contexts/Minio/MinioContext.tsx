@@ -20,8 +20,6 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
-
-import {StreamingBlobPayloadInputTypes} from "@smithy/smithy-client";
 import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { alert } from "@/lib/alert";
 import JSZip from "jszip";
@@ -199,16 +197,13 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!client) return;
 
     const key = path ? `${path}${file.name}` : file.name;
-    let payload: StreamingBlobPayloadInputTypes | undefined;
-    if (fileContent !== null) {
-      payload = fileContent;
-    }
   
     try {
       const command = new PutObjectCommand({
         Bucket: bucketName,
         Key: key,
-        Body: payload,
+        // @ts-ignore
+        Body: fileContent,
       });
       await client.send(command);
       alert.success("File uploaded successfully");
