@@ -1,6 +1,9 @@
 import DocumentTitle from "@/components/DocumentTitle";
 import OscarColors, { ColorWithOpacity } from "@/styles";
 import BigLogo from "@/assets/oscar-big.png";
+import AI4eoscLogo from "@/assets/ai4eosc-logo.png";
+import AI4eoscButon from "@/assets/ai4eosc-logo.svg";
+import ImagineLogo from "@/assets/imagine-logo.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +26,16 @@ function Login() {
   
   function isDeployContainer(){
     if (env.deploy_container ==="true"){
+      return true
+    }else return false
+  }
+  function isAI4EOSCServer(){
+    if (env.deploy_container ==="true" && env.ai4eosc_servers.includes(location.origin) ){
+      return true
+    }else return false
+  }
+  function isImagineServer(){
+    if (env.deploy_container ==="true" && env.imagine_servers.includes(location.origin) ){
       return true
     }else return false
   }
@@ -57,29 +70,34 @@ function Login() {
     }
   }
 
-  async function handleLoginEGI(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.target as HTMLFormElement;
-    const formData = new FormData(form);
-    let endpoint = formData.get("endpoint") as string;
+  async function handleLoginEGI(event: FormEvent<HTMLFormElement>, process:string) {
     if (isDeployContainer()){
       const oscarEndpoint = window.location.origin
       window.location.replace(env.external_ui+"/#/login?endpoint="+oscarEndpoint);
     }else{
+      event.preventDefault();
+      const form = event.target as HTMLFormElement;
+      const formData = new FormData(form);
+      let endpoint = formData.get("endpoint") as string;
       // Check if the endpoint is a valid URL
       if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
         alert.error("Invalid endpoint");
         return;
       }
       try {
-        endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
-        localStorage.setItem("api", endpoint);
-        localStorage.setItem("client_id", env.client_id);
-        localStorage.setItem("provider_url", env.provider_url);
-        localStorage.setItem("url_authorize", env.url_authorize);
-        localStorage.setItem("url_user_info", env.url_user_info);
-        localStorage.setItem("token_endpoint", env.token_endpoint);
-        window.location.replace(env.redirect_uri);
+        if(process=== "EGI"){
+          endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
+          localStorage.setItem("api", endpoint);
+          localStorage.setItem("client_id", env.client_id);
+          localStorage.setItem("provider_url", env.EGI_ISSUER + env.provider_url);
+          localStorage.setItem("url_authorize", env.EGI_ISSUER + env.url_authorize);
+          localStorage.setItem("url_user_info", env.EGI_ISSUER + env.url_user_info);
+          localStorage.setItem("token_endpoint", env.EGI_ISSUER + env.token_endpoint);
+          window.location.replace(env.redirect_uri);
+        }else if(process=== "Keycloak"){
+
+        }
+        
       } catch (error) {
         alert.error("Invalid credentials");
       }
@@ -135,6 +153,7 @@ function Login() {
                 height: "50px",
               }}
             ></div>
+            
             <div
               style={{
                 flex: 1,
@@ -169,14 +188,20 @@ function Login() {
               position: "relative",
             }}
           >
+            {isAI4EOSCServer() ?<img src={AI4eoscLogo} alt="AI4eosc logo" width={320} />:<></>}
+            {isImagineServer()?<img src={ImagineLogo} alt="imagine logo" width={250} />:<></>}
+            {isImagineServer()||isAI4EOSCServer() ?<Separator />:<></>}
+            
             <img src={BigLogo} alt="Oscar logo" width={320} />
             <form
               onSubmit={(e) => {
                 const buttonExecuter = (e.nativeEvent as SubmitEvent).submitter;
                 if (buttonExecuter != null) {
                   const buttonName = buttonExecuter.getAttribute("name");
+                  console.log(buttonName)
                   if (buttonName === "normal") handleLogin(e);
-                  if (buttonName === "EGI") handleLoginEGI(e);
+                  if (buttonName === "EGI") handleLoginEGI(e,buttonName);
+                  if (buttonName === "Keycloak") handleLoginEGI(e,buttonName);
                 }
               }}
               style={{
@@ -227,6 +252,25 @@ function Login() {
                   }}
                 />
                 Sign in via EGI Check-in
+              </Button>
+              <Button
+                name="Keycloak"
+                type="submit"
+                size="sm"
+                style={{
+                  width: "100%",
+                  background: OscarColors.Blue,
+                }}
+              > 
+                <img
+                  src={AI4eoscButon}
+                  alt="AI4EOSC Check-in"
+                  style={{
+                    width: "24px",
+                    marginRight: "10px",
+                  }}
+                />
+                Sign in via Keycloak
               </Button>
             </form>
           </section>

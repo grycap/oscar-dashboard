@@ -187,6 +187,13 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     path: string,
     file: File
   ): Promise<void> {
+    const reader = new FileReader();
+    const  fileContent = await new Promise<string | ArrayBuffer | null>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);  // Resolver la promesa cuando se cargue el archivo
+        reader.onerror = (error) => reject(error);     // Rechazar la promesa si ocurre un error
+        reader.readAsArrayBuffer(file);  // Si el archivo es de texto, usa readAsText. Para binarios usa readAsArrayBuffer o readAsDataURL
+      });
+   
     if (!client) return;
 
     const key = path ? `${path}${file.name}` : file.name;
@@ -196,7 +203,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       const command = new PutObjectCommand({
         Bucket: bucketName,
         Key: key,
-        Body: file,
+        Body: fileContent,
       });
       await client.send(command);
       alert.success("File uploaded successfully");
