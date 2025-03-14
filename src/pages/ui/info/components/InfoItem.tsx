@@ -19,7 +19,7 @@ function InfoItem({
 
   const displayedValue = useMemo(() => {
     if (!isPassword) return value;
-    return isRevealed ? value : value.replace(/./g, "*");
+    return isRevealed ? value : "**********************";
   }, [isRevealed, isPassword, value]);
 
   async function handleCopy() {
@@ -35,6 +35,8 @@ function InfoItem({
         justifyContent: "space-between",
         alignItems: "center",
         padding: "16px",
+        whiteSpace: "pre-wrap",
+        flexWrap: "wrap",
       }}
     >
       <h2 style={{ fontSize: "13px", fontWeight: "500" }}>{label}</h2>
@@ -46,9 +48,17 @@ function InfoItem({
           columnGap: "16px",
         }}
       >
-        <span style={{ fontSize: "13px", fontWeight: "500" }}>
+        <div
+          style={{
+            fontSize: "13px",
+            fontWeight: "500",
+            maxWidth: "30vw",
+            whiteSpace: "pre-wrap",
+            wordWrap: "break-word",
+          }}
+        >
           {displayedValue}
-        </span>
+        </div>
 
         {isPassword && (
           <Eye

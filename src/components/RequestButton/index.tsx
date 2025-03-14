@@ -27,6 +27,8 @@ function RequestButton({
   const [ref, bounds] = useMeasure();
 
   async function onClick() {
+    if (props.disabled) return;
+    if (isLoading) return; // Evita múltiples clics
     setIsLoading(true);
     await request();
     setIsLoading(false);
@@ -36,7 +38,7 @@ function RequestButton({
     <MotionConfig transition={{ duration: 0.2, type: "spring", bounce: 0 }}>
       <Button onClick={onClick} {...props} asChild>
         <motion.div
-          initial={{ width: "max-content" }}
+          initial={{ width: "max-content", minWidth: "80px" }}
           animate={{ width: bounds.width }}
         >
           <div

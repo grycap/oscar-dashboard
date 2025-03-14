@@ -1,25 +1,22 @@
 export type ServiceFilter = {
   value: string;
   type: ServiceFilterBy;
+  onlyOwned: boolean;
 };
 
 export enum ServiceFilterBy {
   Name = "Name",
-  Type = "Type",
   Image = "Image",
   Owner = "Owner",
+  //Type = "Type",
 }
 
-export enum ServiceOrderBy {
-  NameAsc = "Name (asc)",
-  NameDesc = "Name (desc)",
-  CPUAsc = "CPU (asc)",
-  CPUDesc = "CPU (desc)",
-  MemoryAsc = "Memory (asc)",
-  MemoryDesc = "Memory (desc)",
-  ImageAsc = "Image (asc)",
-  ImageDesc = "Image (desc)",
-}
+export const ServiceFilterByKey: Record<ServiceFilterBy, keyof Service> = {
+  [ServiceFilterBy.Name]: "name",
+  [ServiceFilterBy.Image]: "image",
+  [ServiceFilterBy.Owner]: "owner",
+  //[ServiceFilterBy.Type]: "",
+};
 
 export interface StorageProviders {
   s3?: Record<string, AWSStorageProvider>;
@@ -134,8 +131,14 @@ export interface Service {
   labels: Record<string, string>;
   input: StoragePath[];
   output: StoragePath[];
+  owner: string;
   storage_providers: StorageProviders;
   clusters: Clusters;
+  vo?: string;
+  mount?: {
+    path: string;
+    storage_provider: string;
+  };
 }
 
 export enum ServiceTab {
@@ -146,5 +149,4 @@ export enum ServiceTab {
 export enum ServiceFormTab {
   General,
   Storage,
-  "Input - Output",
 }

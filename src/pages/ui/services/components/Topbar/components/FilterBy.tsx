@@ -12,24 +12,27 @@ import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { Filter } from "lucide-react";
 import { SelectIcon } from "@radix-ui/react-select";
+import { Checkbox } from "@/components/ui/checkbox";
+import Divider from "@/components/ui/divider";
 
 function ServicesFilterBy() {
   const { filter, setFilter } = useServicesContext();
-  const [debouncedValue, setDebouncedValue] = useState(filter.value);
+  const [inputValue, setInputValue] = useState(filter.value);
   const isSmallScreen = useMediaQuery({ maxWidth: 1099 });
 
+  // Debounce the input value to avoid unnecessary re-renders
   useEffect(() => {
     const timeout = setTimeout(() => {
       setFilter((prev) => ({
         ...prev,
-        value: debouncedValue,
+        value: inputValue,
       }));
-    }, 300);
+    }, 500);
 
     return () => {
       clearTimeout(timeout);
     };
-  }, [debouncedValue]);
+  }, [inputValue]);
 
   return (
     <div
@@ -63,13 +66,40 @@ function ServicesFilterBy() {
               </SelectItem>
             );
           })}
+          <Divider />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "6px",
+            }}
+          >
+            <Checkbox
+              id="ownedItems"
+              checked={filter.onlyOwned}
+              onCheckedChange={(checked) => {
+                setFilter((prev) => ({
+                  ...prev,
+                  onlyOwned: checked as boolean,
+                }));
+              }}
+              style={{ fontSize: 16 }}
+            />
+            <label
+              htmlFor="ownedItems"
+              style={{ fontSize: 14, marginTop: "1px" }}
+            >
+              My services
+            </label>
+          </div>
         </SelectContent>
       </Select>
       <Input
         placeholder={"Filter by " + filter.type.toLocaleLowerCase()}
-        value={debouncedValue}
+        value={inputValue}
         onChange={(e) => {
-          setDebouncedValue(e.target.value);
+          setInputValue(e.target.value);
         }}
         endIcon={<Search size={16} />}
         style={{ maxWidth: 300, minWidth: isSmallScreen ? 100 : 150 }}

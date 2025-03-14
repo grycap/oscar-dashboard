@@ -2,6 +2,7 @@ import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { getInfoApi } from "@/api/info/getInfoApi";
 import { setAxiosInterceptor } from "@/lib/axiosClient";
 import { SystemConfig } from "@/models/systemConfig";
+import { MinioStorageProvider } from "@/pages/ui/services/models/service";
 import React, {
   createContext,
   useContext,
@@ -10,12 +11,26 @@ import React, {
   useState,
 } from "react";
 
+type EGISessionInfo = {
+  eduperson_assurance: string[]; // Lista de URLs para los niveles de garantía
+  eduperson_entitlement: string[]; // Lista de valores de derechos
+  email: string; // Correo electrónico del usuario
+  email_verified: boolean; // Indica si el correo está verificado
+  family_name: string; // Apellido del usuario
+  given_name: string; // Nombre del usuario
+  name: string; // Nombre completo del usuario
+  preferred_username: string; // Nombre de usuario preferido
+  sub: string; // Identificador único del usuario
+  voperson_verified_email: string[]; // Lista de correos electrónicos verificados
+};
+
 export type AuthData = {
   user: string;
   password: string;
   endpoint: string;
   token?: string;
   authenticated?: boolean;
+  egiSession?: EGISessionInfo;
 };
 
 export const AuthContext = createContext({
@@ -27,7 +42,10 @@ export const AuthContext = createContext({
   } as AuthData,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setAuthData: (_: AuthData) => {},
-  systemConfig: null as SystemConfig | null,
+  systemConfig: null as {
+    config: SystemConfig;
+    minio_provider: MinioStorageProvider;
+  } | null,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -51,7 +69,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const [authData, setAuthDataState] = useState(initialData);
-  const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
+  const [systemConfig, setSystemConfig] = useState<{
+    config: SystemConfig;
+    minio_provider: MinioStorageProvider;
+  } | null>(null);
 
   async function handleGetSystemConfig() {
     if (!authData.authenticated) return;
@@ -91,6 +112,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password: "",
         endpoint: "",
         authenticated: false,
+        egiSession: undefined,
       });
     }
   }

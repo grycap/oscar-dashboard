@@ -103,12 +103,15 @@
                   localStorage.setItem("yunikorn_enable",response.data.config?.yunikorn_enable);
                   localStorage.setItem("gpu_available",response.data.config?.gpu_available);
                   localStorage.setItem("interLink_available",response.data.config?.interLink_available);
+                  localStorage.setItem("oidc_groups",response.data.config?.oidc_groups);
                   const authData= JSON.stringify({
                     "authenticated":true,
                     "user":users?.name,
                     "password": "tokens['access_token']",
                     "token": tokens['access_token'],
-                    "endpoint": localStorage.getItem('api')})                  
+                    "endpoint": localStorage.getItem('api'),
+                    "egiSession": users
+                  })                  
                   localStorage.setItem("authData",authData); 
                   var url_redirect = window.location.origin + "/#/ui/services"
                   window.location.href = url_redirect

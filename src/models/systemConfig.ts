@@ -8,4 +8,5 @@ export type SystemConfig = {
   serverless_backend: string;
   yunikorn_enable: boolean;
   interLink_available: boolean;
+  oidc_groups: string[];
 };

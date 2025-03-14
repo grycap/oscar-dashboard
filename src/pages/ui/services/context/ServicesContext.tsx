@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -11,13 +12,14 @@ import {
   ServiceFilter,
   ServiceFilterBy,
   ServiceTab,
-  ServiceOrderBy,
 } from "../models/service";
 import getServicesApi from "@/api/services/getServicesApi";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { defaultService } from "../components/ServiceForm/utils/initialData";
 import useUpdate from "@/hooks/useUpdate";
 import getSystemConfigApi from "@/api/config/getSystemConfig";
+import { ServiceViewMode } from "../components/Topbar";
+import { z } from "zod";
 
 interface ServiceContextType {
   filter: ServiceFilter;
@@ -25,15 +27,41 @@ interface ServiceContextType {
 
   services: Service[];
   setServices: Dispatch<SetStateAction<Service[]>>;
-  orderBy: ServiceOrderBy;
-  setOrderBy: Dispatch<SetStateAction<ServiceOrderBy>>;
 
   formTab: ServiceTab;
   setFormTab: Dispatch<SetStateAction<ServiceTab>>;
 
   formService: Service;
   setFormService: Dispatch<SetStateAction<Service>>;
+
+  showFDLModal: boolean;
+  setShowFDLModal: Dispatch<SetStateAction<boolean>>;
+
+  refreshServices: () => void;
+  formMode: ServiceViewMode;
+
+  formFunctions: FormFunctions;
 }
+
+type FormFunctions = {
+  handleChange: (
+    e: React.ChangeEvent<HTMLInputElement>,
+    key: SchemaKeys
+  ) => void;
+  onBlur: (key: SchemaKeys) => void;
+  errors: Partial<Record<keyof Service, string>>;
+  setErrors: Dispatch<SetStateAction<Partial<Record<keyof Service, string>>>>;
+};
+
+export const serviceSchema = z.object({
+  name: z.string().min(1, "Service name is required"),
+  image: z.string().min(1, "Docker image is required"),
+  cpu: z.string().min(1, "CPU cores is required"),
+  memory: z.string().min(1, "Memory is required"),
+  script: z.string().min(1, "Script is required"),
+});
+
+type SchemaKeys = keyof typeof serviceSchema.shape;
 
 export const ServicesContext = createContext({
   services: [] as Service[],
@@ -45,22 +73,82 @@ export const ServicesProvider = ({
   children: React.ReactNode;
 }) => {
   const [services, setServices] = useState([] as Service[]);
-  const { serviceId } = useParams();
+  const [showFDLModal, setShowFDLModal] = useState(false);
+  const location = useLocation();
+  const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, serviceId] = pathnames;
 
   // Filter and order TABLE rows
   const [filter, setFilter] = useState({
     value: "",
     type: ServiceFilterBy.Name,
+    onlyOwned: false,
   } as ServiceFilter);
-  const [orderBy, setOrderBy] = useState(ServiceOrderBy.NameDesc);
 
   //Active tab in create/update mode
   const [formTab, setFormTab] = useState(ServiceTab.Settings);
 
+  const formMode = useMemo(() => {
+    if (!serviceId) {
+      return ServiceViewMode.List;
+    }
+
+    if (serviceId === "create") {
+      return ServiceViewMode.Create;
+    }
+
+    return ServiceViewMode.Update;
+  }, [pathnames]);
+
   const [formService, setFormService] = useState({} as Service);
+
+  const [errors, setErrors] = useState<Partial<Record<keyof Service, string>>>(
+    {}
+  );
+
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+    key: SchemaKeys
+  ) {
+    setFormService((service: Service) => {
+      return {
+        ...service,
+        [key]: e.target.value,
+      };
+    });
+
+    // Validar el campo específico
+    try {
+      serviceSchema.shape[key].parse(e.target.value);
+      setErrors((prevErrors) => ({ ...prevErrors, [key]: undefined }));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [key]: error.errors[0].message,
+        }));
+      }
+    }
+  }
+
+  function onBlur(key: SchemaKeys) {
+    try {
+      serviceSchema.shape[key].parse(formService[key]);
+      setErrors((prevErrors) => ({ ...prevErrors, [key]: undefined }));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [key]: error.errors[0].message,
+        }));
+      }
+    }
+  }
 
   async function handleGetServices() {
     const response = await getServicesApi();
+
     setServices(response);
 
     handleFormService(response);
@@ -104,16 +192,24 @@ export const ServicesProvider = ({
   return (
     <ServicesContext.Provider
       value={{
+        formMode,
         filter,
         setFilter,
         services,
         setServices,
-        orderBy,
-        setOrderBy,
         formTab,
         setFormTab,
         formService,
         setFormService,
+        showFDLModal,
+        setShowFDLModal,
+        refreshServices: handleGetServices,
+        formFunctions: {
+          handleChange,
+          onBlur,
+          errors,
+          setErrors,
+        },
       }}
     >
       {children}

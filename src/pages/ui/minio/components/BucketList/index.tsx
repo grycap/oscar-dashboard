@@ -35,15 +35,17 @@ export default function BucketList() {
           {
             button: (bucket) => {
               return (
-                <Button
-                  variant="link"
-                  size="icon"
-                  onClick={() => {
-                    setItemsToDelete([...itemsToDelete, bucket]);
-                  }}
-                >
-                  <Trash color={OscarColors.Red} />
-                </Button>
+                <>
+                  <Button
+                    variant="link"
+                    size="icon"
+                    onClick={() => {
+                      setItemsToDelete([...itemsToDelete, bucket]);
+                    }}
+                  >
+                    <Trash color={OscarColors.Red} />
+                  </Button>
+                </>
               );
             },
           },

@@ -1,12 +1,51 @@
 import OscarLogo from "@/assets/oscar-big.png";
-import SidebarRouteItem from "./components/SidebarRouteItem";
-import { Codesandbox, Database, Info, LogOut } from "lucide-react";
-import OscarColors, { OscarStyles } from "@/styles";
+import { Codesandbox, Database, Info, LogOut, Notebook } from "lucide-react";
+import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "react-router-dom";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { AnimatePresence, motion } from "framer-motion";
+import { Link, useLocation } from "react-router-dom";
 
-function Sidebar() {
+function AppSidebar() {
   const authContext = useAuth();
+  const { open } = useSidebar();
+  const location = useLocation();
+
+  const items = [
+    {
+      title: "Services",
+      icon: <Codesandbox size={20} />,
+      path: "/services",
+    },
+    {
+      title: "Buckets",
+      icon: <Database size={20} />,
+      path: "/minio",
+    },
+    {
+      title: "Notebooks",
+      icon: <Notebook size={20} />,
+      path: "/notebooks",
+    },
+    {
+      title: "Info",
+      icon: <Info size={20} />,
+      path: "/info",
+    },
+  ];
 
   function handleLogout() {
     localStorage.removeItem("authData");
@@ -18,91 +57,76 @@ function Sidebar() {
       authenticated: false,
     });
   }
+
   return (
-    <section
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        width: "200px",
-        paddingTop: "10px",
-      }}
-    >
-      <img src={OscarLogo} alt="Oscar logo" width={163} />
-      <ul
-        style={{
-          marginTop: "40px",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          gap: "6px",
-          flexGrow: 1,
-          flexBasis: 0,
-        }}
-      >
-        <SidebarRouteItem
-          path="/services"
-          label="Services"
-          icon={<Codesandbox size={20} />}
-        />
-        <SidebarRouteItem
-          path="/minio"
-          label="Minio"
-          icon={<Database size={20} />}
-        />
-        <SidebarRouteItem
-          path="/info"
-          label="Info"
-          icon={<Info size={20} />}
-        />
-      </ul>
-      <div
-        style={{
-          marginTop: "auto  ",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
         <div
           style={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            padding: "6px 16px",
-          }}
-        >
-          <Link to={"/terms-of-use"} target="_blank">
-            <span style={{ fontSize: "10px", color: OscarColors.DarkGrayText }}>
-              Terms of use
-            </span>
-          </Link>
-          <Link to={"/privacy-policy"} target="_blank">
-            <span style={{ fontSize: "10px", color: OscarColors.DarkGrayText }}>
-              Privacy policy
-            </span>
-          </Link>
-        </div>
-        <div
-          style={{
-            height: "50px",
-            borderTop: OscarStyles.border,
-            width: "100%",
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 16px",
             gap: "16px",
-            cursor: "pointer",
+            paddingTop: 6,
+            height: "59px",
           }}
-          onClick={handleLogout}
         >
-          Log out <LogOut color={OscarColors.Red} />
+          <AnimatePresence mode="popLayout">
+            {open && (
+              <motion.img src={OscarLogo} alt="Oscar logo" width={140} />
+            )}
+          </AnimatePresence>
+          <SidebarTrigger />
         </div>
-      </div>
-    </section>
+      </SidebarHeader>
+      <SidebarContent className="mt-8">
+        <SidebarGroup>
+          <SidebarGroupContent>
+            {items.map((item) => {
+              const isActive = location.pathname.includes(item.path);
+              return (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <Link
+                      to={"/ui" + item.path}
+                      style={{
+                        textDecoration: "none",
+                        position: "relative",
+                        fontWeight: isActive ? "bold" : undefined,
+                      }}
+                    >
+                      {item.icon}
+                      <span className="text-[16px]">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarSeparator />
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Log out">
+              <div
+                onClick={handleLogout}
+                style={{
+                  height: "33px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                }}
+              >
+                <LogOut color={OscarColors.Red} />
+                <span>Log out</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 }
 
-export default Sidebar;
+export default AppSidebar;

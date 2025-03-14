@@ -40,6 +40,7 @@ export default function MinioForm({
       }}
     >
       <Input
+        id="id-input"
         value={selectedProvider.id}
         autoFocus={false}
         placeholder="ID"
@@ -47,18 +48,21 @@ export default function MinioForm({
         onChange={(e) => updateProvider("id", e.target.value)}
       />
       <Input
+        id="endpoint-input"
         value={minioProvider.endpoint}
         placeholder="Endpoint"
         label="Endpoint"
         onChange={(e) => updateProvider("endpoint", e.target.value)}
       />
       <Input
+        id="region-input"
         value={minioProvider.region}
         placeholder="Region"
         label="Region"
         onChange={(e) => updateProvider("region", e.target.value)}
       />
       <Input
+        id="access-key-input"
         value={minioProvider.access_key}
         placeholder="Access key"
         title="Access Key"
@@ -67,6 +71,7 @@ export default function MinioForm({
         onChange={(e) => updateProvider("access_key", e.target.value)}
       />
       <Input
+        id="secret-key-input"
         value={minioProvider.secret_key}
         placeholder="Secret access key"
         title="Secret Access Key"
@@ -76,6 +81,7 @@ export default function MinioForm({
       />
       <div className="flex items-center space-x-2">
         <Switch
+          id="verify-switch"
           checked={minioProvider.verify}
           onCheckedChange={(checked) => updateProvider("verify", checked)}
         />

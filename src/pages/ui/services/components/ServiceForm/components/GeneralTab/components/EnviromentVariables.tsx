@@ -54,6 +54,7 @@ function EnviromentVariables() {
           style={{ display: "flex", gap: "5px", alignItems: "center" }}
         >
           <Input
+            id={`variable-name-input-${index}`}
             value={variable.key}
             onChange={(e) => {
               const newVariablesArray = [...variablesArray];
@@ -63,6 +64,7 @@ function EnviromentVariables() {
             placeholder="Variable name"
           />
           <Input
+            id={`variable-value-input-${index}`}
             type="password"
             value={variable.value}
             onFocus={(e) => (e.target.type = "text")}
@@ -77,6 +79,7 @@ function EnviromentVariables() {
           />
           {variablesArray.length > 1 && (
             <Button
+              id={`remove-variable-button-${index}`}
               size={"icon"}
               variant={"ghost"}
               onClick={() => {
@@ -92,6 +95,7 @@ function EnviromentVariables() {
         </div>
       ))}
       <Button
+        id="add-variable-button"
         size={"sm"}
         style={{
           width: "max-content",

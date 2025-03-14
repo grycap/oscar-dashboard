@@ -1,28 +1,31 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useServicesContext from "../../context/ServicesContext";
 import getServicesApi from "@/api/services/getServicesApi";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
 import DeleteDialog from "@/components/DeleteDialog";
-
-import { Service, ServiceOrderBy } from "../../models/service";
+import { Service } from "../../models/service";
 import { Button } from "@/components/ui/button";
-import { Ellipsis, Pencil, Terminal, Trash2 } from "lucide-react";
+import { Pencil, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
-import useUpdate from "@/hooks/useUpdate";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import GenericTable from "@/components/Table";
+import { InvokePopover } from "../InvokePopover";
+import { handleFilterServices } from "./domain/filterUtils";
+import { useAuth } from "@/contexts/AuthContext";
+import MoreActionsPopover from "./components/MoreActionsPopover";
 
 function ServicesList() {
-  const { services, setServices, orderBy, setFormService } =
+  const { services, setServices, setFormService, filter } =
     useServicesContext();
-  const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
+  const { authData } = useAuth();
+  const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
+  const navigate = useNavigate();
 
   async function handleGetServices() {
     try {
       const response = await getServicesApi();
-      const orderedResponse = handleOrderBy(response);
-      setServices(orderedResponse);
+      setServices(response);
     } catch (error) {
       alert.error("Error getting services");
       console.error(error);
@@ -30,43 +33,54 @@ function ServicesList() {
   }
 
   async function handleDeleteService() {
-    if (serviceToDelete) {
-      try {
-        await deleteServiceApi(serviceToDelete);
-        await handleGetServices();
-        alert.success(`Service ${serviceToDelete.name} deleted successfully`);
-      } catch (error) {
-        alert.error("Error deleting service");
-        console.error(error);
-      } finally {
-        setServiceToDelete(null);
+    if (servicesToDelete.length > 0) {
+      const deletePromises = servicesToDelete.map((service) =>
+        deleteServiceApi(service).then(
+          () => ({ status: "fulfilled", service }),
+          (error) => ({ status: "rejected", service, error })
+        )
+      );
+
+      const results = await Promise.allSettled(deletePromises);
+
+      const succeededServices = results
+        .filter((result) => result.status === "fulfilled")
+        .map((result) => result.value.service);
+
+      const failedServices = results
+        .filter((result) => result.status === "rejected")
+        .map((result) => (result as PromiseRejectedResult).reason.service);
+
+      await handleGetServices();
+
+      if (succeededServices.length > 0) {
+        alert.success("Services deleted successfully");
       }
+
+      if (failedServices.length > 0) {
+        alert.error(
+          `Error deleting the following services: ${failedServices
+            .map((service) => service.name)
+            .join(", ")}`
+        );
+      }
+
+      if (succeededServices.length === 0) {
+        alert.error("Error deleting all services");
+      }
+
+      setServicesToDelete([]);
     }
   }
 
-  function handleOrderBy(services: Service[]) {
-    switch (orderBy) {
-      case ServiceOrderBy.NameAsc:
-        return services.sort((a, b) => a.name.localeCompare(b.name));
-      case ServiceOrderBy.NameDesc:
-        return services.sort((a, b) => b.name.localeCompare(a.name));
-      case ServiceOrderBy.CPUAsc:
-        return services.sort((a, b) => Number(b.cpu) - Number(a.cpu));
-      case ServiceOrderBy.CPUDesc:
-        return services.sort((a, b) => Number(a.cpu) - Number(b.cpu));
-      case ServiceOrderBy.MemoryAsc:
-        return services.sort((a, b) => Number(b.memory) - Number(a.memory));
-      case ServiceOrderBy.MemoryDesc:
-        return services.sort((a, b) => Number(a.memory) - Number(b.memory));
-    }
-
-    return services;
-  }
-
-  useUpdate(() => {
-    const orderedServices = handleOrderBy(services);
-    setServices(orderedServices);
-  }, [orderBy, services]);
+  const filteredServices = useMemo(() => {
+    const filteredServices = handleFilterServices({
+      filter,
+      services,
+      authData,
+    });
+    return filteredServices;
+  }, [services, filter, authData?.user]);
 
   return (
     <div
@@ -79,8 +93,12 @@ function ServicesList() {
       }}
     >
       <GenericTable<Service>
-        data={services}
+        data={filteredServices}
         idKey="name"
+        onRowClick={(item) => {
+          setFormService(item);
+          navigate(`/ui/services/${item.name}/settings`);
+        }}
         columns={[
           { header: "Name", accessor: "name" },
           { header: "Image", accessor: "image" },
@@ -89,17 +107,34 @@ function ServicesList() {
         ]}
         actions={[
           {
-            button: () => (
-              <Button variant={"link"} size="icon">
-                <Ellipsis />
-              </Button>
+            button: (item) => (
+              <MoreActionsPopover
+                service={item}
+                handleDeleteService={() => setServicesToDelete([item])}
+                handleEditService={() => {
+                  setFormService(item);
+                  navigate(`/ui/services/${item.name}/settings`);
+                }}
+                handleInvokeService={() => {
+                  setFormService(item);
+                }}
+                handleLogs={() => {
+                  setFormService(item);
+                  navigate(`/ui/services/${item.name}/logs`);
+                }}
+              />
             ),
           },
           {
-            button: () => (
-              <Button variant={"link"} size="icon">
-                <Terminal />
-              </Button>
+            button: (item) => (
+              <InvokePopover
+                service={item}
+                triggerRenderer={
+                  <Button variant={"link"} size="icon" tooltipLabel="Invoke">
+                    <Terminal />
+                  </Button>
+                }
+              />
             ),
           },
           {
@@ -111,7 +146,7 @@ function ServicesList() {
                   setFormService(item);
                 }}
               >
-                <Button variant={"link"} size="icon">
+                <Button variant={"link"} size="icon" tooltipLabel="Edit">
                   <Pencil />
                 </Button>
               </Link>
@@ -122,19 +157,42 @@ function ServicesList() {
               <Button
                 variant={"link"}
                 size="icon"
-                onClick={() => setServiceToDelete(item)}
+                onClick={() => setServicesToDelete([item])}
+                tooltipLabel="Delete"
               >
                 <Trash2 color={OscarColors.Red} />
               </Button>
             ),
           },
         ]}
+        bulkActions={[
+          {
+            button: (items) => {
+              return (
+                <div>
+                  <Button
+                    variant={"destructive"}
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      gap: 8,
+                    }}
+                    onClick={() => setServicesToDelete(items)}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete services
+                  </Button>
+                </div>
+              );
+            },
+          },
+        ]}
       />
       <DeleteDialog
-        isOpen={!!serviceToDelete}
-        onClose={() => setServiceToDelete(null)}
+        isOpen={servicesToDelete.length > 0}
+        onClose={() => setServicesToDelete([])}
         onDelete={handleDeleteService}
-        itemNames={serviceToDelete?.name || ""}
+        itemNames={servicesToDelete.map((service) => service.name)}
       />
     </div>
   );

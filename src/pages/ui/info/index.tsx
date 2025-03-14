@@ -15,6 +15,7 @@ function InfoView() {
   return (
     <div
       style={{
+        width: "60vw",
         paddingTop: "40px",
         paddingLeft: "20%",
         paddingRight: "20%",
@@ -51,6 +52,19 @@ function InfoView() {
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <InfoItem label="Password" value={password} isPassword enableCopy />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
+        {authData.token && (
+          <>
+            <InfoItem
+              label="Token"
+              value={authData.token}
+              isPassword
+              enableCopy
+            />
+            <div
+              style={{ borderTop: OscarStyles.border, margin: "0px 16px" }}
+            />
+          </>
+        )}
         <div
           style={{
             padding: "16px",
@@ -60,16 +74,16 @@ function InfoView() {
         >
           <InfoBooleanItem
             label="GPU"
-            enabled={Boolean(systemConfig?.gpu_avaliable)}
+            enabled={Boolean(systemConfig?.config.gpu_avaliable)}
           />
 
           <InfoBooleanItem
             label="InterLink"
-            enabled={Boolean(systemConfig?.interLink_available)}
+            enabled={Boolean(systemConfig?.config.interLink_available)}
           />
           <InfoBooleanItem
             label="Yunikorn"
-            enabled={Boolean(systemConfig?.yunikorn_enable)}
+            enabled={Boolean(systemConfig?.config.yunikorn_enable)}
           />
         </div>
       </div>

@@ -18,9 +18,11 @@ import {
   DeleteBucketCommand,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { alert } from "@/lib/alert";
+import JSZip from "jszip";
 
 export type MinioProviderData = {
   providerInfo: MinioStorageProvider;
@@ -40,6 +42,13 @@ export type MinioProviderData = {
   createFolder: (bucketName: string, folderName: string) => Promise<void>;
   uploadFile: (bucketName: string, path: string, file: File) => Promise<void>;
   deleteFile: (bucketName: string, path: string) => Promise<void>;
+  getFileUrl: (bucketName: string, path: string) => Promise<string | undefined>;
+  listObjects: (bucketName: string, path: string) => Promise<_Object[]>;
+  downloadAndZipFolders: (
+    bucketName: string,
+    folders: CommonPrefix[],
+    singleFiles: _Object[]
+  ) => Promise<Blob | undefined>;
 };
 
 export const MinioContext = createContext({} as MinioProviderData);
@@ -110,17 +119,6 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  useEffect(() => {
-    async function getProviderInfo() {
-      const config = await getSystemConfigApi();
-      if (!config) return;
-
-      setProviderInfo(config.minio_provider);
-    }
-
-    getProviderInfo();
-  }, []);
-
   async function updateBuckets() {
     if (!client) return;
 
@@ -130,10 +128,6 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
 
     setBuckets(buckets);
   }
-
-  useEffect(() => {
-    updateBuckets();
-  }, [client]);
 
   async function createBucket(bucketName: string) {
     if (!client) return;
@@ -193,16 +187,23 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     path: string,
     file: File
   ): Promise<void> {
+    const reader = new FileReader();
+    const  fileContent = await new Promise<string | ArrayBuffer | null>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);  // Resolver la promesa cuando se cargue el archivo
+        reader.onerror = (error) => reject(error);     // Rechazar la promesa si ocurre un error
+        reader.readAsArrayBuffer(file);  // Si el archivo es de texto, usa readAsText. Para binarios usa readAsArrayBuffer o readAsDataURL
+      });
+   
     if (!client) return;
 
     const key = path ? `${path}${file.name}` : file.name;
-    console.log(key);
-
+  
     try {
       const command = new PutObjectCommand({
         Bucket: bucketName,
         Key: key,
-        Body: file,
+        // @ts-ignore
+        Body: fileContent,
       });
       await client.send(command);
       alert.success("File uploaded successfully");
@@ -232,6 +233,114 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     updateBuckets();
   }
 
+  async function getFileUrl(bucketName: string, path: string) {
+    if (!client) return;
+
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: path,
+    });
+    const response = await client.send(command);
+    const byteArray = await response.Body?.transformToByteArray();
+    if (!byteArray) {
+      throw new Error("Failed to transform response body to byte array");
+    }
+    const url = URL.createObjectURL(new Blob([byteArray]));
+
+    return url;
+  }
+
+  async function listObjects(bucketName: string, path: string = "") {
+    if (!client) return [];
+
+    let objects: _Object[] = [];
+    let continuationToken: string | undefined = undefined;
+
+    do {
+      const params: ListObjectsV2CommandInput = {
+        Bucket: bucketName,
+        Prefix: path,
+        ContinuationToken: continuationToken,
+      };
+
+      const response = await client.send(new ListObjectsV2Command(params));
+      if (response.Contents) {
+        objects = objects.concat(response.Contents);
+      }
+      continuationToken = response.NextContinuationToken;
+    } while (continuationToken);
+
+    return objects;
+  }
+
+  // Función para descargar un archivo como ArrayBuffer
+  async function downloadFile(bucketName: string, key: string) {
+    const params = { Bucket: bucketName, Key: key };
+    const data = await client?.send(new GetObjectCommand(params));
+    if (!data?.Body) return undefined;
+    return await data.Body.transformToByteArray();
+  }
+
+  async function downloadAndZipFolders(
+    bucketName: string,
+    folders: CommonPrefix[],
+    singleFiles: _Object[]
+  ) {
+    const zip = new JSZip();
+
+    try {
+      for (const folder of folders) {
+        const objects = await listObjects(bucketName, folder.Prefix!);
+
+        for (const object of objects) {
+          const relativePath = object.Key!.replace(folder.Prefix!, "");
+          if (!relativePath) continue; // Ignorar carpetas vacías
+
+          const fileData = await downloadFile(bucketName, object.Key!);
+
+          // Añadir archivo al ZIP
+          if (fileData) {
+            zip.file(`${folder.Prefix}${relativePath}`, new Blob([fileData]));
+          } else {
+            throw new Error(`Error al descargar el archivo: ${object.Key}`);
+          }
+        }
+      }
+
+      for (const file of singleFiles) {
+        const fileData = await downloadFile(bucketName, file.Key!);
+        if (fileData) {
+          zip.file(file.Key!, new Blob([fileData]));
+        } else {
+          throw new Error(`Error al descargar el archivo: ${file.Key}`);
+        }
+      }
+
+      // Generar el ZIP y descargarlo
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      return zipBlob;
+    } catch (err) {
+      alert.error(
+        err instanceof Error ? err.message : "Error durante la descarga"
+      );
+    }
+  }
+
+  useEffect(() => {
+    async function getProviderInfo() {
+      const config = await getSystemConfigApi();
+      if (!config) return;
+
+      setProviderInfo(config.minio_provider);
+    }
+
+    getProviderInfo();
+  }, []);
+
+  useEffect(() => {
+    updateBuckets();
+  }, [client]);
+
   return (
     <MinioContext.Provider
       value={{
@@ -246,6 +355,9 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         deleteBucket,
         uploadFile,
         deleteFile,
+        getFileUrl,
+        listObjects,
+        downloadAndZipFolders,
       }}
     >
       {children}

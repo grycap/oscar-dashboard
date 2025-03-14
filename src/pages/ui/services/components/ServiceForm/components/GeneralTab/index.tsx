@@ -17,20 +17,17 @@ import { Button } from "@/components/ui/button";
 import { alert } from "@/lib/alert";
 import Divider from "@/components/ui/divider";
 import { Label } from "@/components/ui/label";
+import { ServiceViewMode } from "../../../Topbar";
+import InputOutputEditor from "../InputOutputTab";
+import { useAuth } from "@/contexts/AuthContext";
 
 function ServiceGeneralTab() {
-  const { formService, setFormService } = useServicesContext();
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement>,
-    key: keyof Service
-  ) {
-    setFormService((service: Service) => {
-      return {
-        ...service,
-        [key]: e.target.value,
-      };
-    });
-  }
+  const { formService, setFormService, formMode, formFunctions } =
+    useServicesContext();
+
+  const { handleChange, onBlur, errors } = formFunctions;
+  const { systemConfig } = useAuth();
+  const voGroups = systemConfig?.config.oidc_groups;
 
   const [memoryUnits, setMemoryUnits] = useState("Mi" as "Mi" | "Gi");
 
@@ -40,13 +37,9 @@ function ServiceGeneralTab() {
         display: "flex",
         flexDirection: "column",
         width: "100%",
-        justifyContent: "flex-start",
       }}
     >
-      <ServiceFormCell
-        title="General Settings"
-        subtitle="Configure the service name and a container image to use"
-      >
+      <ServiceFormCell title="General Settings">
         <div
           style={{
             display: "flex",
@@ -61,57 +54,70 @@ function ServiceGeneralTab() {
               flexDirection: "row",
               width: "100%",
               gap: 10,
+              alignItems: "top",
             }}
           >
             <Input
+              id="service-name-input"
               flex={1}
               value={formService?.name}
               onChange={(e) => {
                 handleChange(e, "name");
               }}
               label="Service name"
+              error={errors.name}
+              onBlur={() => onBlur("name")}
+              required
             />
             <Input
+              id="docker-image-input"
               flex={2}
               value={formService?.image}
               label="Docker image"
               onChange={(e) => {
                 handleChange(e, "image");
               }}
+              error={errors.image}
+              onBlur={() => onBlur("image")}
+              required
             />
           </section>
-          <div className="flex flex-row w-full items-end">
-            {formService.token && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "end",
-                  width: "50%",
-                  gap: 10,
+          <div className="flex flex-row w-full items-end gap-5">
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.375rem",
+                minWidth: "200px",
+              }}
+            >
+              <Label>VO</Label>
+              <Select
+                value={formService?.vo}
+                onValueChange={(value) => {
+                  setFormService((service: Service) => {
+                    return {
+                      ...service,
+                      vo: value,
+                    };
+                  });
                 }}
               >
-                <Input
-                  value={formService?.token}
-                  readOnly
-                  label="Token"
-                  type="password"
-                  width="80%"
-                />
-                <Button
-                  variant="ghost"
-                  style={{
-                    height: "39px",
-                  }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(formService?.token || "");
-                    alert.success("Token copied to clipboard");
-                  }}
-                >
-                  <CopyIcon />
-                </Button>
-              </div>
-            )}
+                <SelectTrigger id="vo-select-trigger">
+                  <SelectValue placeholder="Select an V0" />
+                </SelectTrigger>
+                <SelectContent>
+                  {voGroups?.map((vo) => {
+                    return (
+                      <SelectItem key={vo} value={vo}>
+                        {vo}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div
               style={{
                 width: "50%",
@@ -132,7 +138,10 @@ function ServiceGeneralTab() {
                   });
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  className="w-[250px]"
+                  id="log-level-select-trigger"
+                >
                   <SelectValue placeholder="Log level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -146,48 +155,82 @@ function ServiceGeneralTab() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: 50,
-            }}
-          >
-            <div className="flex flex-row gap-2 items-center">
-              <strong>Alpine:</strong>
-              {formService.alpine ? (
-                <CheckIcon size={16} />
-              ) : (
-                <XIcon size={16} className="pt-[2px]" />
-              )}
-            </div>
+            {formService.token && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "end",
 
-            <div className="flex flex-row gap-2 items-center">
-              <strong>Interlink:</strong>
-              {formService.interlink_node_name ? (
-                formService.interlink_node_name
-              ) : (
-                <XIcon size={16} className="pt-[2px]" />
-              )}
-            </div>
-
-            <div className="flex flex-row gap-2 items-center">
-              <strong>Allowed users:</strong>
-              {formService.allowed_users?.length ? (
-                formService.allowed_users.join(", ")
-              ) : (
-                <XIcon size={16} className="pt-[2px]" />
-              )}
-            </div>
+                  gap: 10,
+                }}
+              >
+                <Input
+                  id="token-input"
+                  value={formService?.token}
+                  readOnly
+                  label="Token"
+                  type="password"
+                  width="600px"
+                />
+                <Button
+                  id="copy-token-button"
+                  variant="ghost"
+                  style={{
+                    height: "39px",
+                  }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(formService?.token || "");
+                    alert.success("Token copied to clipboard");
+                  }}
+                >
+                  <CopyIcon />
+                </Button>
+              </div>
+            )}
           </div>
+
+          {formMode === ServiceViewMode.Update && (
+            <div
+              style={{
+                marginTop: 10,
+                display: "flex",
+                flexDirection: "row",
+                gap: 50,
+              }}
+            >
+              <div className="flex flex-row gap-2 items-center">
+                <strong>Alpine:</strong>
+                {formService.alpine ? (
+                  <CheckIcon size={16} />
+                ) : (
+                  <XIcon size={16} className="pt-[2px]" />
+                )}
+              </div>
+
+              <div className="flex flex-row gap-2 items-center">
+                <strong>Interlink:</strong>
+                {formService.interlink_node_name ? (
+                  formService.interlink_node_name
+                ) : (
+                  <XIcon size={16} className="pt-[2px]" />
+                )}
+              </div>
+
+              <div className="flex flex-row gap-2 items-center">
+                <strong>Allowed users:</strong>
+                {formService.allowed_users?.length ? (
+                  formService.allowed_users.join(", ")
+                ) : (
+                  <XIcon size={16} className="pt-[2px]" />
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </ServiceFormCell>
       <Divider />
-      <ServiceFormCell
-        title="Service specifications"
-        subtitle="Adjust container resources and provide a script for the processing of files"
-      >
+      <ServiceFormCell title="Service specifications">
         <div
           style={{
             display: "flex",
@@ -207,13 +250,16 @@ function ServiceGeneralTab() {
             }}
           >
             <Input
+              id="cpu-input"
               value={formService?.cpu}
               onChange={(e) => {
                 handleChange(e, "cpu");
               }}
               label="CPU cores"
+              error={errors.cpu}
             />
             <Input
+              id="memory-input"
               value={formService?.memory?.replace("Mi", "")?.replace("Gi", "")}
               label="Memory"
               onChange={(e) => {
@@ -223,8 +269,10 @@ function ServiceGeneralTab() {
                     memory: e.target.value + memoryUnits,
                   };
                 });
+                handleChange(e, "memory");
               }}
               type="number"
+              error={errors.memory}
             />
             <Select
               value={memoryUnits}
@@ -232,7 +280,7 @@ function ServiceGeneralTab() {
                 setMemoryUnits(value as "Mi" | "Gi");
               }}
             >
-              <SelectTrigger className="w-[75px]">
+              <SelectTrigger id="memory-units-select" className="w-[75px]">
                 <SelectValue placeholder="Order by" />
               </SelectTrigger>
               <SelectContent>
@@ -244,12 +292,11 @@ function ServiceGeneralTab() {
         </div>
       </ServiceFormCell>
       <Divider />
-      <ServiceFormCell
-        title="Enviroment variables"
-        subtitle="Provide environment variables to the service adding them here"
-      >
+      <ServiceFormCell title="Enviroment variables">
         <EnviromentVariables />
       </ServiceFormCell>
+      <Divider />
+      <InputOutputEditor />
     </div>
   );
 }

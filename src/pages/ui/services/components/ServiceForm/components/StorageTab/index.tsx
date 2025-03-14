@@ -73,7 +73,6 @@ function ServicesStorageTab() {
       >
         <ServiceFormCell
           title="Storage configuration"
-          subtitle="Set up the credentials of the storage providers"
           button={
             <AddProviderButton setSelectedProvider={setSelectedProvider} />
           }

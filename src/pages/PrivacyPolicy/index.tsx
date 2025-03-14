@@ -71,7 +71,7 @@ export function PrivacyPolicy() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 overflow-auto max-h-screen">
       <h1 className="text-3xl font-bold mb-6">Privacy Policy for OSCAR</h1>
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300">

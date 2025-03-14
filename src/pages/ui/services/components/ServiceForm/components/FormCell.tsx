@@ -1,13 +1,10 @@
-import OscarColors from "@/styles";
-
 interface Props {
   title: string;
-  subtitle: string;
   children?: React.ReactNode;
   button?: React.ReactNode;
 }
 
-function ServiceFormCell({ title, subtitle, children, button }: Props) {
+function ServiceFormCell({ title, children, button }: Props) {
   return (
     <div
       style={{
@@ -24,29 +21,20 @@ function ServiceFormCell({ title, subtitle, children, button }: Props) {
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: "start",
           width: "100%",
           marginBottom: 18,
         }}
       >
-        <div>
-          <h1
-            style={{
-              color: OscarColors.DarkGrayText,
-              fontSize: 14,
-            }}
-          >
-            {title}
-          </h1>
-          <h2
-            style={{
-              fontSize: 16,
-              fontWeight: "bold",
-            }}
-          >
-            {subtitle}
-          </h2>
-        </div>
+        <h1
+          style={{
+            fontSize: 16,
+            fontWeight: "bold",
+          }}
+        >
+          {title}
+        </h1>
+
         {button}
       </div>
       <div

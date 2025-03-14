@@ -32,9 +32,10 @@ function ProvidersListItem({
 
   function getSubtitle() {
     switch (provider.type) {
-      case "minio":
+      case "minio": {
         const minioProvider = provider as MinioStorageProvider;
         return minioProvider.endpoint;
+      }
       default:
         return undefined;
     }
@@ -96,6 +97,7 @@ function ProvidersListItem({
       </div>
       <div>
         <Button
+          id="edit-provider-button"
           style={{
             minWidth: 40,
             height: 40,
@@ -110,6 +112,7 @@ function ProvidersListItem({
           <Edit />
         </Button>
         <Button
+          id="delete-provider-button"
           style={{
             minWidth: 40,
             height: 40,

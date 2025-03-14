@@ -8,6 +8,8 @@ import TermsOfUse from "@/pages/TermsOfUse";
 import { MinioProvider } from "@/contexts/Minio/MinioContext";
 import MinioRouter from "@/pages/ui/minio/router";
 import InfoView from "@/pages/ui/info";
+import { ServicesProvider } from "@/pages/ui/services/context/ServicesContext";
+import JunoView from "@/pages/ui/juno";
 
 function AppRouter() {
   return (
@@ -17,15 +19,18 @@ function AppRouter() {
           path="/ui"
           element={
             <ProtectedRoute>
-              <MinioProvider>
-                <AppLayout />
-              </MinioProvider>
+              <ServicesProvider>
+                <MinioProvider>
+                  <AppLayout />
+                </MinioProvider>
+              </ServicesProvider>
             </ProtectedRoute>
           }
         >
           <Route path="services/*" element={<ServicesRouter />} />
           <Route path="minio/*" element={<MinioRouter />} />
           <Route path="info" element={<InfoView />} />
+          <Route path="notebooks" element={<JunoView />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />
