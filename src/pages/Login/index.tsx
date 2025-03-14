@@ -85,7 +85,7 @@ function Login() {
         return;
       }
       try {
-        if(process=== "EGI"){
+        if(process === "EGI"){
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
           localStorage.setItem("api", endpoint);
           localStorage.setItem("client_id", env.client_id);
@@ -94,7 +94,7 @@ function Login() {
           localStorage.setItem("url_user_info", env.EGI_ISSUER + env.url_user_info);
           localStorage.setItem("token_endpoint", env.EGI_ISSUER + env.token_endpoint);
           window.location.replace(env.redirect_uri);
-        }else if(process=== "Keycloak"){
+        }else if(process === "Keycloak"){
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
           localStorage.setItem("api", endpoint);
           localStorage.setItem("client_id", env.client_id);
@@ -102,6 +102,7 @@ function Login() {
           localStorage.setItem("url_authorize", env.AI4EOSC_ISSUER + env.url_authorize);
           localStorage.setItem("url_user_info", env.AI4EOSC_ISSUER + env.url_user_info);
           localStorage.setItem("token_endpoint", env.AI4EOSC_ISSUER + env.token_endpoint);
+          console.log(env.redirect_uri)
           window.location.replace(env.redirect_uri);
         }
         
