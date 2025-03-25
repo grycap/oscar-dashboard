@@ -172,6 +172,7 @@
               grant_type: 'authorization_code',
               code: q.get('code'),
               client_id,
+              client_secret,
               redirect_uri,
               code_verifier: localStorage.code_verifier
       };
