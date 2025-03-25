@@ -39,7 +39,11 @@ function Login() {
       return true
     }else return false
   }
-
+  function isDemoServer(){
+    if (env.deploy_container ==="true" && env.demo_servers.includes(location.origin) ){
+      return true
+    }else return false
+  }
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -71,11 +75,12 @@ function Login() {
   }
 
   async function handleLoginEGI(event: FormEvent<HTMLFormElement>, process:string) {
+    event.preventDefault();
     if (isDeployContainer()){
       const oscarEndpoint = window.location.origin
-      window.location.replace(env.external_ui+"/#/login?endpoint="+oscarEndpoint);
+      const url = isDemoServer()?env.external_ui_demo+"/#/login?endpoint="+oscarEndpoint : env.external_ui+"/#/login?endpoint="+oscarEndpoint;
+      window.location.replace(url);
     }else{
-      event.preventDefault();
       const form = event.target as HTMLFormElement;
       const formData = new FormData(form);
       let endpoint = formData.get("endpoint") as string;

@@ -14,6 +14,8 @@ const env = {
     "minio_local_ssl": false ,
     "response_default_minio": "minio.minio",
     "external_ui": "https://dashboard.oscar.grycap.net",
+    "external_ui_demo": "https://dashboard-demo.oscar.grycap.net",
+    "demo_servers": ["https://oscar-ukri.intertwin.fedcloud.eu"],
     "ai4eosc_servers": ["https://inference.cloud.ai4eosc.eu"],
     "imagine_servers": ["https://inference.cloud.imagine-ai.eu","https://inference-walton.cloud.imagine-ai.eu"],
     "juno":{
