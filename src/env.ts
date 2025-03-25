@@ -2,6 +2,7 @@ const env = {
     "EGI_ISSUER": "$EGI_CHECKIN_ISSUER",
     "AI4EOSC_ISSUER":"$AI4EOSC_KEYCLOAK_ISSUER",
     "AI4EOSC_client_id":"$AI4EOSC_KEYCLOAK_CLIENT_ID",
+    "AI4EOSC_client_secret":"$AI4EOSC_KEYCLOAK_CLIENT_SECRET",
     "provider_url": "/protocol/",
     "client_id": "$EGI_CHECKIN_CLIENT_ID",
     "redirect_uri" : `${location.origin}/callback.html`,
