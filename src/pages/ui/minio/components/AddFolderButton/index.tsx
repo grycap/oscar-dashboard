@@ -45,29 +45,29 @@ export default function AddFolderButton() {
       <PopoverTrigger asChild>
         <Button variant="mainGreen">
           <Plus size={20} className="mr-2" />
-          Crear Carpeta
+          Create Folder
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium leading-none">Crear Carpeta</h4>
+            <h4 className="font-medium leading-none">Create Folder</h4>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="folderName">Nombre de la Carpeta</Label>
+            <Label htmlFor="folderName">Folder Name</Label>
             <Input
               id="folderName"
               value={folderName}
               onChange={(e) => setFolderName(e.target.value)}
-              placeholder="Ingrese el nombre de la carpeta"
+              placeholder="Enter the folder name"
             />
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cancelar
+              Cancel
             </Button>
             <Button onClick={handleCreateFolder} disabled={!folderName.trim()}>
-              Crear
+              Create
             </Button>
           </div>
         </div>
