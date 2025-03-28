@@ -314,6 +314,14 @@ export default function BucketContent() {
                           <DownloadIcon className="w-4 h-4 mr-2" />
                           Download
                         </Button>
+                        <Button
+                          className="mt-[2px] ml-[4px]"
+                          onClick={() => setItemsToDelete(items)}
+                          variant={"destructive"}
+                        >
+                          <Trash  className="w-4 h-4 mr-2"/>
+                          Delete Files
+                        </Button>
                       </div>
                     </TooltipTrigger>
                     {items.some((item) => item.Type === "folder") && (
