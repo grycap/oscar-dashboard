@@ -6,6 +6,7 @@ import UserInfo from "@/components/UserInfo";
 import AddBucketButton from "./AddBucketButton";
 import AddFolderButton from "./AddFolderButton";
 import useSelectedBucket from "../hooks/useSelectedBucket";
+import AddFileButton from "./AddFileButton";
 
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
@@ -93,7 +94,7 @@ function MinioTopbar() {
             {breadcrumbs.length > 0 && breadcrumbs}
           </nav>
         </div>
-        {isOnRoot ? <AddBucketButton /> : <AddFolderButton />}
+        {isOnRoot ? <AddBucketButton /> : <div><AddFolderButton /> <AddFileButton /></div>}
       </div>
       <UserInfo />
     </header>
