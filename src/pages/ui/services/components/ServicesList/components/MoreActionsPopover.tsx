@@ -9,6 +9,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { alert } from "@/lib/alert";
 import { MoreVertical, Activity, Play, Key, Edit, Trash } from "lucide-react";
 import OscarColors from "@/styles";
 
@@ -62,7 +63,12 @@ export default function MoreActionsPopover({
             </span>
           </div>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={() => {
+            navigator.clipboard.writeText(service?.token || "");
+            alert.success("Token copied to clipboard");
+          }}
+        >
           <Key className="mr-2 h-4 w-4" />
           <div className="flex flex-col">
             <span>Token</span>
