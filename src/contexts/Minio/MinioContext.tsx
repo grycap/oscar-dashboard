@@ -23,6 +23,7 @@ import {
 import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { alert } from "@/lib/alert";
 import JSZip from "jszip";
+import env from "@/env";
 
 export type MinioProviderData = {
   providerInfo: MinioStorageProvider;
@@ -51,6 +52,11 @@ export type MinioProviderData = {
   ) => Promise<Blob | undefined>;
 };
 
+function isLocalhostDeployed(endpoint:string){
+  if (env.response_default_minio === endpoint){
+    return true
+  }else return false
+}
 export const MinioContext = createContext({} as MinioProviderData);
 
 export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
@@ -65,7 +71,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       !providerInfo.region
     )
       return null;
-
+    providerInfo.endpoint =  isLocalhostDeployed(providerInfo.endpoint) ? "http://"+env.minio_local_endpoint+":"+env.minio_local_port : providerInfo.endpoint;
     return new S3Client({
       region: providerInfo.region,
       endpoint: providerInfo.endpoint,
