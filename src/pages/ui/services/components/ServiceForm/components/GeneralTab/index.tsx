@@ -29,7 +29,8 @@ function ServiceGeneralTab() {
   const { systemConfig } = useAuth();
   const voGroups = systemConfig?.config.oidc_groups;
 
-  const [memoryUnits, setMemoryUnits] = useState("Mi" as "Mi" | "Gi");
+  const [memoryUnits, setMemoryUnits] = useState<"Mi" | "Gi">(formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi");
+  const [memory, setMemory] = useState<string>(formService?.memory?.replace(/[a-zA-Z]/g, ""));
 
   return (
     <div
@@ -257,19 +258,21 @@ function ServiceGeneralTab() {
               }}
               label="CPU cores"
               error={errors.cpu}
+              type="number"
+              step="0.1"
             />
             <Input
               id="memory-input"
-              value={formService?.memory?.replace("Mi", "")?.replace("Gi", "")}
+              value={memory}
               label="Memory"
               onChange={(e) => {
+                setMemory(e.target.value);
                 setFormService((service: Service) => {
                   return {
                     ...service,
                     memory: e.target.value + memoryUnits,
                   };
                 });
-                handleChange(e, "memory");
               }}
               type="number"
               error={errors.memory}
@@ -278,6 +281,12 @@ function ServiceGeneralTab() {
               value={memoryUnits}
               onValueChange={(value) => {
                 setMemoryUnits(value as "Mi" | "Gi");
+                setFormService((service: Service) => {
+                  return {
+                    ...service,
+                    memory: memory + value,
+                  };
+                });
               }}
             >
               <SelectTrigger id="memory-units-select" className="w-[75px]">

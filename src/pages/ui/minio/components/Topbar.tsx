@@ -6,6 +6,7 @@ import UserInfo from "@/components/UserInfo";
 import AddBucketButton from "./AddBucketButton";
 import AddFolderButton from "./AddFolderButton";
 import useSelectedBucket from "../hooks/useSelectedBucket";
+import AddFileButton from "./AddFileButton";
 
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
@@ -19,19 +20,28 @@ function MinioTopbar() {
 
   const breadcrumbs = useMemo(() => {
     return pathSegments.map((segment, index) => {
-      const currentPath = pathSegments.slice(0, index + 1).join("/");
-
-      return (
-        <React.Fragment key={currentPath}>
-          <ChevronRight size={24} className="pt-[2px]" aria-hidden="true" />
-          <Link
-            to={`/ui/minio/${name}/${currentPath}`}
-            className="no-underline hover:underline"
-          >
-            {segment}
-          </Link>
-        </React.Fragment>
-      );
+      const currentPath = pathSegments.slice(0, index + 1).join("/"); 
+      if(index === pathSegments.length-3){
+        return (
+          <React.Fragment key={currentPath}>
+            <ChevronRight size={24} className="pt-[2px]" aria-hidden="true" />
+            {`...`}
+          </React.Fragment>
+        );
+      }
+      if(index === pathSegments.length-1 || index === pathSegments.length-2){
+        return (
+          <React.Fragment key={currentPath}>
+            <ChevronRight size={24} className="pt-[2px]" aria-hidden="true" />
+            <Link
+              to={`/ui/minio/${name}/${currentPath}`}
+              className="no-underline hover:underline"
+            >
+              {segment}
+            </Link>
+          </React.Fragment>
+        );
+      }
     });
   }, [pathSegments, name]);
 
@@ -93,7 +103,7 @@ function MinioTopbar() {
             {breadcrumbs.length > 0 && breadcrumbs}
           </nav>
         </div>
-        {isOnRoot ? <AddBucketButton /> : <AddFolderButton />}
+        {isOnRoot ? <AddBucketButton /> : <div><AddFolderButton /> <AddFileButton /></div>}
       </div>
       <UserInfo />
     </header>

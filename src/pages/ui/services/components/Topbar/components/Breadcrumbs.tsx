@@ -1,7 +1,10 @@
 import OscarColors from "@/styles";
+import { RefreshCcwIcon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import useServicesContext from "../../../context/ServicesContext";
 
 function ServiceBreadcrumb() {
+  const { refreshServices } = useServicesContext();
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
   const [_, serviceId] = pathnames;
@@ -23,6 +26,18 @@ function ServiceBreadcrumb() {
           textDecoration: "none",
         }}
       >{`Services`}</Link>
+      
+      {location.pathname === "/ui/services" &&
+      <Link to=""
+        onClick={() => refreshServices()}
+      >
+        <RefreshCcwIcon size={18} 
+          onMouseEnter={(e) => {e.currentTarget.style.transform = 'rotate(90deg)'}}
+          onMouseLeave={(e) => {e.currentTarget.style.transform = 'rotate(0deg)'}}
+        />
+      </Link>
+      }
+      
 
       {serviceId === "create" && (
         <>
