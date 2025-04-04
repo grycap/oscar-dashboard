@@ -10,12 +10,14 @@ import {
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Plus } from "lucide-react";
 import useSelectedBucket from "../../hooks/useSelectedBucket";
+import { useMediaQuery } from "react-responsive";
 
 export default function AddFolderButton() {
   const { name: bucketName, path } = useSelectedBucket();
   const [folderName, setFolderName] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const { createFolder } = useMinio();
+  const isSmallScreen = useMediaQuery({ maxWidth: 799 });
 
   const handleCreateFolder = async () => {
     await createFolder(bucketName as string, path + folderName);
@@ -43,9 +45,9 @@ export default function AddFolderButton() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="mainGreen">
-          <Plus size={20} className="mr-2" />
-          Create Folder
+        <Button variant="mainGreen" style={{gap: 8}}>
+          <Plus size={20} className="h-5 w-5" />
+          {!isSmallScreen && "Create Folder"}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">

@@ -10,6 +10,7 @@ import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Upload } from "lucide-react";
 import useSelectedBucket from "../../hooks/useSelectedBucket";
 import { Input } from "@/components/ui/input";
+import { useMediaQuery } from "react-responsive";
 
 export default function AddFileButton() {
 
@@ -19,7 +20,7 @@ export default function AddFileButton() {
   const [isImage, setIsImage] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+  const isSmallScreen = useMediaQuery({ maxWidth: 799 });
 
   const handleUploadFile = async () => {  
     await uploadFile(bucketName!, path, file!);
@@ -125,9 +126,9 @@ export default function AddFileButton() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="mainGreen">
-          <Upload size={20} className="mr-2" />
-          Upload File
+        <Button variant="mainGreen" style={{gap: 8}}>
+          <Upload size={20} className="h-5 w-5" />
+          {!isSmallScreen && "Upload File"}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
