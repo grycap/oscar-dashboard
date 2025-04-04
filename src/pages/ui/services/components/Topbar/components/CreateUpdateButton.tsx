@@ -27,7 +27,7 @@ export function CreateUpdateServiceButton({ isInCreateMode }: Props) {
       imagePullSecrets: [],
       input: formService.input,
       limitsMemory: formService.memory?.replace(/[a-zA-Z]/g, ""),
-      log_level: "INFO",
+      log_level: formService.log_level,
       memory: formService.memory,
       name: formService.name,
       output: formService.output,
