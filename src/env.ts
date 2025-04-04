@@ -13,7 +13,7 @@ const env = {
     "minio_local_endpoint" :"localhost",
     "minio_local_port": "30300",
     "minio_local_ssl": false ,
-    "response_default_minio": "minio.minio",
+    "response_default_minio": "http://minio.minio:9000",
     "external_ui": "https://dashboard.oscar.grycap.net",
     "external_ui_demo": "https://dashboard-demo.oscar.grycap.net",
     "demo_servers": ["https://oscar-ukri.intertwin.fedcloud.eu"],
