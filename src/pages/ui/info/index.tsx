@@ -3,6 +3,7 @@ import { useMinio } from "@/contexts/Minio/MinioContext";
 import OscarColors, { OscarStyles } from "@/styles";
 import InfoItem from "./components/InfoItem";
 import InfoBooleanItem from "./components/InfoBooleanItem";
+import InfoListItems from "./components/InfoListItems";
 
 function InfoView() {
   const { authData, systemConfig } = useAuth();
@@ -47,6 +48,8 @@ function InfoView() {
           </h1>
         </div>
         <InfoItem label="Endpoint" value={endpoint} enableCopy />
+        <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
+        <InfoListItems  label="Supported VOs" values={systemConfig.config.oidc_groups} enableCopy />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <InfoItem label="User" value={user} enableCopy />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
