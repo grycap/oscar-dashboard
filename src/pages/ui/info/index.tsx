@@ -43,7 +43,7 @@ function InfoView() {
           }}
         >
           <h1 style={{ fontSize: "16px", fontWeight: "500" }}>
-            Cluster information
+            Cluster
           </h1>
         </div>
         <InfoItem label="Endpoint" value={endpoint} enableCopy />
@@ -100,7 +100,7 @@ function InfoView() {
           }}
         >
           <h1 style={{ fontSize: "16px", fontWeight: "500" }}>
-            Minio information
+            MinIO
           </h1>
         </div>
         <InfoItem label="Endpoint" value={providerInfo.endpoint} enableCopy />

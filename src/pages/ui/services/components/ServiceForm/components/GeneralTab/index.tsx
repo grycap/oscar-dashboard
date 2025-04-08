@@ -105,7 +105,7 @@ function ServiceGeneralTab() {
                 }}
               >
                 <SelectTrigger id="vo-select-trigger">
-                  <SelectValue placeholder="Select an V0" />
+                  <SelectValue placeholder="Select a VO" />
                 </SelectTrigger>
                 <SelectContent>
                   {voGroups?.map((vo) => {

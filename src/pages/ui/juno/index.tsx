@@ -153,7 +153,7 @@ function JunoView() {
       <Card>
         <CardHeader>
           <CardTitle key={isDeployed.toString()}>
-            {isDeployed ? "Deployment" : "Service parameters"}
+            {isDeployed ? "Deployment" : "Configuration"}
           </CardTitle>
         </CardHeader>
 

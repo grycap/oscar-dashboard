@@ -48,19 +48,13 @@ export default function MoreActionsPopover({
         <DropdownMenuItem onClick={handleLogs}>
           <Activity className="mr-2 h-4 w-4" />
           <div className="flex flex-col">
-            <span>Logs</span>
-            <span className="text-xs text-muted-foreground">
-              Manage service jobs
-            </span>
+            <span>Logs</span>            
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleInvokeService}>
           <Play className="mr-2 h-4 w-4" />
           <div className="flex flex-col">
-            <span>Invoke</span>
-            <span className="text-xs text-muted-foreground">
-              Select files and run the function
-            </span>
+            <span>Invoke</span>            
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem 
@@ -71,15 +65,14 @@ export default function MoreActionsPopover({
         >
           <Key className="mr-2 h-4 w-4" />
           <div className="flex flex-col">
-            <span>Token</span>
-            <span className="text-xs text-muted-foreground">Copy token</span>
+            <span>Copy Token</span>          
           </div>
           <kbd className="ml-auto text-xs text-muted-foreground">⌘C</kbd>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleEditService}>
           <Edit className="mr-2 h-4 w-4" />
-          <span>Edit service</span>
+          <span>Edit</span>
           <kbd className="ml-auto text-xs text-muted-foreground">⌘E</kbd>
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -88,7 +81,7 @@ export default function MoreActionsPopover({
           onClick={handleDeleteService}
         >
           <Trash className="mr-2 h-4 w-4" />
-          <span>Delete service</span>
+          <span>Delete</span>
           <kbd className="ml-auto text-xs text-muted-foreground">⌘D</kbd>
         </DropdownMenuItem>
       </DropdownMenuContent>
