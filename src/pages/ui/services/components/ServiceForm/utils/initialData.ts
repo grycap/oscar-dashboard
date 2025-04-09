@@ -22,7 +22,7 @@ export const defaultService: Service = {
   script: "",
   image_pull_secrets: [],
   environment: {
-    Variables: {},
+    variables: {},
   },
   annotations: {},
   labels: {},

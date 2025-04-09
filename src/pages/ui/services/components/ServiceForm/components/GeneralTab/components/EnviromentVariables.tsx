@@ -8,7 +8,7 @@ function EnviromentVariables() {
   const { formService, setFormService } = useServicesContext();
 
   const initialArray = useMemo(() => {
-    const variables = formService.environment?.Variables;
+    const variables = formService.environment?.variables;
     const array = variables
       ? Object.entries(variables).map(([key, value]) => {
           return {
@@ -32,7 +32,7 @@ function EnviromentVariables() {
       ...prev,
       environment: {
         ...prev.environment,
-        Variables: variablesArray.reduce((acc, curr) => {
+        variables: variablesArray.reduce((acc, curr) => {
           acc[curr.key] = curr.value;
           return acc;
         }, {} as Record<string, string>),
