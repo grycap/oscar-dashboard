@@ -32,6 +32,7 @@ export function CreateUpdateServiceButton({ isInCreateMode }: Props) {
       name: formService.name,
       output: formService.output,
       script: formService.script,
+      environment: formService.environment,
       valid: true,
     };
   }, [formService]);

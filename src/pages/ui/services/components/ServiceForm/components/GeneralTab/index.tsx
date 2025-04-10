@@ -69,6 +69,8 @@ function ServiceGeneralTab() {
               error={errors.name}
               onBlur={() => onBlur("name")}
               required
+              disabled={formMode === ServiceViewMode.Update}
+              className="disabled:bg-gray"
             />
             <Input
               id="docker-image-input"

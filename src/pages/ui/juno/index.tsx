@@ -99,8 +99,8 @@ function JunoView() {
         },
         environment: {
           ...service.environment,
-          Variables: {
-            ...service.environment.Variables,
+          variables: {
+            ...service.environment.variables,
             JUPYTER_TOKEN: authData?.token ?? "",
             JHUB_BASE_URL: `/system/services/juno${namePrefixSlice}/exposed`,
           },

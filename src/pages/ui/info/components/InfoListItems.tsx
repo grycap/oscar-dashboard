@@ -1,31 +1,24 @@
 import { alert } from "@/lib/alert";
-import { Copy, Eye } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Copy } from "lucide-react";
+import InfoItem from "./InfoItem";
 
 interface Props {
   label: string;
-  value: string;
-  isPassword?: boolean;
+  placeholder: string;
+  values: string[];
   enableCopy?: boolean;
-  displayLabel?: boolean;
 }
 
-function InfoItem({
+function InfoListItems({
   label,
-  value,
-  isPassword = false,
+  placeholder,
+  values,
   enableCopy = false,
-  displayLabel = true,
 }: Props) {
-  const [isRevealed, setIsRevealed] = useState(false);
-
-  const displayedValue = useMemo(() => {
-    if (!isPassword) return value;
-    return isRevealed ? value : "**********************";
-  }, [isRevealed, isPassword, value]);
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(value);
+    await navigator.clipboard.writeText(values.toString());
     alert.success(label + " copied to clipboard");
   }
 
@@ -41,7 +34,7 @@ function InfoItem({
         flexWrap: "wrap",
       }}
     >
-      <h2 style={{ fontSize: "13px", fontWeight: "500" }}>{displayLabel ? label : ''}</h2>
+      <h2 style={{ fontSize: "13px", fontWeight: "500" }}>{label}</h2>
       <div
         style={{
           display: "flex",
@@ -59,28 +52,28 @@ function InfoItem({
             wordWrap: "break-word",
           }}
         >
-          {displayedValue}
+          <Select>
+            <SelectTrigger style={{
+            background: 'transparent',
+            border: 'transparent',
+          }}>
+              <SelectValue placeholder={placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {values.map((item) => {
+                return (
+                  <InfoItem key={item} label={item} value={item} displayLabel={false} enableCopy />
+                );
+              })}
+            </SelectContent>
+          </Select>
         </div>
-
-        {isPassword && (
-          <Eye
-            size={16}
-            style={{
-              cursor: "pointer",
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setIsRevealed(!isRevealed);
-            }}
-          />
-        )}
         {enableCopy && (
           <Copy
             size={16}
             style={{
               cursor: "pointer",
-              marginTop: !isPassword ? "3px" : undefined,
+              marginTop: "3px",
             }}
             onClick={(e) => {
               e.preventDefault();
@@ -94,4 +87,4 @@ function InfoItem({
   );
 }
 
-export default InfoItem;
+export default InfoListItems;
