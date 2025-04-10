@@ -5,12 +5,14 @@ import InfoItem from "./InfoItem";
 
 interface Props {
   label: string;
+  placeholder: string;
   values: string[];
   enableCopy?: boolean;
 }
 
 function InfoListItems({
   label,
+  placeholder,
   values,
   enableCopy = false,
 }: Props) {
@@ -51,8 +53,11 @@ function InfoListItems({
           }}
         >
           <Select>
-            <SelectTrigger id="vo-select-trigger">
-              <SelectValue placeholder="View VOs" />
+            <SelectTrigger style={{
+            background: 'transparent',
+            border: 'transparent',
+          }}>
+              <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent>
               {values.map((item) => {
