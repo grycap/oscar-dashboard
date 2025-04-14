@@ -1,6 +1,7 @@
 import { alert } from "@/lib/alert";
 import { Copy, Eye } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 interface Props {
   label: string;
@@ -8,6 +9,7 @@ interface Props {
   isPassword?: boolean;
   enableCopy?: boolean;
   displayLabel?: boolean;
+  isLink?: boolean;
 }
 
 function InfoItem({
@@ -16,6 +18,7 @@ function InfoItem({
   isPassword = false,
   enableCopy = false,
   displayLabel = true,
+  isLink = false,
 }: Props) {
   const [isRevealed, setIsRevealed] = useState(false);
 
@@ -59,7 +62,9 @@ function InfoItem({
             wordWrap: "break-word",
           }}
         >
-          {displayedValue}
+          {!isLink ? displayedValue :
+            <Link style={{ textDecoration: 'none' }} to={displayedValue} target="_blank">{displayedValue}</Link>
+          }
         </div>
 
         {isPassword && (

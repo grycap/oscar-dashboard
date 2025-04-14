@@ -84,7 +84,7 @@ function InfoView() {
             Cluster
           </h1>
         </div>
-        <InfoItem label="Endpoint" value={endpoint} enableCopy />
+        <InfoItem label="Endpoint" value={endpoint} enableCopy isLink />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         {systemConfig.config.oidc_groups.length > 1 ? 
           <InfoListItems  label="Supported VOs" placeholder={systemConfig.config.oidc_groups[0] + '... '} values={systemConfig.config.oidc_groups} enableCopy />
@@ -132,7 +132,7 @@ function InfoView() {
             MinIO
           </h1>
         </div>
-        <InfoItem label="Endpoint" value={providerInfo.endpoint} enableCopy />
+        <InfoItem label="Endpoint" value={providerInfo.endpoint} enableCopy isLink />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <InfoItem
           label="Access key"
