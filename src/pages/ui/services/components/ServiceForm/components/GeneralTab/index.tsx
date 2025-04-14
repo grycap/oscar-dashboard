@@ -12,7 +12,7 @@ import {
 import EnviromentVariables from "./components/EnviromentVariables";
 import ServiceFormCell from "../FormCell";
 import ScriptButton from "./components/ScriptButton";
-import { CheckIcon, CopyIcon, XIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, XIcon, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { alert } from "@/lib/alert";
 import Divider from "@/components/ui/divider";
@@ -20,13 +20,14 @@ import { Label } from "@/components/ui/label";
 import { ServiceViewMode } from "../../../Topbar";
 import InputOutputEditor from "../InputOutputTab";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 function ServiceGeneralTab() {
   const { formService, setFormService, formMode, formFunctions } =
     useServicesContext();
 
   const { handleChange, onBlur, errors } = formFunctions;
-  const { systemConfig } = useAuth();
+  const { systemConfig, authData } = useAuth();
   const voGroups = systemConfig?.config.oidc_groups;
 
   const [memoryUnits, setMemoryUnits] = useState<"Mi" | "Gi">(formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi");
@@ -202,6 +203,21 @@ function ServiceGeneralTab() {
                 gap: 50,
               }}
             >
+              <div className="flex flex-row gap-2 items-center">
+                <strong>Exposed:</strong>
+                {formService.expose.api_port ? (
+                  <Link
+                    to={`${
+                      authData.endpoint
+                    }/system/services/${formService.name}/exposed/`}
+                    target="_blank"
+                  >
+                    <ExternalLink size={18} />
+                  </Link>
+                ) : (
+                  <XIcon size={16} className="pt-[2px]" />
+                )}
+              </div>
               <div className="flex flex-row gap-2 items-center">
                 <strong>Alpine:</strong>
                 {formService.alpine ? (
