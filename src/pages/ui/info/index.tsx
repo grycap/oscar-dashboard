@@ -52,7 +52,7 @@ function InfoView() {
         {systemConfig.config.oidc_groups.length > 1 ? 
           <InfoListItems  label="Supported VOs" placeholder={systemConfig.config.oidc_groups[0] + '... '} values={systemConfig.config.oidc_groups} enableCopy />
           :
-          <InfoItem label="User" value={systemConfig.config.oidc_groups.toString()} enableCopy />
+          <InfoItem label="Supported VOs" value={systemConfig.config.oidc_groups.toString()} enableCopy />
         }
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <InfoItem label="User" value={user} enableCopy />
