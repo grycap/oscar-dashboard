@@ -7,18 +7,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-//import { useMinio } from "@/contexts/Minio/MinioContext";
+import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Plus } from "lucide-react";
-import createBucketsApi from "@/api/buckets/createBucketsApi"
 
 export default function AddBucketButton() {
   const [bucketName, setBucketName] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  //const { createBucket } = useMinio();
+  const { createBucket } = useMinio();
 
   const handleCreateBucket = async () => {
     console.log("Creating bucket", bucketName);
-    await createBucketsApi(bucketName,undefined);
+    await createBucket(bucketName);
     setBucketName("");
     setIsOpen(false);
   };

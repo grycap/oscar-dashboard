@@ -7,10 +7,8 @@ import { Bucket } from "@aws-sdk/client-s3";
 import { Trash } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import deleteBucketsApi from "@/api/buckets/deleteBucketsApi"
 export default function BucketList() {
   const { buckets, deleteBucket } = useMinio();
-
   const [itemsToDelete, setItemsToDelete] = useState<Bucket[]>([]);
   return (
     <>
@@ -18,7 +16,7 @@ export default function BucketList() {
         isOpen={itemsToDelete.length > 0}
         onClose={() => setItemsToDelete([])}
         onDelete={() => {
-          itemsToDelete.forEach((bucket) => deleteBucketsApi(bucket.Name!));
+          itemsToDelete.forEach((bucket) => deleteBucket(bucket.Name!));
         }}
         itemNames={itemsToDelete.map((bucket) => bucket.Name!)}
       />
