@@ -6,7 +6,7 @@ import InfoBooleanItem from "./components/InfoBooleanItem";
 import InfoListItems from "./components/InfoListItems";
 
 function InfoView() {
-  const { authData, systemConfig } = useAuth();
+  const { authData, systemConfig, clusterInfo } = useAuth();
   const { endpoint, user, password } = authData;
   const { providerInfo } = useMinio();
 
@@ -72,6 +72,8 @@ function InfoView() {
             />
           </>
         )}
+        <InfoItem label="OSCAR Version" value={'v' + clusterInfo?.version!} enableCopy />
+        <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <div
           style={{
             padding: "16px",
