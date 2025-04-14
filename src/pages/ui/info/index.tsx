@@ -72,7 +72,7 @@ function InfoView() {
             />
           </>
         )}
-        <InfoItem label="OSCAR Version" value={'v' + clusterInfo?.version!} enableCopy />
+        <InfoItem label="OSCAR Version" value={clusterInfo?.version!} enableCopy />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <div
           style={{
