@@ -40,17 +40,21 @@ function ServicesList() {
           (error) => ({ status: "rejected", service, error })
         )
       );
-
-      const results = await Promise.allSettled(deletePromises);
+      
+      const results = await Promise.all(deletePromises);
 
       const succeededServices = results
         .filter((result) => result.status === "fulfilled")
-        .map((result) => result.value.service);
+        .map((result) => result.service);
 
       const failedServices = results
         .filter((result) => result.status === "rejected")
-        .map((result) => (result as PromiseRejectedResult).reason.service);
-
+        .map((result) => (result as {
+          status: string;
+          service: Service;
+          error: any;
+        }).service);
+      
       await handleGetServices();
 
       if (succeededServices.length > 0) {
@@ -65,7 +69,7 @@ function ServicesList() {
         );
       }
 
-      if (succeededServices.length === 0) {
+      if (succeededServices.length === 0 && failedServices.length > 1) {
         alert.error("Error deleting all services");
       }
 
