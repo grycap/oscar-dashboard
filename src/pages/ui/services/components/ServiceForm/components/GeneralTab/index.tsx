@@ -205,7 +205,7 @@ function ServiceGeneralTab() {
             >
               <div className="flex flex-row gap-2 items-center">
                 <strong>Exposed:</strong>
-                {formService.expose.api_port ? (
+                {formService.expose?.api_port ? (
                   <Link
                     to={`${
                       authData.endpoint
