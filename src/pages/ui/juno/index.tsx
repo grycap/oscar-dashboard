@@ -105,9 +105,9 @@ function JunoView() {
             JUPYTER_DIRECTORY: "/mnt/"+ formData.bucket,
             GRANT_SUDO: "yes",
             OSCAR_ENDPOINT: authData.endpoint,
+            JUPYTER_TOKEN: authData?.token ?? "",
           },
           secrets:{
-            JUPYTER_TOKEN: authData?.token ?? "",
           }
         },
       };
