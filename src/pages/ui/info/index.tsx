@@ -54,7 +54,7 @@ function InfoView() {
               <InfoItem label="EGI UID" value={egiSession?.sub! ?? egiSession?.sub!} enableCopy />
               <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
               <InfoItem
-                label="Token"
+                label="Access Token"
                 value={token}
                 isPassword
                 enableCopy
@@ -81,7 +81,7 @@ function InfoView() {
           }}
         >
           <h1 style={{ fontSize: "16px", fontWeight: "500" }}>
-            Cluster
+            OSCAR Cluster
           </h1>
         </div>
         <InfoItem label="Endpoint" value={endpoint} enableCopy isLink />
@@ -92,7 +92,7 @@ function InfoView() {
           <InfoItem label="Supported VOs" value={systemConfig.config.oidc_groups.toString()} enableCopy />
         }
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
-        <InfoItem label="OSCAR Version" value={clusterInfo?.version!} enableCopy />
+        <InfoItem label="Version" value={clusterInfo?.version!} enableCopy />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <div
           style={{
