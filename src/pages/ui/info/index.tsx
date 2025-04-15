@@ -3,10 +3,11 @@ import { useMinio } from "@/contexts/Minio/MinioContext";
 import OscarColors, { OscarStyles } from "@/styles";
 import InfoItem from "./components/InfoItem";
 import InfoBooleanItem from "./components/InfoBooleanItem";
+import InfoListItems from "./components/InfoListItems";
 
 function InfoView() {
-  const { authData, systemConfig } = useAuth();
-  const { endpoint, user, password } = authData;
+  const { authData, systemConfig, clusterInfo } = useAuth();
+  const { endpoint, user, password, egiSession, token } = authData;
   const { providerInfo } = useMinio();
 
   if (!systemConfig) return null;
@@ -43,28 +44,56 @@ function InfoView() {
           }}
         >
           <h1 style={{ fontSize: "16px", fontWeight: "500" }}>
-            Cluster
+            User
           </h1>
         </div>
-        <InfoItem label="Endpoint" value={endpoint} enableCopy />
-        <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <InfoItem label="User" value={user} enableCopy />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
-        <InfoItem label="Password" value={password} isPassword enableCopy />
-        <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
-        {authData.token && (
+        {token ? (
+            <>
+              <InfoItem label="EGI UID" value={egiSession?.sub! ?? egiSession?.sub!} enableCopy />
+              <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
+              <InfoItem
+                label="Access Token"
+                value={token}
+                isPassword
+                enableCopy
+              />
+            </>
+          )
+          :
           <>
-            <InfoItem
-              label="Token"
-              value={authData.token}
-              isPassword
-              enableCopy
-            />
-            <div
-              style={{ borderTop: OscarStyles.border, margin: "0px 16px" }}
-            />
+            <InfoItem label="Password" value={password} isPassword enableCopy />
+            <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           </>
-        )}
+        }
+      </div>
+      <div
+        style={{
+          border: OscarStyles.border,
+          borderRadius: "8px",
+        }}
+      >
+        <div
+          style={{
+            background: OscarColors.Gray2,
+            padding: "16px",
+          }}
+        >
+          <h1 style={{ fontSize: "16px", fontWeight: "500" }}>
+            OSCAR Cluster
+          </h1>
+        </div>
+        <InfoItem label="Endpoint" value={endpoint} enableCopy isLink />
+        <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
+        {systemConfig.config.oidc_groups.length > 1 ? 
+          <InfoListItems  label="Supported VOs" placeholder={systemConfig.config.oidc_groups[0] + '... '} values={systemConfig.config.oidc_groups} enableCopy />
+          :
+          <InfoItem label="Supported VOs" value={systemConfig.config.oidc_groups.toString()} enableCopy />
+        }
+        <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
+        <InfoItem label="Version" value={clusterInfo?.version!} enableCopy />
+        <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <div
           style={{
             padding: "16px",
@@ -103,7 +132,7 @@ function InfoView() {
             MinIO
           </h1>
         </div>
-        <InfoItem label="Endpoint" value={providerInfo.endpoint} enableCopy />
+        <InfoItem label="Endpoint" value={providerInfo.endpoint} enableCopy isLink />
         <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
         <InfoItem
           label="Access key"
