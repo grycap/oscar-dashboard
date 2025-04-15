@@ -23,6 +23,7 @@ export const defaultService: Service = {
   image_pull_secrets: [],
   environment: {
     Variables: {},
+    Secrets: {},
   },
   annotations: {},
   labels: {},
