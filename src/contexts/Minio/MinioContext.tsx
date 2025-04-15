@@ -10,12 +10,10 @@ import {
   S3Client,
   ListBucketsCommand,
   Bucket,
-  CreateBucketCommand,
   ListObjectsV2Command,
   ListObjectsV2CommandInput,
   CommonPrefix,
   _Object,
-  DeleteBucketCommand,
   PutObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
@@ -24,6 +22,8 @@ import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { alert } from "@/lib/alert";
 import JSZip from "jszip";
 import env from "@/env";
+import createBucketsApi from "@/api/buckets/createBucketsApi";
+import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
 
 export type MinioProviderData = {
   providerInfo: MinioStorageProvider;
@@ -139,10 +139,13 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!client) return;
 
     try {
-      const command = new CreateBucketCommand({
+      await createBucketsApi(bucketName,undefined)
+      //console.log(command)
+      /*const command = new CreateBucketCommand({
         Bucket: bucketName,
-      });
-      await client.send(command);
+      });*/
+
+      //await client.send(command);
       alert.success("Bucket created successfully");
     } catch (error) {
       console.error(error);
@@ -156,8 +159,9 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!client) return;
 
     try {
-      const command = new DeleteBucketCommand({ Bucket: bucketName });
-      await client.send(command);
+      await deleteBucketsApi(bucketName)
+      // const command = new DeleteBucketCommand({ Bucket: bucketName });
+      //console.log(command)
       alert.success("Bucket deleted successfully");
     } catch (error) {
       console.error(error);
