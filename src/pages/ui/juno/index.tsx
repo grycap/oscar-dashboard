@@ -99,14 +99,14 @@ function JunoView() {
         },
         environment: {
           ...service.environment,
-          Variables: {
-            ...service.environment.Variables,
+          variables: {
+            ...service.environment.variables,
             JHUB_BASE_URL: `/system/services/juno${namePrefixSlice}/exposed`,
             JUPYTER_DIRECTORY: "/mnt/"+ formData.bucket,
             GRANT_SUDO: "yes",
             OSCAR_ENDPOINT: authData.endpoint,
           },
-          Secrets:{
+          secrets:{
             JUPYTER_TOKEN: authData?.token ?? "",
           }
         },

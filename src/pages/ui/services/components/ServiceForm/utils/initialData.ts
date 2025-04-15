@@ -22,8 +22,8 @@ export const defaultService: Service = {
   script: "",
   image_pull_secrets: [],
   environment: {
-    Variables: {},
-    Secrets: {},
+    variables: {},
+    secrets: {},
   },
   annotations: {},
   labels: {},
