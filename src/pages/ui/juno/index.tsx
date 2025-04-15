@@ -73,12 +73,12 @@ function JunoView() {
       if (!namePrefix) throw Error("No name prefix found");
 
       const fdlUrl =
-        "https://raw.githubusercontent.com/grycap/oscar/master/examples/expose_services/jupyter/jupyter_expose_mount.yaml";
+        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/juno.yaml";
       const fdlResponse = await fetch(fdlUrl);
       const fdlText = await fdlResponse.text();
 
       const scriptUrl =
-        "https://raw.githubusercontent.com/grycap/oscar/refs/heads/master/examples/expose_services/jupyter/jupyterscript2.sh";
+        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/script.sh";
       const scriptResponse = await fetch(scriptUrl);
       const scriptText = await scriptResponse.text();
 
@@ -101,9 +101,14 @@ function JunoView() {
           ...service.environment,
           Variables: {
             ...service.environment.Variables,
-            JUPYTER_TOKEN: authData?.token ?? "",
             JHUB_BASE_URL: `/system/services/juno${namePrefixSlice}/exposed`,
+            JUPYTER_DIRECTORY: "/mnt/"+ formData.bucket,
+            GRANT_SUDO: "yes",
+            OSCAR_ENDPOINT: authData.endpoint,
           },
+          Secrets:{
+            JUPYTER_TOKEN: authData?.token ?? "",
+          }
         },
       };
 
