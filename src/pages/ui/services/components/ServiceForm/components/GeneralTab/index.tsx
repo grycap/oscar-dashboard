@@ -21,6 +21,7 @@ import { ServiceViewMode } from "../../../Topbar";
 import InputOutputEditor from "../InputOutputTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
+import EnviromentSecrets from "./components/EnviromentSecrets";
 
 function ServiceGeneralTab() {
   const { formService, setFormService, formMode, formFunctions } =
@@ -321,6 +322,9 @@ function ServiceGeneralTab() {
       <Divider />
       <ServiceFormCell title="Enviroment variables">
         <EnviromentVariables />
+      </ServiceFormCell>
+      <ServiceFormCell title="Enviroment secrets">
+        <EnviromentSecrets />
       </ServiceFormCell>
       <Divider />
       <InputOutputEditor />

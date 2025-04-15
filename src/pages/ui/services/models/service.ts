@@ -126,6 +126,7 @@ export interface Service {
   image_pull_secrets: string[];
   environment: {
     variables: Record<string, string>;
+    secrets: Record<string, string>;
   };
   annotations: Record<string, string>;
   labels: Record<string, string>;
