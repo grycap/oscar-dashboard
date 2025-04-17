@@ -127,12 +127,10 @@ export default function BucketContent() {
   const handleBulkDownload = async (items: BucketItem[]) => {
     const bucketName = items[0].BucketName;
 
-    const folders = items
-      .filter((item) => item.Type === "folder")
+    const folders = items?.filter((item) => item.Type === "folder")
       .map((item) => item.Key as CommonPrefix);
 
-    const singleFiles = items
-      .filter((item) => item.Type === "file")
+    const singleFiles = items?.filter((item) => item.Type === "file")
       .map((item) => item.Key as _Object);
 
     const zipBlob = await downloadAndZipFolders(
