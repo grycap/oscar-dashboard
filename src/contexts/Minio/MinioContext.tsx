@@ -129,7 +129,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!client) return;
 
     const res = await client.send(new ListBucketsCommand({}));
-    const buckets = res.Buckets;
+    const buckets = res?.Buckets;
     if (!buckets) return;
 
     setBuckets(buckets);
