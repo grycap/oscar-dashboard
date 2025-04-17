@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import useServicesContext from "../../context/ServicesContext";
 import getServicesApi from "@/api/services/getServicesApi";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
@@ -21,6 +21,7 @@ function ServicesList() {
   const { authData } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const navigate = useNavigate();
+  const buttonRef = useRef<Map<String, HTMLButtonElement>>(new Map())
 
   async function handleGetServices() {
     try {
@@ -121,6 +122,7 @@ function ServicesList() {
                 }}
                 handleInvokeService={() => {
                   setFormService(item);
+                  buttonRef.current?.get(item.name)?.click();
                 }}
                 handleLogs={() => {
                   setFormService(item);
@@ -134,7 +136,7 @@ function ServicesList() {
               <InvokePopover
                 service={item}
                 triggerRenderer={
-                  <Button variant={"link"} size="icon" tooltipLabel="Invoke">
+                  <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Invoke">
                     <Terminal />
                   </Button>
                 }
