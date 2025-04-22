@@ -261,7 +261,7 @@ function GenericTable<T extends object>({
                 >
                   {bulkActions.map((action, index) => {
                     const idKeys = Array.from(selectedRows.values());
-                    const items = data.filter((item) =>
+                    const items = data?.filter((item) =>
                       idKeys.includes(item[idKey])
                     );
 
