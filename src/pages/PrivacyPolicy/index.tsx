@@ -5,7 +5,7 @@ export function PrivacyPolicy() {
     { category: "Name of the service", details: "OSCAR" },
     {
       category: "URLs of the service",
-      details: "https://ui.oscar.grycap.net/",
+      details: "https://dashboard.oscar.grycap.net",
     },
     {
       category: "Description of the service",
