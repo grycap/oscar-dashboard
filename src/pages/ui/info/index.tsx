@@ -103,7 +103,7 @@ function InfoView() {
         >
           <InfoBooleanItem
             label="GPU"
-            enabled={Boolean(systemConfig?.config.gpu_avaliable)}
+            enabled={Boolean(systemConfig?.config.gpu_available)}
           />
 
           <InfoBooleanItem
