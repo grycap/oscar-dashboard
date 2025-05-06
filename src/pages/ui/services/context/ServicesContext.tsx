@@ -41,6 +41,7 @@ interface ServiceContextType {
   formMode: ServiceViewMode;
 
   formFunctions: FormFunctions;
+  servocesAreLoading: boolean;
 }
 
 type FormFunctions = {
@@ -73,6 +74,7 @@ export const ServicesProvider = ({
   children: React.ReactNode;
 }) => {
   const [services, setServices] = useState([] as Service[]);
+  const [servocesAreLoading, setServocesAreLoading] = useState(false);
   const [showFDLModal, setShowFDLModal] = useState(false);
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
@@ -147,7 +149,9 @@ export const ServicesProvider = ({
   }
 
   async function handleGetServices() {
+    setServocesAreLoading(true);
     const response = await getServicesApi();
+    setServocesAreLoading(false);
 
     setServices(response);
 
@@ -193,6 +197,7 @@ export const ServicesProvider = ({
     <ServicesContext.Provider
       value={{
         formMode,
+        servocesAreLoading,
         filter,
         setFilter,
         services,

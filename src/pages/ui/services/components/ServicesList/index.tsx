@@ -6,7 +6,7 @@ import { alert } from "@/lib/alert";
 import DeleteDialog from "@/components/DeleteDialog";
 import { Service } from "../../models/service";
 import { Button } from "@/components/ui/button";
-import { Pencil, Terminal, Trash2 } from "lucide-react";
+import { LoaderPinwheel, Pencil, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import { Link, useNavigate } from "react-router-dom";
 import GenericTable from "@/components/Table";
@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import MoreActionsPopover from "./components/MoreActionsPopover";
 
 function ServicesList() {
-  const { services, setServices, setFormService, filter } =
+  const { services, servocesAreLoading,setServices, setFormService, filter } =
     useServicesContext();
   const { authData } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
@@ -97,109 +97,117 @@ function ServicesList() {
         overflow: "hidden",
       }}
     >
-      <GenericTable<Service>
-        data={filteredServices}
-        idKey="name"
-        onRowClick={(item) => {
-          setFormService(item);
-          navigate(`/ui/services/${item.name}/settings`);
-        }}
-        columns={[
-          { header: "Name", accessor: "name" },
-          { header: "Image", accessor: "image" },
-          { header: "CPU", accessor: "cpu" },
-          { header: "Memory", accessor: "memory" },
-        ]}
-        actions={[
-          {
-            button: (item) => (
-              <MoreActionsPopover
-                service={item}
-                handleDeleteService={() => setServicesToDelete([item])}
-                handleEditService={() => {
-                  setFormService(item);
-                  navigate(`/ui/services/${item.name}/settings`);
-                }}
-                handleInvokeService={() => {
-                  setFormService(item);
-                  buttonRef.current?.get(item.name)?.click();
-                }}
-                handleLogs={() => {
-                  setFormService(item);
-                  navigate(`/ui/services/${item.name}/logs`);
-                }}
-              />
-            ),
-          },
-          {
-            button: (item) => (
-              <InvokePopover
-                service={item}
-                triggerRenderer={
-                  <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Invoke">
-                    <Terminal />
-                  </Button>
-                }
-              />
-            ),
-          },
-          {
-            button: (item) => (
-              <Link
-                to={`/ui/services/${item.name}/settings`}
-                replace
-                onClick={() => {
-                  setFormService(item);
-                }}
-              >
-                <Button variant={"link"} size="icon" tooltipLabel="Edit">
-                  <Pencil />
-                </Button>
-              </Link>
-            ),
-          },
-          {
-            button: (item) => (
-              <Button
-                variant={"link"}
-                size="icon"
-                onClick={() => setServicesToDelete([item])}
-                tooltipLabel="Delete"
-              >
-                <Trash2 color={OscarColors.Red} />
-              </Button>
-            ),
-          },
-        ]}
-        bulkActions={[
-          {
-            button: (items) => {
-              return (
-                <div>
-                  <Button
-                    variant={"destructive"}
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      gap: 8,
+      {servocesAreLoading === true ?
+        <div className="flex items-center justify-center h-screen">
+            <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+        </div>
+      :
+        <>
+          <GenericTable<Service>
+            data={filteredServices}
+            idKey="name"
+            onRowClick={(item) => {
+              setFormService(item);
+              navigate(`/ui/services/${item.name}/settings`);
+            }}
+            columns={[
+              { header: "Name", accessor: "name" },
+              { header: "Image", accessor: "image" },
+              { header: "CPU", accessor: "cpu" },
+              { header: "Memory", accessor: "memory" },
+            ]}
+            actions={[
+              {
+                button: (item) => (
+                  <MoreActionsPopover
+                    service={item}
+                    handleDeleteService={() => setServicesToDelete([item])}
+                    handleEditService={() => {
+                      setFormService(item);
+                      navigate(`/ui/services/${item.name}/settings`);
                     }}
-                    onClick={() => setServicesToDelete(items)}
+                    handleInvokeService={() => {
+                      setFormService(item);
+                      buttonRef.current?.get(item.name)?.click();
+                    }}
+                    handleLogs={() => {
+                      setFormService(item);
+                      navigate(`/ui/services/${item.name}/logs`);
+                    }}
+                  />
+                ),
+              },
+              {
+                button: (item) => (
+                  <InvokePopover
+                    service={item}
+                    triggerRenderer={
+                      <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Invoke">
+                        <Terminal />
+                      </Button>
+                    }
+                  />
+                ),
+              },
+              {
+                button: (item) => (
+                  <Link
+                    to={`/ui/services/${item.name}/settings`}
+                    replace
+                    onClick={() => {
+                      setFormService(item);
+                    }}
                   >
-                    <Trash2 className="h-5 w-5" />
-                    Delete services
+                    <Button variant={"link"} size="icon" tooltipLabel="Edit">
+                      <Pencil />
+                    </Button>
+                  </Link>
+                ),
+              },
+              {
+                button: (item) => (
+                  <Button
+                    variant={"link"}
+                    size="icon"
+                    onClick={() => setServicesToDelete([item])}
+                    tooltipLabel="Delete"
+                  >
+                    <Trash2 color={OscarColors.Red} />
                   </Button>
-                </div>
-              );
-            },
-          },
-        ]}
-      />
-      <DeleteDialog
-        isOpen={servicesToDelete.length > 0}
-        onClose={() => setServicesToDelete([])}
-        onDelete={handleDeleteService}
-        itemNames={servicesToDelete.map((service) => service.name)}
-      />
+                ),
+              },
+            ]}
+            bulkActions={[
+              {
+                button: (items) => {
+                  return (
+                    <div>
+                      <Button
+                        variant={"destructive"}
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          gap: 8,
+                        }}
+                        onClick={() => setServicesToDelete(items)}
+                      >
+                        <Trash2 className="h-5 w-5" />
+                        Delete services
+                      </Button>
+                    </div>
+                  );
+                },
+              },
+            ]}
+          />
+          <DeleteDialog
+            isOpen={servicesToDelete.length > 0}
+            onClose={() => setServicesToDelete([])}
+            onDelete={handleDeleteService}
+            itemNames={servicesToDelete.map((service) => service.name)}
+          />
+        </>
+      }
     </div>
   );
 }
