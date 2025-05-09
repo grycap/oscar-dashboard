@@ -255,6 +255,7 @@ export default function BucketContent() {
                 }
                 return item.Name;
               },
+              sortBy: "Name"
             },
           ]}
           idKey="Name"
