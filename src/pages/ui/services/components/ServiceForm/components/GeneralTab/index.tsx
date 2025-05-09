@@ -22,6 +22,7 @@ import InputOutputEditor from "../InputOutputTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import EnviromentSecrets from "./components/EnviromentSecrets";
+import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
 
 function ServiceGeneralTab() {
   const { formService, setFormService, formMode, formFunctions } =
@@ -239,11 +240,7 @@ function ServiceGeneralTab() {
 
               <div className="flex flex-row gap-2 items-center">
                 <strong>Allowed users:</strong>
-                {formService.allowed_users?.length ? (
-                  formService.allowed_users.join(", ")
-                ) : (
-                  <XIcon size={16} className="pt-[2px]" />
-                )}
+                  <AllowedUsersPopover />
               </div>
             </div>
           )}
