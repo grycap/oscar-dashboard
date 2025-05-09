@@ -31,7 +31,7 @@ export default function MoreActionsPopover({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild title="More actions">
-        <Button variant={"link"} size="icon" tooltipLabel="Edit">
+        <Button variant={"link"} size="icon" tooltipLabel="More Actions">
           <MoreVertical />
         </Button>
       </DropdownMenuTrigger>
