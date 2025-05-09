@@ -4,7 +4,7 @@ import Log from "../../models/log";
 import { getServiceLogsApi } from "@/api/logs/getServiceLogs";
 import GenericTable from "@/components/Table";
 import { Badge, BadgeProps } from "@/components/ui/badge";
-import { Eye, Loader, Trash2 } from "lucide-react";
+import { Eye, Loader,  Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LogDetailsPopover from "./components/LogDetailsPopover";
 import DeleteDialog from "@/components/DeleteDialog";
@@ -151,30 +151,35 @@ export default function ServiceLogs() {
       <GenericTable<LogWithName>
         data={logsWithName}
         columns={[
-          { accessor: "name", header: "Name" },
+          { accessor: "name", header: "Name", sortBy: "name"},
           {
             header: "Status",
             accessor(item) {
-              return renderStatus(item.status);
+              return item.status,renderStatus(item.status);
             },
+            sortBy: "status"
+
           },
           {
             header: "Creation Time",
             accessor(item) {
-              return formatTimestamp(item.creation_time);
+              return item.creation_time, formatTimestamp(item.creation_time);
             },
+            sortBy: "creation_time"
           },
           {
             header: "Start Time",
             accessor(item) {
               return formatTimestamp(item.start_time);
             },
+            sortBy: "start_time"
           },
           {
             header: "Finish Time",
             accessor(item) {
               return formatTimestamp(item.finish_time);
             },
+            sortBy: "finish_time"
           },
         ]}
         idKey="name"

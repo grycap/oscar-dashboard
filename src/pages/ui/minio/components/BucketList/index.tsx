@@ -28,6 +28,7 @@ export default function BucketList() {
             accessor: (row) => (
               <Link to={`/ui/minio/${row.Name}`}>{row.Name}</Link>
             ),
+            sortBy: "Name"
           },
         ]}
         actions={[

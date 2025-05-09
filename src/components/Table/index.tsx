@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from "framer-motion";
 export type ColumnDef<T> = {
   header: string;
   accessor: keyof T | ((item: T) => React.ReactNode);
+  sortBy: keyof T ;
 };
 
 type ActionButton<T> = {
@@ -73,7 +74,7 @@ function GenericTable<T extends object>({
   const handleHeaderClick = (column: ColumnDef<T>) => {
     if (sortConfig?.key === column.accessor) {
       setSortConfig({
-        key: column.accessor as keyof T,
+        key: column.sortBy as keyof T,
         direction: sortConfig.direction === "asc" ? "desc" : "asc",
       });
     } else {
