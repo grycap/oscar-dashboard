@@ -23,13 +23,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     return (
       <div
-        className="relative grid gap-1.5"
+        className="relative grid"
         style={{
           width: props.width,
           flex: props.flex,
         }}
       >
-        <div className="flex flex-row gap-1.5">
+        <div className="flex flex-row">
           {label && <Label>{label + (required ? "*" : "")}</Label>}
           {label && props.error && <Label>-</Label>}
           {props.error && <Label className="text-red-500">{props.error}</Label>}
