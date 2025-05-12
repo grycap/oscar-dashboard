@@ -130,7 +130,13 @@ export default function ServiceLogs() {
       });
   }
   return (
-    <div className="flex flex-grow">
+    <div className="flex flex-grow" style={{
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: 1,
+        flexBasis: 0,
+        overflow: "hidden",
+      }}>
       <LogDetailsPopover
         log={selectedLog}
         serviceName={formService?.name}
