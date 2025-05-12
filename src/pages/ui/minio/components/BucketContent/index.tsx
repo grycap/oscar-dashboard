@@ -127,12 +127,10 @@ export default function BucketContent() {
   const handleBulkDownload = async (items: BucketItem[]) => {
     const bucketName = items[0].BucketName;
 
-    const folders = items
-      .filter((item) => item.Type === "folder")
+    const folders = items?.filter((item) => item.Type === "folder")
       .map((item) => item.Key as CommonPrefix);
 
-    const singleFiles = items
-      .filter((item) => item.Type === "file")
+    const singleFiles = items?.filter((item) => item.Type === "file")
       .map((item) => item.Key as _Object);
 
     const zipBlob = await downloadAndZipFolders(
@@ -257,6 +255,7 @@ export default function BucketContent() {
                 }
                 return item.Name;
               },
+              sortBy: "Name"
             },
           ]}
           idKey="Name"
@@ -313,6 +312,14 @@ export default function BucketContent() {
                         >
                           <DownloadIcon className="w-4 h-4 mr-2" />
                           Download
+                        </Button>
+                        <Button
+                          className="mt-[2px] ml-[4px]"
+                          onClick={() => setItemsToDelete(items)}
+                          variant={"destructive"}
+                        >
+                          <Trash  className="w-4 h-4 mr-2"/>
+                          Delete Files
                         </Button>
                       </div>
                     </TooltipTrigger>

@@ -1,6 +1,7 @@
 import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { getInfoApi } from "@/api/info/getInfoApi";
 import { setAxiosInterceptor } from "@/lib/axiosClient";
+import { ClusterInfo } from "@/models/clusterInfo";
 import { SystemConfig } from "@/models/systemConfig";
 import { MinioStorageProvider } from "@/pages/ui/services/models/service";
 import React, {
@@ -46,6 +47,7 @@ export const AuthContext = createContext({
     config: SystemConfig;
     minio_provider: MinioStorageProvider;
   } | null,
+  clusterInfo: null as ClusterInfo | null,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -73,6 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     config: SystemConfig;
     minio_provider: MinioStorageProvider;
   } | null>(null);
+  const [clusterInfo, setClusterInfo] = useState<ClusterInfo | null>(null);
 
   async function handleGetSystemConfig() {
     if (!authData.authenticated) return;
@@ -100,12 +103,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   async function checkAuth() {
     if (!authData.authenticated) return;
     try {
-      await getInfoApi({
+      setClusterInfo(await getInfoApi({
         endpoint: authData.endpoint,
         username: authData.user,
         password: authData.password,
         token: authData?.token,
-      });
+      }));
     } catch (error) {
       setAuthData({
         user: "",
@@ -127,6 +130,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         authData,
         setAuthData,
         systemConfig,
+        clusterInfo,
       }}
     >
       {children}

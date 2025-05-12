@@ -89,6 +89,7 @@ export default function InputOutputEditor() {
       )}
       {items.map((item, index) => (
         <div
+          key={item.storage_provider + '-' + index}
           style={{
             border: OscarStyles.border,
             background: "white",

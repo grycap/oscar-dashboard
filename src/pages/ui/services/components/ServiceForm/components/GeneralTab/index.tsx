@@ -12,7 +12,7 @@ import {
 import EnviromentVariables from "./components/EnviromentVariables";
 import ServiceFormCell from "../FormCell";
 import ScriptButton from "./components/ScriptButton";
-import { CheckIcon, CopyIcon, XIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, XIcon, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { alert } from "@/lib/alert";
 import Divider from "@/components/ui/divider";
@@ -20,16 +20,20 @@ import { Label } from "@/components/ui/label";
 import { ServiceViewMode } from "../../../Topbar";
 import InputOutputEditor from "../InputOutputTab";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
+import EnviromentSecrets from "./components/EnviromentSecrets";
+import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
 
 function ServiceGeneralTab() {
   const { formService, setFormService, formMode, formFunctions } =
     useServicesContext();
 
   const { handleChange, onBlur, errors } = formFunctions;
-  const { systemConfig } = useAuth();
+  const { systemConfig, authData } = useAuth();
   const voGroups = systemConfig?.config.oidc_groups;
 
-  const [memoryUnits, setMemoryUnits] = useState("Mi" as "Mi" | "Gi");
+  const [memoryUnits, setMemoryUnits] = useState<"Mi" | "Gi">(formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi");
+  const [memory, setMemory] = useState<string>(formService?.memory?.replace(/[a-zA-Z]/g, ""));
 
   return (
     <div
@@ -68,6 +72,8 @@ function ServiceGeneralTab() {
               error={errors.name}
               onBlur={() => onBlur("name")}
               required
+              disabled={formMode === ServiceViewMode.Update}
+              className="disabled:bg-gray"
             />
             <Input
               id="docker-image-input"
@@ -104,7 +110,7 @@ function ServiceGeneralTab() {
                 }}
               >
                 <SelectTrigger id="vo-select-trigger">
-                  <SelectValue placeholder="Select an V0" />
+                  <SelectValue placeholder="Select a VO" />
                 </SelectTrigger>
                 <SelectContent>
                   {voGroups?.map((vo) => {
@@ -200,6 +206,21 @@ function ServiceGeneralTab() {
               }}
             >
               <div className="flex flex-row gap-2 items-center">
+                <strong>Exposed:</strong>
+                {formService.expose?.api_port ? (
+                  <Link
+                    to={`${
+                      authData.endpoint
+                    }/system/services/${formService.name}/exposed/`}
+                    target="_blank"
+                  >
+                    <ExternalLink size={18} />
+                  </Link>
+                ) : (
+                  <XIcon size={16} className="pt-[2px]" />
+                )}
+              </div>
+              <div className="flex flex-row gap-2 items-center">
                 <strong>Alpine:</strong>
                 {formService.alpine ? (
                   <CheckIcon size={16} />
@@ -219,11 +240,7 @@ function ServiceGeneralTab() {
 
               <div className="flex flex-row gap-2 items-center">
                 <strong>Allowed users:</strong>
-                {formService.allowed_users?.length ? (
-                  formService.allowed_users.join(", ")
-                ) : (
-                  <XIcon size={16} className="pt-[2px]" />
-                )}
+                  <AllowedUsersPopover />
               </div>
             </div>
           )}
@@ -257,19 +274,21 @@ function ServiceGeneralTab() {
               }}
               label="CPU cores"
               error={errors.cpu}
+              type="number"
+              step="0.1"
             />
             <Input
               id="memory-input"
-              value={formService?.memory?.replace("Mi", "")?.replace("Gi", "")}
+              value={memory}
               label="Memory"
               onChange={(e) => {
+                setMemory(e.target.value);
                 setFormService((service: Service) => {
                   return {
                     ...service,
                     memory: e.target.value + memoryUnits,
                   };
                 });
-                handleChange(e, "memory");
               }}
               type="number"
               error={errors.memory}
@@ -278,6 +297,12 @@ function ServiceGeneralTab() {
               value={memoryUnits}
               onValueChange={(value) => {
                 setMemoryUnits(value as "Mi" | "Gi");
+                setFormService((service: Service) => {
+                  return {
+                    ...service,
+                    memory: memory + value,
+                  };
+                });
               }}
             >
               <SelectTrigger id="memory-units-select" className="w-[75px]">
@@ -294,6 +319,9 @@ function ServiceGeneralTab() {
       <Divider />
       <ServiceFormCell title="Enviroment variables">
         <EnviromentVariables />
+      </ServiceFormCell>
+      <ServiceFormCell title="Enviroment secrets">
+        <EnviromentSecrets />
       </ServiceFormCell>
       <Divider />
       <InputOutputEditor />

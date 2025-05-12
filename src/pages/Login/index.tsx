@@ -39,7 +39,11 @@ function Login() {
       return true
     }else return false
   }
-
+  function isDemoServer(){
+    if (env.deploy_container ==="true" && env.demo_servers.includes(location.origin) ){
+      return true
+    }else return false
+  }
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -71,11 +75,12 @@ function Login() {
   }
 
   async function handleLoginEGI(event: FormEvent<HTMLFormElement>, process:string) {
+    event.preventDefault();
     if (isDeployContainer()){
       const oscarEndpoint = window.location.origin
-      window.location.replace(env.external_ui+"/#/login?endpoint="+oscarEndpoint);
+      const url = isDemoServer()?env.external_ui_demo+"/#/login?endpoint="+oscarEndpoint : env.external_ui+"/#/login?endpoint="+oscarEndpoint;
+      window.location.replace(url);
     }else{
-      event.preventDefault();
       const form = event.target as HTMLFormElement;
       const formData = new FormData(form);
       let endpoint = formData.get("endpoint") as string;
@@ -97,7 +102,8 @@ function Login() {
         }else if(process === "Keycloak"){
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
           localStorage.setItem("api", endpoint);
-          localStorage.setItem("client_id", env.client_id);
+          localStorage.setItem("client_id", env.AI4EOSC_client_id);
+          localStorage.setItem("client_secret", env.AI4EOSC_client_secret);
           localStorage.setItem("provider_url", env.AI4EOSC_ISSUER + env.provider_url);
           localStorage.setItem("url_authorize", env.AI4EOSC_ISSUER + env.url_authorize);
           localStorage.setItem("url_user_info", env.AI4EOSC_ISSUER + env.url_user_info);

@@ -4,13 +4,13 @@ import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-function EnviromentVariables() {
+function EnviromentSecrets() {
   const { formService, setFormService } = useServicesContext();
 
   const initialArray = useMemo(() => {
-    const variables = formService.environment?.variables;
-    const array = variables
-      ? Object.entries(variables).map(([key, value]) => {
+    const secrets = formService.environment?.secrets;
+    const array = secrets
+      ? Object.entries(secrets).map(([key, value]) => {
           return {
             key,
             value,
@@ -25,20 +25,20 @@ function EnviromentVariables() {
     return array;
   }, [formService]);
 
-  const [variablesArray, setVariablesArray] = useState(initialArray);
+  const [secretsArray, setSecretsArray] = useState(initialArray);
 
   useEffect(() => {
     setFormService((prev) => ({
       ...prev,
       environment: {
         ...prev.environment,
-        variables: variablesArray.reduce((acc, curr) => {
+        secrets: secretsArray.reduce((acc, curr) => {
           acc[curr.key] = curr.value;
           return acc;
         }, {} as Record<string, string>),
       },
     }));
-  }, [variablesArray]);
+  }, [secretsArray]);
 
   return (
     <div
@@ -48,45 +48,45 @@ function EnviromentVariables() {
         gap: "9px",
       }}
     >
-      {variablesArray.map((variable, index) => (
+      {secretsArray.map((variable, index) => (
         <div
           key={index}
           style={{ display: "flex", gap: "5px", alignItems: "center" }}
         >
           <Input
-            id={`variable-name-input-${index}`}
+            id={`secret-name-input-${index}`}
             value={variable.key}
             onChange={(e) => {
-              const newVariablesArray = [...variablesArray];
+              const newVariablesArray = [...secretsArray];
               newVariablesArray[index].key = e.target.value;
-              setVariablesArray(newVariablesArray);
+              setSecretsArray(newVariablesArray);
             }}
-            placeholder="Variable name"
+            placeholder="Secret name"
           />
           <Input
-            id={`variable-value-input-${index}`}
+            id={`secret-value-input-${index}`}
             type="password"
             value={variable.value}
             onFocus={(e) => (e.target.type = "text")}
             onBlur={(e) => (e.target.type = "password")}
             style={{ width: 300 }}
             onChange={(e) => {
-              const newVariablesArray = [...variablesArray];
+              const newVariablesArray = [...secretsArray];
               newVariablesArray[index].value = e.target.value;
-              setVariablesArray(newVariablesArray);
+              setSecretsArray(newVariablesArray);
             }}
             placeholder="Value"
           />
-          {variablesArray.length > 0 && (
+          {secretsArray.length > 0 && (
             <Button
-              id={`remove-variable-button-${index}`}
+              id={`remove-secret-button-${index}`}
               size={"icon"}
               variant={"ghost"}
               onClick={() => {
-                const newVariablesArray = variablesArray.filter(
+                const newVariablesArray = secretsArray.filter(
                   (_, i) => i !== index
                 );
-                setVariablesArray(newVariablesArray);
+                setSecretsArray(newVariablesArray);
               }}
             >
               <X size={16} />
@@ -95,19 +95,19 @@ function EnviromentVariables() {
         </div>
       ))}
       <Button
-        id="add-variable-button"
+        id="add-secret-button"
         size={"sm"}
         style={{
           width: "max-content",
         }}
         onClick={() => {
-          setVariablesArray([...variablesArray, { key: "", value: "" }]);
+          setSecretsArray([...secretsArray, { key: "", value: "" }]);
         }}
       >
-        <Plus className="h-4 w-4 mr-2" /> Add Variable
+        <Plus className="h-4 w-4 mr-2" /> Add Secret
       </Button>
     </div>
   );
 }
 
-export default EnviromentVariables;
+export default EnviromentSecrets;

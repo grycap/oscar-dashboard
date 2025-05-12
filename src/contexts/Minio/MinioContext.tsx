@@ -10,12 +10,10 @@ import {
   S3Client,
   ListBucketsCommand,
   Bucket,
-  CreateBucketCommand,
   ListObjectsV2Command,
   ListObjectsV2CommandInput,
   CommonPrefix,
   _Object,
-  DeleteBucketCommand,
   PutObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
@@ -23,6 +21,9 @@ import {
 import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { alert } from "@/lib/alert";
 import JSZip from "jszip";
+import env from "@/env";
+import createBucketsApi from "@/api/buckets/createBucketsApi";
+import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
 
 export type MinioProviderData = {
   providerInfo: MinioStorageProvider;
@@ -51,6 +52,11 @@ export type MinioProviderData = {
   ) => Promise<Blob | undefined>;
 };
 
+function isLocalhostDeployed(endpoint:string){
+  if (env.response_default_minio === endpoint){
+    return true
+  }else return false
+}
 export const MinioContext = createContext({} as MinioProviderData);
 
 export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
@@ -65,7 +71,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       !providerInfo.region
     )
       return null;
-
+    providerInfo.endpoint =  isLocalhostDeployed(providerInfo.endpoint) ? "http://"+env.minio_local_endpoint+":"+env.minio_local_port : providerInfo.endpoint;
     return new S3Client({
       region: providerInfo.region,
       endpoint: providerInfo.endpoint,
@@ -123,7 +129,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!client) return;
 
     const res = await client.send(new ListBucketsCommand({}));
-    const buckets = res.Buckets;
+    const buckets = res?.Buckets;
     if (!buckets) return;
 
     setBuckets(buckets);
@@ -133,10 +139,13 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!client) return;
 
     try {
-      const command = new CreateBucketCommand({
+      await createBucketsApi(bucketName,undefined)
+      //console.log(command)
+      /*const command = new CreateBucketCommand({
         Bucket: bucketName,
-      });
-      await client.send(command);
+      });*/
+
+      //await client.send(command);
       alert.success("Bucket created successfully");
     } catch (error) {
       console.error(error);
@@ -150,8 +159,9 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!client) return;
 
     try {
-      const command = new DeleteBucketCommand({ Bucket: bucketName });
-      await client.send(command);
+      await deleteBucketsApi(bucketName)
+      // const command = new DeleteBucketCommand({ Bucket: bucketName });
+      //console.log(command)
       alert.success("Bucket deleted successfully");
     } catch (error) {
       console.error(error);

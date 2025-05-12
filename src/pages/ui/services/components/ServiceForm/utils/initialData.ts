@@ -22,7 +22,8 @@ export const defaultService: Service = {
   script: "",
   image_pull_secrets: [],
   environment: {
-    Variables: {},
+    variables: {},
+    secrets: {},
   },
   annotations: {},
   labels: {},
@@ -45,4 +46,14 @@ export const defaultService: Service = {
   },
   interlink_node_name: "",
   allowed_users: [],
+  expose: {
+    min_scale: "",
+    max_scale: "",
+    api_port: "",
+    cpu_threshold: "",
+    rewrite_target: false,
+    nodePort: "",
+    default_command: false,
+    set_auth: false
+  }
 };

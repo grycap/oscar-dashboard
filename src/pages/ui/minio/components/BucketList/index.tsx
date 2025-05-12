@@ -7,7 +7,6 @@ import { Bucket } from "@aws-sdk/client-s3";
 import { Trash } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-
 export default function BucketList() {
   const { buckets, deleteBucket } = useMinio();
   const [itemsToDelete, setItemsToDelete] = useState<Bucket[]>([]);
@@ -29,6 +28,7 @@ export default function BucketList() {
             accessor: (row) => (
               <Link to={`/ui/minio/${row.Name}`}>{row.Name}</Link>
             ),
+            sortBy: "Name"
           },
         ]}
         actions={[

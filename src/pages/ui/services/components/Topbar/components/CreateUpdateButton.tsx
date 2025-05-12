@@ -26,12 +26,13 @@ export function CreateUpdateServiceButton({ isInCreateMode }: Props) {
       imageRules: [null],
       imagePullSecrets: [],
       input: formService.input,
-      limitsMemory: formService.memory?.replace("Mi", "").replace("Gi", ""),
-      log_level: "INFO",
+      limitsMemory: formService.memory?.replace(/[a-zA-Z]/g, ""),
+      log_level: formService.log_level,
       memory: formService.memory,
       name: formService.name,
       output: formService.output,
       script: formService.script,
+      environment: formService.environment,
       valid: true,
     };
   }, [formService]);

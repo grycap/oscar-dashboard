@@ -125,7 +125,8 @@ export interface Service {
   script: string;
   image_pull_secrets: string[];
   environment: {
-    Variables: Record<string, string>;
+    variables: Record<string, string>;
+    secrets: Record<string, string>;
   };
   annotations: Record<string, string>;
   labels: Record<string, string>;
@@ -138,6 +139,16 @@ export interface Service {
   mount?: {
     path: string;
     storage_provider: string;
+  };
+  expose: {
+    min_scale: string,
+    max_scale: string,
+    api_port: string,
+    cpu_threshold: string,
+    rewrite_target: boolean,
+    nodePort: string,
+    default_command: boolean,
+    set_auth: boolean
   };
 }
 

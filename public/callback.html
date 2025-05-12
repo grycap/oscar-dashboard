@@ -38,12 +38,17 @@
   <script>
         const baseUrl = localStorage.getItem('provider_url');
         const client_id = localStorage.getItem('client_id');
+        const client_secret = localStorage.getItem('client_secret');
         const groupId = '00gwb2x6jewAvwYSX0h7';
         const redirect_uri = `${location.origin}/callback.html`;
         const authorize_endpoint = localStorage.getItem('url_authorize');;
         const token_endpoint = localStorage.getItem('token_endpoint');;
         const userinfo_endpoint = localStorage.getItem('url_user_info');;
-        const scope = 'openid profile email eduperson_entitlement';
+        if(baseUrl.includes('egi.eu')){
+          scope = 'openid profile email eduperson_entitlement';
+        }else{
+          scope = 'openid profile email';
+        }
 
         const q = new URLSearchParams(location.search);
         var tokens;
@@ -167,6 +172,7 @@
               grant_type: 'authorization_code',
               code: q.get('code'),
               client_id,
+              client_secret,
               redirect_uri,
               code_verifier: localStorage.code_verifier
       };
