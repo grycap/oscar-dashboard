@@ -69,14 +69,15 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
       uploadedFile.type === "application/x-yaml" ||
       uploadedFile.type === "text/yaml" ||
       uploadedFile.name.endsWith(".yaml") ||
-      uploadedFile.name.endsWith(".yml")
+      uploadedFile.name.endsWith(".yml")||
+      uploadedFile.name.endsWith(".npy")
     ) {
       setFileType("text");
       setSelectedLanguage("yaml");
     } else if (uploadedFile.type.startsWith("image/")) {
       setFileType("image");
     } else {
-      alert.error("Tipo de archivo no soportado");
+      alert.error("Type file not supported");
       return;
     }
 

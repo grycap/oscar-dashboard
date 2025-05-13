@@ -114,7 +114,7 @@ export function AllowedUsersPopover() {
           <GenericTable<User>
             data={filteredAllowedUsers}
             idKey="uid"
-            columns={[{ header: "UID", accessor: "uid" }]}
+            columns={[{ header: "UID", accessor: "uid", sortBy: "uid"  }]}
             actions={[
               {
                 button: (user) => (

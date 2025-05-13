@@ -111,10 +111,10 @@ function ServicesList() {
               navigate(`/ui/services/${item.name}/settings`);
             }}
             columns={[
-              { header: "Name", accessor: "name" },
-              { header: "Image", accessor: "image" },
-              { header: "CPU", accessor: "cpu" },
-              { header: "Memory", accessor: "memory" },
+              { header: "Name", accessor: "name", sortBy: "name" },
+              { header: "Image", accessor: "image", sortBy: "image" },
+              { header: "CPU", accessor: "cpu", sortBy: "cpu" },
+              { header: "Memory", accessor: "memory", sortBy: "memory" },
             ]}
             actions={[
               {
