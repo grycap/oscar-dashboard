@@ -12,6 +12,8 @@ import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import { Input } from "@/components/ui/input";
 import createServiceApi from "@/api/services/createServiceApi";
+import getServiceApi from "@/api/services/getServiceApi";
+import updateServiceApi from "@/api/services/updateServiceApi";
 import { alert } from "@/lib/alert";
 import RequestButton from "@/components/RequestButton";
 import yamlToServices from "./utils/yamlToService";
@@ -54,8 +56,14 @@ function FDLForm() {
     const services = yamlToServices(fdl, script);
 
     const promises = services.map(async (service) => {
-      const response = await createServiceApi(service);
-      return response;
+      try{
+        await getServiceApi(service.name);
+      }catch (error) {
+        const response = await createServiceApi(service);
+        return response;
+      }
+        const response = await updateServiceApi(service);
+        return response;
     });
 
     const results = await Promise.allSettled(promises);
@@ -166,7 +174,7 @@ function FDLForm() {
           </TabsContent>
         </Tabs>
         <DialogFooter>
-          <RequestButton request={handleSave}>Save</RequestButton>
+          <RequestButton request={handleSave}>Create Service</RequestButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>
