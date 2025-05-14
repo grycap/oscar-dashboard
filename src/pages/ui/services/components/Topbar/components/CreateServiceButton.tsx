@@ -16,7 +16,7 @@ import useServicesContext from "../../../context/ServicesContext";
 function AddServiceButton() {
   const navigate = useNavigate();
   const { setShowFDLModal } = useServicesContext();
-  const isSmallScreen = useMediaQuery({ maxWidth: 799 });
+  const isSmallScreen = useMediaQuery({ maxWidth: 1100 });
 
   return (
     <DropdownMenu>

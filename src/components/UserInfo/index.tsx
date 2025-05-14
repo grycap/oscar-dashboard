@@ -55,7 +55,7 @@ export default function UserInfo() {
               }}
             >
               <div className="grid grid-cols-1 xl:grid-cols-[auto_auto]">
-                <div className="">
+                <div className="truncate">
                   {`${authContext.authData.user} -\u00A0`}
                 </div>
                 <div className="truncate">
