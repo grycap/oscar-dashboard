@@ -4,8 +4,13 @@ import OscarColors, { OscarStyles } from "@/styles";
 import InfoItem from "./components/InfoItem";
 import InfoBooleanItem from "./components/InfoBooleanItem";
 import InfoListItems from "./components/InfoListItems";
+import { useEffect } from "react";
 
 function InfoView() {
+  
+  useEffect(() => {
+    document.title ="OSCAR - Info"
+  });
   const { authData, systemConfig, clusterInfo } = useAuth();
   const { endpoint, user, password, egiSession, token } = authData;
   const { providerInfo } = useMinio();
