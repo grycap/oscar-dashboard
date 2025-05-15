@@ -22,6 +22,8 @@ import InputOutputEditor from "../InputOutputTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import EnviromentSecrets from "./components/EnviromentSecrets";
+import Annotations from "./components/Annotations";
+
 import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
 
 function ServiceGeneralTab() {
@@ -81,6 +83,7 @@ function ServiceGeneralTab() {
               value={formService?.image}
               label="Docker image"
               onChange={(e) => {
+                console.log(e)
                 handleChange(e, "image");
               }}
               error={errors.image}
@@ -315,6 +318,10 @@ function ServiceGeneralTab() {
             </Select>
           </div>
         </div>
+      </ServiceFormCell>
+      <Divider />
+      <ServiceFormCell title="Annotations">
+        <Annotations />
       </ServiceFormCell>
       <Divider />
       <ServiceFormCell title="Enviroment variables">
