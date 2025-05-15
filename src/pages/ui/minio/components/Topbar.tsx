@@ -15,7 +15,7 @@ function MinioTopbar() {
   const isOnRoot = name === undefined;
 
   useEffect(() => {
-    document.title = isOnRoot ? "OSCAR - MinIO" : `OSCAR - MinIO: ${name}`;
+    document.title = isOnRoot ? "OSCAR - Buckets" : `OSCAR - Buckets: ${name}`;
   }, [isOnRoot, name]);
 
   const breadcrumbs = useMemo(() => {

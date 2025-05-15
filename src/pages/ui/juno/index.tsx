@@ -31,6 +31,7 @@ import { Link } from "react-router-dom";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
 
 function JunoView() {
+  
   const { buckets } = useMinio();
   const { systemConfig } = useAuth();
   const { authData } = useAuth();
@@ -38,6 +39,10 @@ function JunoView() {
   const namePrefix =
     authData?.egiSession?.sub ?? authData?.token ?? authData?.user;
   const namePrefixSlice = namePrefix?.slice(0, 6);
+
+  useEffect(() => {
+      document.title ="OSCAR - Notebooks"
+    });
 
   const oidcGroups = systemConfig?.config.oidc_groups ?? [];
 
