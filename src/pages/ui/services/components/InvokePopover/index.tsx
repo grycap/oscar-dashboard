@@ -70,7 +70,11 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
       uploadedFile.type === "text/yaml" ||
       uploadedFile.name.endsWith(".yaml") ||
       uploadedFile.name.endsWith(".yml")||
-      uploadedFile.name.endsWith(".npy")
+      uploadedFile.name.endsWith(".npy") ||
+      uploadedFile.name.endsWith(".gzip") ||
+      uploadedFile.name.endsWith(".tar") ||
+      uploadedFile.name.endsWith(".rar") ||
+      uploadedFile.name.endsWith(".7z")
     ) {
       setFileType("text");
       setSelectedLanguage("yaml");
