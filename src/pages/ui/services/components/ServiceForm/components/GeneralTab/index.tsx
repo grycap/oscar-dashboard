@@ -45,58 +45,45 @@ function ServiceGeneralTab() {
     >
       <ServiceFormCell title="General Settings">
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            gap: 10,
-          }}
+          className="grid grid-cols-1 gap-[10px] w-full max-w-5xl min-w-[720px]"
         >
-          <section
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              width: "100%",
-              gap: 10,
-              alignItems: "top",
-            }}
+          <div
+            className="grid grid-cols-2 lg:grid-cols-3 gap-5 items-end w-full"
           >
-            <Input
-              id="service-name-input"
-              flex={1}
-              value={formService?.name}
-              onChange={(e) => {
-                handleChange(e, "name");
-              }}
-              label="Service name"
-              error={errors.name}
-              onBlur={() => onBlur("name")}
-              required
-              disabled={formMode === ServiceViewMode.Update}
-              className="disabled:bg-gray"
-            />
-            <Input
-              id="docker-image-input"
-              flex={2}
-              value={formService?.image}
-              label="Docker image"
-              onChange={(e) => {
-                handleChange(e, "image");
-              }}
-              error={errors.image}
-              onBlur={() => onBlur("image")}
-              required
-            />
-          </section>
-          <div className="flex flex-row w-full items-end gap-5">
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.375rem",
-                minWidth: "200px",
-              }}
-            >
+            <div className="col-span-1">
+              <Input
+                id="service-name-input"
+                flex={1}
+                value={formService?.name}
+                onChange={(e) => {
+                  handleChange(e, "name");
+                }}
+                label="Service name"
+                error={errors.name}
+                onBlur={() => onBlur("name")}
+                required
+                disabled={formMode === ServiceViewMode.Update}
+                className="disabled:bg-gray"
+              />
+            </div>
+            <div className="col-span-1 lg:col-span-2">
+              <Input
+                id="docker-image-input"
+                flex={2}
+                value={formService?.image}
+                label="Docker image"
+                onChange={(e) => {
+                  handleChange(e, "image");
+                }}
+                error={errors.image}
+                onBlur={() => onBlur("image")}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-[auto_auto_1fr] gap-5 items-end">
+            <div className="min-w-[150px]">
               <Label>VO</Label>
               <Select
                 value={formService?.vo}
@@ -124,14 +111,7 @@ function ServiceGeneralTab() {
               </Select>
             </div>
 
-            <div
-              style={{
-                width: "50%",
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.375rem",
-              }}
-            >
+            <div className="min-w-[150px]">
               <Label>Log level</Label>
               <Select
                 value={formService?.log_level}
@@ -144,10 +124,7 @@ function ServiceGeneralTab() {
                   });
                 }}
               >
-                <SelectTrigger
-                  className="w-[250px]"
-                  id="log-level-select-trigger"
-                >
+                <SelectTrigger id="log-level-select-trigger">
                   <SelectValue placeholder="Log level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -162,36 +139,28 @@ function ServiceGeneralTab() {
               </Select>
             </div>
             {formService.token && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "end",
-
-                  gap: 10,
-                }}
+              <div 
+               className="col-span-1"
               >
-                <Input
-                  id="token-input"
-                  value={formService?.token}
-                  readOnly
-                  label="Token"
-                  type="password"
-                  width="600px"
-                />
-                <Button
-                  id="copy-token-button"
-                  variant="ghost"
-                  style={{
-                    height: "39px",
-                  }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(formService?.token || "");
-                    alert.success("Token copied to clipboard");
-                  }}
-                >
-                  <CopyIcon />
-                </Button>
+                <div className="grid grid-cols-[1fr_auto] items-end w-full">
+                  <Input
+                    id="token-input"
+                    value={formService?.token}
+                    readOnly
+                    label="Token"
+                    type="password"
+                  />
+                  <Button
+                    id="copy-token-button"
+                    variant="ghost"
+                    onClick={() => {
+                      navigator.clipboard.writeText(formService?.token || "");
+                      alert.success("Token copied to clipboard");
+                    }}
+                  >
+                    <CopyIcon size={20}/>
+                  </Button>
+                </div>
               </div>
             )}
           </div>
