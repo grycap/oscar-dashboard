@@ -274,9 +274,11 @@ function ServiceGeneralTab() {
       </ServiceFormCell>
       <Divider />
       <div className="grid grid-cols-1 2xl:grid-cols-2 w-ful max-w-[1250px] min-w-[720px]">
-        <ServiceFormCell title="Enviroment variables">
-          <EnviromentVariables />
-        </ServiceFormCell>
+        <div className="2xl:border-r-2 border-b-2 2xl:border-b-0">
+          <ServiceFormCell title="Enviroment variables">
+            <EnviromentVariables />
+          </ServiceFormCell>
+        </div>
         <ServiceFormCell title="Enviroment secrets">
           <EnviromentSecrets />
         </ServiceFormCell>
