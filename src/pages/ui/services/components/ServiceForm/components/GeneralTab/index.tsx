@@ -22,6 +22,8 @@ import InputOutputEditor from "../InputOutputTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import EnviromentSecrets from "./components/EnviromentSecrets";
+import Annotations from "./components/Annotations";
+
 import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
 
 function ServiceGeneralTab() {
@@ -265,6 +267,10 @@ function ServiceGeneralTab() {
             </Select>
           </div>
         </div>
+      </ServiceFormCell>
+      <Divider />
+      <ServiceFormCell title="Annotations">
+        <Annotations />
       </ServiceFormCell>
       <Divider />
       <div className="grid grid-cols-1 2xl:grid-cols-2 w-ful max-w-[1250px] min-w-[720px]">
