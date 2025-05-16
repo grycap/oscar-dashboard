@@ -23,31 +23,22 @@ function ServicesTopbar() {
   return (
     <div
       style={{
-        height: "64px",
         borderBottom: OscarStyles.border,
-        display: "flex",
-        flexDirection: "row",
       }}
+      className="grid grid-cols-[1fr_auto] h-[64px]"
     >
       <div
         style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
           padding: "0 16px",
-          gap: 10,
         }}
+        className={"grid items-center justify-between gap-2 " + (formMode === ServiceViewMode.List ? "grid-cols-[auto_auto_auto]" : "grid-cols-[auto_1fr]")}
       >
         <ServiceBreadcrumb />
 
         {formMode === ServiceViewMode.List ? (
           <>
-            <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-              <ServicesFilterBy />
-            </div>
-            <AddServiceButton />
+          <ServicesFilterBy />
+          <AddServiceButton />
           </>
         ) : (
           <CreateUpdateServiceTabs mode={formMode} />

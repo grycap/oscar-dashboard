@@ -29,11 +29,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           flex: props.flex,
         }}
       >
-        <div className="flex flex-row">
-          {label && <Label>{label + (required ? "*" : "")}</Label>}
-          {label && props.error && <Label>-</Label>}
-          {props.error && <Label className="text-red-500">{props.error}</Label>}
-        </div>
+        {label && 
+          <div className="flex flex-row mb-1">
+            {label && <Label>{label + (required ? "*" : "")}</Label>}
+            {label && props.error && <Label>-</Label>}
+            {props.error && <Label className="text-red-500">{props.error}</Label>}
+          </div>
+        }
         <input
           type={type === "password" && showPassword ? "text" : type}
           className={cn(

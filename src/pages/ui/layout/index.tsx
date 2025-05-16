@@ -11,15 +11,9 @@ function AppLayout() {
   }
 
   return (
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        height: "100vh",
-        overflow: "hidden",
-      }}
-    >
-      <SidebarProvider>
+      <SidebarProvider
+        className="grid grid-cols-[auto_1fr] h-screen"
+      >
         <AppSidebar />
         <main
           style={{
@@ -30,11 +24,11 @@ function AppLayout() {
             background: ColorWithOpacity(OscarColors.Gray1, 0.5),
             border: OscarStyles.border,
           }}
+          className="overflow-y-auto"
         >
           <Outlet />
         </main>
       </SidebarProvider>
-    </main>
   );
 }
 

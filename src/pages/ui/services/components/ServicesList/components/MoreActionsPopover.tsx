@@ -67,13 +67,11 @@ export default function MoreActionsPopover({
           <div className="flex flex-col">
             <span>Copy Token</span>          
           </div>
-          <kbd className="ml-auto text-xs text-muted-foreground">⌘C</kbd>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleEditService}>
           <Edit className="mr-2 h-4 w-4" />
           <span>Edit</span>
-          <kbd className="ml-auto text-xs text-muted-foreground">⌘E</kbd>
         </DropdownMenuItem>
         <DropdownMenuItem
           className="text-destructive"
@@ -82,7 +80,6 @@ export default function MoreActionsPopover({
         >
           <Trash className="mr-2 h-4 w-4" />
           <span>Delete</span>
-          <kbd className="ml-auto text-xs text-muted-foreground">⌘D</kbd>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
