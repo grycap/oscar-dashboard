@@ -44,12 +44,8 @@ function ServiceGeneralTab() {
       }}
     >
       <ServiceFormCell title="General Settings">
-        <div
-          className="grid grid-cols-1 gap-[10px] w-full max-w-5xl min-w-[720px]"
-        >
-          <div
-            className="grid grid-cols-2 lg:grid-cols-3 gap-5 items-end w-full"
-          >
+        <div className="grid grid-cols-1 gap-[10px] w-full max-w-5xl min-w-[720px]">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 items-end w-full">
             <div className="col-span-1">
               <Input
                 id="service-name-input"
@@ -82,8 +78,8 @@ function ServiceGeneralTab() {
             </div>
           </div>
           
-          <div className="grid grid-cols-[auto_auto_1fr] gap-5 items-end">
-            <div className="min-w-[150px]">
+          <div className="grid grid-cols-[auto_auto_1fr] gap-5 items-end w-full">
+            <div className="min-w-[154px]">
               <Label>VO</Label>
               <Select
                 value={formService?.vo}
@@ -111,7 +107,7 @@ function ServiceGeneralTab() {
               </Select>
             </div>
 
-            <div className="min-w-[150px]">
+            <div className="min-w-[152px]">
               <Label>Log level</Label>
               <Select
                 value={formService?.log_level}
@@ -217,24 +213,9 @@ function ServiceGeneralTab() {
       </ServiceFormCell>
       <Divider />
       <ServiceFormCell title="Service specifications">
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            gap: 10,
-          }}
-        >
-          <ScriptButton />
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              width: "100%",
-              alignItems: "end",
-              gap: 10,
-            }}
-          >
+        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5 w-full max-w-6xl min-w-[720px]">
+          <ScriptButton  />
+          <div className="grid grid-cols-[210px_210px_150px] gap-[10px] 2xl:pl-[40px] items-end">
             <Input
               id="cpu-input"
               value={formService?.cpu}
@@ -286,12 +267,14 @@ function ServiceGeneralTab() {
         </div>
       </ServiceFormCell>
       <Divider />
-      <ServiceFormCell title="Enviroment variables">
-        <EnviromentVariables />
-      </ServiceFormCell>
-      <ServiceFormCell title="Enviroment secrets">
-        <EnviromentSecrets />
-      </ServiceFormCell>
+      <div className="grid grid-cols-1 2xl:grid-cols-2 w-ful max-w-[1250px] min-w-[720px]">
+        <ServiceFormCell title="Enviroment variables">
+          <EnviromentVariables />
+        </ServiceFormCell>
+        <ServiceFormCell title="Enviroment secrets">
+          <EnviromentSecrets />
+        </ServiceFormCell>
+      </div>
       <Divider />
       <InputOutputEditor />
     </div>

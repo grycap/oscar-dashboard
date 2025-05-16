@@ -61,7 +61,7 @@ function ScriptButton() {
         >
           <SelectTrigger
             id="script-upload-method-select-trigger"
-            className="w-[180px]"
+            className="w-[150px]"
           >
             <SelectValue placeholder="Select upload method" />
           </SelectTrigger>
