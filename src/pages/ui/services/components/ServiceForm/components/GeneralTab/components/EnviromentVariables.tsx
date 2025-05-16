@@ -18,10 +18,6 @@ function EnviromentVariables() {
         })
       : [];
 
-    if (array.length === 0) {
-      array.push({ key: "", value: "" });
-    }
-
     return array;
   }, [formService]);
 
