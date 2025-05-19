@@ -25,7 +25,7 @@ function InfoView() {
   if (!authData.authenticated) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-[40px] content-start">
+    <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-[40px] min-w-[300px] content-start">
       <div className={(isBigScreen ? "flex justify-center": "")}>
         <div className="max-w-[700px] w-full text-center sm:text-left">
           <h1 style={{ fontSize: "24px", fontWeight: "500" }}>
