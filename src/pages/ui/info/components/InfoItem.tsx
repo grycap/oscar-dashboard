@@ -47,7 +47,7 @@ function InfoItem({
         (isPassword && enableCopy ? "grid-cols-[1fr_auto_auto]" 
         : isPassword || enableCopy ? "grid-cols-[1fr_auto]" 
         : "grid-cols-1")
-      + " break-words"}
+      + " break-words text-right"}
         style={{
           alignItems: "center",
           columnGap: "16px",
