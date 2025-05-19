@@ -70,6 +70,10 @@ function FDLForm() {
 
     results.forEach((result, index) => {
       if (result.status === "rejected") {
+        if (result.reason.status === 403 &&
+          result.reason.data.includes("doesn't have permision to modify this service")){
+            console.log("Service already exist and you don't have permision")
+        }
         console.log(result.reason)
         console.log(result.status)
         alert.error(
