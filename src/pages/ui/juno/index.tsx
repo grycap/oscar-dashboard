@@ -145,21 +145,10 @@ function JunoView() {
   }
 
   return (
-    <div
-      style={{
-        width: "60vw",
-        paddingTop: "40px",
-        paddingLeft: "20%",
-        paddingRight: "20%",
-        display: "flex",
-        flexDirection: "column",
-        flexGrow: 1,
-        flexBasis: 0,
-        overflowY: "auto",
-        rowGap: "24px",
-      }}
-    >
-      <h1 style={{ fontSize: "24px", fontWeight: "500" }}>Jupyter Notebook</h1>
+    <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-[40px] min-w-[300px] max-w-[700px] content-start">
+      <h1 className="text-center sm:text-left" style={{ fontSize: "24px", fontWeight: "500" }}>
+        Jupyter Notebook
+      </h1>
       <Card>
         <CardHeader>
           <CardTitle key={isDeployed.toString()}>
