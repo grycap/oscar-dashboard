@@ -71,7 +71,7 @@ function FDLForm() {
     results.forEach((result, index) => {
       if (result.status === "rejected") {
         alert.error(
-          `Error creating service ${services[index].name}: ${result.reason}`
+          `Error creating service ${services[index].name}: ${result.reason.response.data}`
         );
       } else {
         alert.success(`Service ${services[index].name} created successfully`);
