@@ -361,7 +361,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
         {currentView === "upload" && renderUploadView()}
         {currentView === "editor" && renderEditorView()}
         {currentView === "response" && renderResponseView()}
-        <div className="flex justify-end">
+        <div className="grid grid-cols-1 sm:grid-cols-[auto] sm:justify-end">
           {currentView !== "response" ? (
             <RequestButton variant="mainGreen" request={invokeService}>
               Invoke Service

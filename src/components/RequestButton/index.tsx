@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Button, ButtonProps } from "../ui/button";
 import { Loader2 } from "lucide-react";
-import { AnimatePresence, motion, MotionConfig } from "framer-motion";
-import useMeasure from "react-use-measure";
+import { motion } from "framer-motion";
 
 type Props = {
   request: () => Promise<void>;
@@ -24,8 +23,6 @@ function RequestButton({
 }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const [ref, bounds] = useMeasure();
-
   async function onClick() {
     if (props.disabled) return;
     if (isLoading) return; // Evita múltiples clics
@@ -35,38 +32,21 @@ function RequestButton({
   }
 
   return (
-    <MotionConfig transition={{ duration: 0.2, type: "spring", bounce: 0 }}>
-      <Button onClick={onClick} {...props} asChild>
+    <Button onClick={onClick} {...props} >
+      <div className="grid grid-cols-[auto_1fr] gap-1 items-center">
         <motion.div
-          initial={{ width: "max-content", minWidth: "80px" }}
-          animate={{ width: bounds.width }}
+          initial={{ width: 0, opacity: 0 }}
+          animate={isLoading ? { width: 24, opacity: 1 } : { width: 0, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          style={{ overflow: "hidden", display: "flex", alignItems: "center" }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "8px 16px",
-              cursor: "pointer",
-            }}
-            ref={ref}
-          >
-            <AnimatePresence mode="popLayout">
-              {isLoading && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  {icon}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {children}
-          </div>
+          {isLoading && <Loader2 className="animate-spin" />}
         </motion.div>
-      </Button>
-    </MotionConfig>
+        <div>
+          {children}
+        </div>
+      </div>
+    </Button>
   );
 }
 
