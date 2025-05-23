@@ -109,21 +109,21 @@ function FDLForm() {
   return (
     <Dialog open={showFDLModal} onOpenChange={setShowFDLModal}>
       {/* <DialogTrigger>Open</DialogTrigger> */}
-      <DialogContent style={{ maxWidth: "80vw", width: "80vw" }}>
+      <DialogContent className="grid grid-cols-1 grid-rows-[auto_1fr_auto] w-screen sm:w-[70%] 2xl:w-[60%] h-[90%] sm:h-[80%] 2xl:h-[60%] overflow-y-auto gap-4">
         <DialogHeader>
           <DialogTitle>Create the service using FDL</DialogTitle>
           <DialogDescription>
             Use the code editor to edit the FDL file and the script.
           </DialogDescription>
         </DialogHeader>
-        <Tabs
+        <Tabs className="grid grid-cols-1 grid-rows-[auto_1fr]"
           defaultValue="account"
           value={selectedTab}
           onValueChange={(value) => {
             setSelectedTab(value as "fdl" | "script");
           }}
         >
-          <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-2 justify-items-start">
             <TabsList>
               <TabsTrigger style={{ padding: "7px 30px" }} value="fdl">
                 FDL
@@ -144,7 +144,7 @@ function FDLForm() {
                 setFdl(e || "");
               }}
               width="100%"
-              height="60vh"
+              height="100%"
               options={{
                 minimap: {
                   enabled: false,
@@ -156,7 +156,7 @@ function FDLForm() {
             value="script"
             style={{ outline: "none", width: "100%" }}
           >
-            <Editor
+            <Editor 
               key={`script-${editorKey}`}
               language="javascript"
               value={script}
@@ -164,7 +164,7 @@ function FDLForm() {
                 setScript(e || "");
               }}
               width="100%"
-              height="60vh"
+              height="100%"
               options={{
                 minimap: {
                   enabled: false,

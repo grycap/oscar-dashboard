@@ -33,33 +33,30 @@ function InfoItem({
   }
 
   return (
-    <div
+    <div className="grid grid-cols-[1fr_auto] gap-4" 
       style={{
-        display: "flex",
-        flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
         padding: "16px",
-        whiteSpace: "pre-wrap",
-        flexWrap: "wrap",
       }}
     >
-      <h2 style={{ fontSize: "13px", fontWeight: "500" }}>{displayLabel ? label : ''}</h2>
-      <div
+      <h2 style={{ fontSize: "13px", fontWeight: "500" }}>
+        {displayLabel ? label : ''}
+      </h2>
+      <div className={"grid " + 
+        (isPassword && enableCopy ? "grid-cols-[1fr_auto_auto]" 
+        : isPassword || enableCopy ? "grid-cols-[1fr_auto]" 
+        : "grid-cols-1")
+      + " break-words text-right"}
         style={{
-          display: "flex",
-          flexDirection: "row",
           alignItems: "center",
           columnGap: "16px",
         }}
       >
-        <div
+        <div className="min-w-0 "
           style={{
             fontSize: "13px",
             fontWeight: "500",
-            maxWidth: "30vw",
-            whiteSpace: "pre-wrap",
-            wordWrap: "break-word",
           }}
         >
           {!isLink ? displayedValue :

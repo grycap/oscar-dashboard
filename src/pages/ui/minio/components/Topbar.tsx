@@ -103,7 +103,7 @@ function MinioTopbar() {
             {breadcrumbs.length > 0 && breadcrumbs}
           </nav>
         </div>
-        {isOnRoot ? <AddBucketButton /> : <div><AddFolderButton /> <AddFileButton /></div>}
+        {isOnRoot ? <AddBucketButton /> : <div className="flex flex-row items-center gap-1"><AddFolderButton /> <AddFileButton /></div>}
       </div>
       <UserInfo />
     </header>

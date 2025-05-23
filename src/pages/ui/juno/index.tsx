@@ -150,21 +150,10 @@ function JunoView() {
   }
 
   return (
-    <div
-      style={{
-        width: "60vw",
-        paddingTop: "40px",
-        paddingLeft: "20%",
-        paddingRight: "20%",
-        display: "flex",
-        flexDirection: "column",
-        flexGrow: 1,
-        flexBasis: 0,
-        overflowY: "auto",
-        rowGap: "24px",
-      }}
-    >
-      <h1 style={{ fontSize: "24px", fontWeight: "500" }}>Jupyter Notebook</h1>
+    <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-[40px] min-w-[300px] max-w-[700px] content-start">
+      <h1 className="text-center sm:text-left" style={{ fontSize: "24px", fontWeight: "500" }}>
+        Jupyter Notebook
+      </h1>
       <Card>
         <CardHeader>
           <CardTitle key={isDeployed.toString()}>
@@ -174,7 +163,7 @@ function JunoView() {
 
         <CardContent>
           {!isDeployed ? (
-            <form className="space-y-4">
+            <form className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="cpu-cores">CPU Cores</Label>
                 <Input
@@ -256,7 +245,7 @@ function JunoView() {
                     </SelectContent>
                   </Select>
                 }
-                <CardFooter className="flex justify-end space-x-2">
+                <div className="flex justify-end space-x-2">
                 <Button 
                         id="add-annotations-button"
                         size={"sm"}
@@ -269,7 +258,7 @@ function JunoView() {
                       >
                   <Plus className="h-4 w-4 mr-2" /> {kindInputBucket?"Buckets created":"New Bucket"}
                 </Button>
-                </CardFooter>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="vo">VO</Label>
@@ -302,13 +291,13 @@ function JunoView() {
             </Alert>
           )}
         </CardContent>
-        <CardFooter className="flex justify-end space-x-2">
+        <CardFooter className="grid grid-cols-1">
           {!isDeployed ? (
-            <RequestButton id="juno-deploy-button" request={handleDeploy}>
+            <RequestButton id="juno-deploy-button " request={handleDeploy} className="sm:justify-self-end">
               Deploy
             </RequestButton>
           ) : (
-            <>
+            <div className="grid grid-cols-2 sm:grid-cols-[auto_auto] gap-2 justify-end">
               <Link
                 key={`juno-${namePrefixSlice}`}
                 to={`${
@@ -318,7 +307,7 @@ function JunoView() {
                 }`}
                 target="_blank"
               >
-                <Button id="juno-visit-button">
+                <Button id="juno-visit-button" className="w-full">
                   <ExternalLink className="w-5 h-5 mr-2" />
                   Visit
                 </Button>
@@ -330,7 +319,7 @@ function JunoView() {
               >
                 Delete
               </RequestButton>
-            </>
+            </div>
           )}
         </CardFooter>
       </Card>
