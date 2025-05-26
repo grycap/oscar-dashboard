@@ -2,7 +2,7 @@ name: Pull Request into Fork from Upstream Repo on Push
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ] 
  
 jobs:
   create_pull_request:
