@@ -1,0 +1,24 @@
+name: Pull Request into Fork from Upstream Repo on Push
+
+on:
+  push:
+    branches: [ "master" ]
+ 
+jobs:
+  create_pull_request:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.UPDATE_DEMO }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Check if PR exists
+        run: |
+          PR_EXISTS=$(gh pr list --repo https://github.com/grycap/oscar-dashboard-demo -B master --json number | jq '. | length')
+          echo "PR_EXISTS=$PR_EXISTS" >> $GITHUB_ENV
+
+      - name: Create Pull Request (if none exists) 
+        if: env.PR_EXISTS == '0'
+        run: gh pr create --repo https://github.com/grycap/oscar-dashboard-demo -B master --title 'Merge upstream master into fork master' --body 'Created by GitHub Actions'
