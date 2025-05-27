@@ -2,7 +2,7 @@
 import axios from "axios";
 
 async function deleteBucketsApi(bucket: string) {
-  const response  = await axios.delete("/system/bucket")
+  const response  = await axios.delete("/system/buckets/"+bucket)
   console.log(bucket)
   return response;
 }
