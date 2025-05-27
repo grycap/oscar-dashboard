@@ -37,6 +37,14 @@ function ServiceGeneralTab() {
   const [memoryUnits, setMemoryUnits] = useState<"Mi" | "Gi">(formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi");
   const [memory, setMemory] = useState<string>(formService?.memory?.replace(/[a-zA-Z]/g, ""));
 
+
+  const setAllowedUsers = (users: string[]) => {
+    setFormService((prev) => ({
+      ...prev,
+      allowed_users: users
+    }));
+  };
+
   return (
     <div
       style={{
@@ -207,7 +215,7 @@ function ServiceGeneralTab() {
 
               <div className="flex flex-row gap-2 items-center">
                 <strong>Allowed users:</strong>
-                  <AllowedUsersPopover />
+                  <AllowedUsersPopover allowed_users={formService.allowed_users} setAllowedUsersInExternalVar={setAllowedUsers}/>
               </div>
             </div>
           )}
