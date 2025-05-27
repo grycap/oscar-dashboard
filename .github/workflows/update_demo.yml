@@ -15,12 +15,21 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Check if PR exists
+        id: check_pr
         run: |
-          PR_EXISTS=$(gh api -X GET repos/grycap/oscar-dashboard-demo/pulls \
+          PR_DATA=$(gh api -X GET repos/grycap/oscar-dashboard-demo/pulls \
             -f head_repo=grycap/oscar-dashboard \
             -f base=main \
-            -f head=main | jq '. | length')
+            -f head=main)
+
+          PR_EXISTS=$(echo "$PR_DATA" | jq '. | length')
           echo "PR_EXISTS=$PR_EXISTS" >> $GITHUB_ENV
+          if [ "$PR_EXISTS" != '0' ]; then 
+            PR_NUMBER=$(echo "$PR_DATA" | jq '.[0].number')
+            echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          else
+            echo "PR_NUMBER=0" >> $GITHUB_ENV
+          fi
 
       - name: Create Pull Request (if none exists) 
         if: env.PR_EXISTS == '0'
@@ -37,7 +46,6 @@ jobs:
       - name: Merge Pull Request (if exists)
         if: env.PR_NUMBER != '0'
         run: |
-          gh api -X PUT repos/grycap/oscar-dashboard-demo/pulls/env.PR_NUMBER/merge \
-            -f "commit_title=Upstream sync" 
+          gh api -X PUT repos/grycap/oscar-dashboard-demo/pulls/${{env.PR_NUMBER}}/merge \
+            -f "commit_title=Upstream sync" \
             -f "merge_method=merge"
-            
