@@ -30,7 +30,7 @@ export type MinioProviderData = {
   setProviderInfo: (providerInfo: MinioStorageProvider) => void;
   buckets: Bucket[];
   setBuckets: (buckets: Bucket[]) => void;
-  createBucket: (bucketName: string) => Promise<void>;
+  createBucket: (bucketName: Bucket) => Promise<void>;
   updateBuckets: () => Promise<void>;
   getBucketItems: (
     bucketName: string,
@@ -39,7 +39,7 @@ export type MinioProviderData = {
     folders: CommonPrefix[];
     items: _Object[];
   }>;
-  deleteBucket: (bucketName: string) => Promise<void>;
+  deleteBucket: (bucketName: Bucket) => Promise<void>;
   createFolder: (bucketName: string, folderName: string) => Promise<void>;
   uploadFile: (bucketName: string, path: string, file: File) => Promise<void>;
   deleteFile: (bucketName: string, path: string) => Promise<void>;
@@ -135,11 +135,11 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     setBuckets(buckets);
   }
 
-  async function createBucket(bucketName: string) {
+  async function createBucket(bucketName: Bucket) {
     if (!client) return;
 
     try {
-      await createBucketsApi(bucketName,undefined)
+      await createBucketsApi(bucketName)
       /*const command = new CreateBucketCommand({
         Bucket: bucketName,
       });
@@ -153,7 +153,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     updateBuckets();
   }
 
-  async function deleteBucket(bucketName: string) {
+  async function deleteBucket(bucketName: Bucket) {
     if (!client) return;
 
     try {
