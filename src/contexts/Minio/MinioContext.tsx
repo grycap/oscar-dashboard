@@ -9,7 +9,7 @@ import React, {
 import {
   S3Client,
   ListBucketsCommand,
-  Bucket as Bucket_aws,
+  Bucket,
   ListObjectsV2Command,
   ListObjectsV2CommandInput,
   CommonPrefix,
@@ -24,14 +24,14 @@ import JSZip from "jszip";
 import env from "@/env";
 import createBucketsApi from "@/api/buckets/createBucketsApi";
 import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
-import { Bucket } from "@/pages/ui/services/models/service"
+import { Bucket as Bucket_oscar } from "@/pages/ui/services/models/service"
 
 export type MinioProviderData = {
   providerInfo: MinioStorageProvider;
   setProviderInfo: (providerInfo: MinioStorageProvider) => void;
-  buckets: Bucket_aws[];
-  setBuckets: (buckets: Bucket_aws[]) => void;
-  createBucket: (bucketName: Bucket) => Promise<void>;
+  buckets: Bucket[];
+  setBuckets: (buckets: Bucket[]) => void;
+  createBucket: (bucketName: Bucket_oscar) => Promise<void>;
   updateBuckets: () => Promise<void>;
   getBucketItems: (
     bucketName: string,
@@ -40,7 +40,7 @@ export type MinioProviderData = {
     folders: CommonPrefix[];
     items: _Object[];
   }>;
-  deleteBucket: (bucketName: Bucket) => Promise<void>;
+  deleteBucket: (bucketName: string) => Promise<void>;
   createFolder: (bucketName: string, folderName: string) => Promise<void>;
   uploadFile: (bucketName: string, path: string, file: File) => Promise<void>;
   deleteFile: (bucketName: string, path: string) => Promise<void>;
@@ -62,7 +62,7 @@ export const MinioContext = createContext({} as MinioProviderData);
 
 export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [providerInfo, setProviderInfo] = useState({} as MinioStorageProvider);
-  const [buckets, setBuckets] = useState<Bucket_aws[]>([]);
+  const [buckets, setBuckets] = useState<Bucket[]>([]);
 
   const client = useMemo(() => {
     if (
@@ -136,7 +136,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     setBuckets(buckets);
   }
 
-  async function createBucket(bucketName: Bucket) {
+  async function createBucket(bucketName: Bucket_oscar) {
     if (!client) return;
 
     try {
@@ -154,7 +154,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     updateBuckets();
   }
 
-  async function deleteBucket(bucketName: Bucket) {
+  async function deleteBucket(bucketName: string) {
     if (!client) return;
 
     try {
