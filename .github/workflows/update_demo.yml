@@ -25,9 +25,19 @@ jobs:
       - name: Create Pull Request (if none exists) 
         if: env.PR_EXISTS == '0'
         run: |
-          gh api -X POST repos/grycap/oscar-dashboard-demo/pulls \
+          PR_NUMBER=$(gh api -X POST repos/grycap/oscar-dashboard-demo/pulls \
             -f head_repo=grycap/oscar-dashboard \
             -f title='Merge upstream main into fork main' \
             -f body='Created by GitHub Actions' \
             -f base=main \
-            -f head=main
+            -f head=main | jq '.number')
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+
+      
+      - name: Merge Pull Request (if exists)
+        if: env.PR_NUMBER != '0'
+        run: |
+          gh api -X PUT repos/grycap/oscar-dashboard-demo/pulls/env.PR_NUMBER/merge \
+            -f "commit_title=Upstream sync" 
+            -f "merge_method=merge"
+            
