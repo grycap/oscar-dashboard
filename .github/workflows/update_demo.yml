@@ -16,9 +16,18 @@ jobs:
         
       - name: Check if PR exists
         run: |
-          PR_EXISTS=$(gh pr list --repo https://github.com/grycap/oscar-dashboard-demo -B main -H grycap:oscar-dashboard:main --json number | jq '. | length')
+          PR_EXISTS=$(gh api -X GET repos/grycap/oscar-dashboard-demo/pulls \
+            -f head_repo=grycap/oscar-dashboard \
+            -f base=main \
+            -f head=main | jq '. | length')
           echo "PR_EXISTS=$PR_EXISTS" >> $GITHUB_ENV
 
       - name: Create Pull Request (if none exists) 
         if: env.PR_EXISTS == '0'
-        run: gh pr create --repo https://github.com/grycap/oscar-dashboard-demo -B main -H grycap:oscar-dashboard:main --title 'Merge upstream main into fork main' --body 'Created by GitHub Actions'
+        run: |
+          gh api -X POST repos/grycap/oscar-dashboard-demo/pulls \
+            -f head_repo=grycap/oscar-dashboard \
+            -f title='Merge upstream main into fork main' \
+            -f body='Created by GitHub Actions' \
+            -f base=main \
+            -f head=main
