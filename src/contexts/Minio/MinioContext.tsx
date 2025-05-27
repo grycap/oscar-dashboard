@@ -9,7 +9,7 @@ import React, {
 import {
   S3Client,
   ListBucketsCommand,
-  Bucket,
+  Bucket as Bucket_aws,
   ListObjectsV2Command,
   ListObjectsV2CommandInput,
   CommonPrefix,
@@ -24,12 +24,13 @@ import JSZip from "jszip";
 import env from "@/env";
 import createBucketsApi from "@/api/buckets/createBucketsApi";
 import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
+import { Bucket } from "@/pages/ui/services/models/service"
 
 export type MinioProviderData = {
   providerInfo: MinioStorageProvider;
   setProviderInfo: (providerInfo: MinioStorageProvider) => void;
-  buckets: Bucket[];
-  setBuckets: (buckets: Bucket[]) => void;
+  buckets: Bucket_aws[];
+  setBuckets: (buckets: Bucket_aws[]) => void;
   createBucket: (bucketName: Bucket) => Promise<void>;
   updateBuckets: () => Promise<void>;
   getBucketItems: (
@@ -61,7 +62,7 @@ export const MinioContext = createContext({} as MinioProviderData);
 
 export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [providerInfo, setProviderInfo] = useState({} as MinioStorageProvider);
-  const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [buckets, setBuckets] = useState<Bucket_aws[]>([]);
 
   const client = useMemo(() => {
     if (

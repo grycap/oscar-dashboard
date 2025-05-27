@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Plus } from "lucide-react";
-import {Bucket,Bucket_visibility} from "@/pages/ui/services/models/service"
+import { Bucket, Bucket_visibility } from "@/pages/ui/services/models/service"
 import {
   Select,
   SelectContent,

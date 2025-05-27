@@ -1,4 +1,4 @@
-import { Bucket } from "@aws-sdk/client-s3";
+import { Bucket } from "@/pages/ui/services/models/service"
 import axios from "axios";
 
 async function deleteBucketsApi(bucket: Bucket) {
