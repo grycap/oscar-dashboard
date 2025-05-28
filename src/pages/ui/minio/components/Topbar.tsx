@@ -7,6 +7,10 @@ import AddBucketButton from "./AddBucketButton";
 import AddFolderButton from "./AddFolderButton";
 import useSelectedBucket from "../hooks/useSelectedBucket";
 import AddFileButton from "./AddFileButton";
+//import UpdateBucketButton from "./UpdateBucketButton";
+import getBucketsApi from "@/api/buckets/getBucketsApi";
+import { Bucket } from "../../services/models/service";
+
 
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
@@ -18,6 +22,19 @@ function MinioTopbar() {
     document.title = isOnRoot ? "OSCAR - Buckets" : `OSCAR - Buckets: ${name}`;
   }, [isOnRoot, name]);
 
+  const getBucketInfo = async (bucketName:string|undefined) => {
+    const allBuckets:Bucket[]= await getBucketsApi()
+    const bucketInfo = allBuckets.find((oneBucket) => oneBucket.bucket_path == bucketName);
+    /*const thebucket: Bucket={
+        bucket_path: name as string,
+        visibility: Bucket_visibility.private,
+        allowed_users: [],
+    }*/
+    console.log(bucketInfo)
+    console.log(allBuckets)
+    //return bucketInfo
+  };
+  getBucketInfo(name)
   const breadcrumbs = useMemo(() => {
     return pathSegments.map((segment, index) => {
       const currentPath = pathSegments.slice(0, index + 1).join("/"); 
