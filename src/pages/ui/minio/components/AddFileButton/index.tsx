@@ -126,7 +126,7 @@ export default function AddFileButton() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="mainGreen" style={{gap: 8}}>
+        <Button variant="outline" style={{gap: 8}}>
           <Upload size={20} className="h-5 w-5" />
           {!isSmallScreen && "Upload File"}
         </Button>
