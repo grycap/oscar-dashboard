@@ -1,7 +1,7 @@
 name: Pull Request into Fork from Upstream Repo on Push
 
 on:
-  push:
+  push: 
     branches: [ "main" ] 
 
 permissions:
