@@ -35,7 +35,7 @@ function MinioTopbar() {
           if(foundBucket?.Metadata?.service == undefined){
             setServiceAssociate(true)
           }else{
-            setServiceAssociate(!!foundBucket?.Metadata?.service)
+            setServiceAssociate(foundBucket?.Metadata?.service)
           }
           if(!foundBucket){
             foundBucket={
