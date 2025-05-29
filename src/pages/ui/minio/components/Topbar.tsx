@@ -21,8 +21,10 @@ function MinioTopbar() {
       allowed_users: [],
     });
 
-  if (typeof name === 'string' && name) {
-    const buckets = async () => {
+  const isOnRoot = name === undefined;
+
+  if (!isOnRoot) {
+    const selectBucket = async () => {
       const allBucket = await getBucketsApi();
       let foundBucket = allBucket.find(b => b.bucket_path === name);
       if(!foundBucket){
@@ -34,10 +36,8 @@ function MinioTopbar() {
       }
       setBucket(foundBucket);
     };
-    buckets()
+    selectBucket()
   }
-
-  const isOnRoot = name === undefined;
 
   useEffect(() => {
     document.title = isOnRoot ? "OSCAR - Buckets" : `OSCAR - Buckets: ${name}`;
