@@ -141,7 +141,11 @@ function MinioTopbar() {
         <AddBucketButton bucket={bucket} create={true} /> 
         :
         <div className="flex flex-row items-center gap-1"> 
-          {!serviceAssociate? <AddBucketButton bucket={bucket} create={false} />:<></> } 
+          { !serviceAssociate ? 
+          <AddBucketButton bucket={bucket} create={false} />
+          :
+          <></> 
+          } 
           <AddFolderButton /> <AddFileButton />
         </div>
         }
