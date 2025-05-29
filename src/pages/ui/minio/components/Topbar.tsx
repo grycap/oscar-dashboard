@@ -30,7 +30,11 @@ function MinioTopbar() {
         const selectBucket = async () => {
           const allBucket = await getBucketsApi();
           let foundBucket = allBucket.find(b => b.bucket_path === name);
-          setServiceAssociate(!!foundBucket?.Metadata?.service)
+          if(foundBucket?.Metadata?.service == undefined){
+            setServiceAssociate(true)
+          }else{
+            setServiceAssociate(!!foundBucket?.Metadata?.service)
+          }
           if(!foundBucket){
             foundBucket={
               bucket_path: "",
@@ -136,7 +140,7 @@ function MinioTopbar() {
         <AddBucketButton bucket={bucket} create={true} /> 
         :
         <div className="flex flex-row items-center gap-1"> 
-          {serviceAssociate?<></> :<AddBucketButton bucket={bucket} create={false} /> } 
+          {!serviceAssociate? <AddBucketButton bucket={bucket} create={false} />:<></> } 
           <AddFolderButton /> <AddFileButton />
         </div>
         }
