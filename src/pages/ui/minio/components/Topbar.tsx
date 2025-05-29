@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import OscarColors, { OscarStyles } from "@/styles";
@@ -9,12 +9,33 @@ import useSelectedBucket from "../hooks/useSelectedBucket";
 import AddFileButton from "./AddFileButton";
 //import UpdateBucketButton from "./UpdateBucketButton";
 import getBucketsApi from "@/api/buckets/getBucketsApi";
-import { Bucket } from "../../services/models/service";
+import { Bucket,Bucket_visibility } from "../../services/models/service";
 
 
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
+  const [bucket, setBucket] = useState<Bucket>({
+      bucket_path: "",
+      visibility: Bucket_visibility.private,
+      allowed_users: [],
+    });
+
+  if (typeof name === 'string' && name) {
+    const buckets = async () => {
+      const allBucket = await getBucketsApi();
+      let foundBucket = allBucket.find(b => b.bucket_path === name);
+      if(!foundBucket){
+        foundBucket={
+          bucket_path: "",
+          visibility: Bucket_visibility.private,
+          allowed_users: [],
+        }
+      }
+      setBucket(foundBucket);
+    };
+    buckets()
+  }
 
   const isOnRoot = name === undefined;
 
@@ -22,19 +43,7 @@ function MinioTopbar() {
     document.title = isOnRoot ? "OSCAR - Buckets" : `OSCAR - Buckets: ${name}`;
   }, [isOnRoot, name]);
 
-  const getBucketInfo = async (bucketName:string|undefined) => {
-    const allBuckets:Bucket[]= await getBucketsApi()
-    const bucketInfo = allBuckets.find((oneBucket) => oneBucket.bucket_path == bucketName);
-    /*const thebucket: Bucket={
-        bucket_path: name as string,
-        visibility: Bucket_visibility.private,
-        allowed_users: [],
-    }*/
-    console.log(bucketInfo)
-    console.log(allBuckets)
-    //return bucketInfo
-  };
-  getBucketInfo(name)
+
   const breadcrumbs = useMemo(() => {
     return pathSegments.map((segment, index) => {
       const currentPath = pathSegments.slice(0, index + 1).join("/"); 
@@ -120,7 +129,7 @@ function MinioTopbar() {
             {breadcrumbs.length > 0 && breadcrumbs}
           </nav>
         </div>
-        {isOnRoot ? <AddBucketButton /> : <div className="flex flex-row items-center gap-1"><AddFolderButton /> <AddFileButton /></div>}
+        {isOnRoot ? <AddBucketButton bucket={bucket} create={true} /> : <div className="flex flex-row items-center gap-1"> <AddBucketButton bucket={bucket} create={false} />  <AddFolderButton /> <AddFileButton /></div>}
       </div>
       <UserInfo />
     </header>

@@ -24,6 +24,7 @@ import JSZip from "jszip";
 import env from "@/env";
 import createBucketsApi from "@/api/buckets/createBucketsApi";
 import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
+import updateBucketsApi from "@/api/buckets/updateBucketsApi";
 import { Bucket as Bucket_oscar } from "@/pages/ui/services/models/service"
 
 export type MinioProviderData = {
@@ -32,6 +33,7 @@ export type MinioProviderData = {
   buckets: Bucket[];
   setBuckets: (buckets: Bucket[]) => void;
   createBucket: (bucketName: Bucket_oscar) => Promise<void>;
+  updateBucketsVisibilityControl: (bucketName: Bucket_oscar) => Promise<void>; 
   updateBuckets: () => Promise<void>;
   getBucketItems: (
     bucketName: string,
@@ -125,6 +127,24 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       throw error;
     }
   }
+
+ async function updateBucketsVisibilityControl(bucket:Bucket_oscar) {
+    if (!client) return;
+    try {
+      await updateBucketsApi(bucket)
+      /*const command = new CreateBucketCommand({
+        Bucket: bucketName,
+      });
+      await client.send(command);*/
+      alert.success("Bucket created successfully");
+    } catch (error) {
+      console.error(error);
+      alert.error("Error creating bucket");
+    }
+    updateBuckets();
+  
+  }
+
 
   async function updateBuckets() {
     if (!client) return;
@@ -361,6 +381,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         createBucket,
         createFolder,
         updateBuckets,
+        updateBucketsVisibilityControl,
         getBucketItems,
         deleteBucket,
         uploadFile,
