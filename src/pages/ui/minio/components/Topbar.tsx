@@ -15,7 +15,7 @@ import { Bucket,Bucket_visibility } from "../../services/models/service";
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
-  const [serviceAssociate, setServiceAssociate] = useState<Boolean>(false)
+  const [serviceAssociate, setServiceAssociate] = useState<Boolean>()
   const [bucket, setBucket] = useState<Bucket>({
       bucket_path: "",
       visibility: Bucket_visibility.private,
@@ -37,12 +37,12 @@ function MinioTopbar() {
               visibility: Bucket_visibility.private,
               allowed_users: [],
             }
+            setServiceAssociate(true)
           }
           setBucket(foundBucket);
         };
         selectBucket()
       }
-      setServiceAssociate(false)
 
   }, [isOnRoot, name]);
 
