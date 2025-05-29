@@ -109,7 +109,7 @@ export interface Bucket {
 	visibility: Bucket_visibility;
 	allowed_users: string[];
   metadata?: {
-    service: Boolean;
+    service: string;
     owner: string;
   }
 }

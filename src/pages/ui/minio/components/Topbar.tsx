@@ -32,7 +32,7 @@ function MinioTopbar() {
           let foundBucket = allBucket.find(b => b.bucket_path === name);
           console.log(allBucket)
           console.log(foundBucket?.metadata?.service)
-          if(foundBucket?.metadata?.service == undefined || foundBucket?.metadata?.service == true){
+          if(foundBucket?.metadata?.service == undefined || foundBucket?.metadata?.service == "true"){
             setServiceAssociate(true)
           }else{
             setServiceAssociate(false)
