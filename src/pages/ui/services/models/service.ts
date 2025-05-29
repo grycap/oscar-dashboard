@@ -108,6 +108,10 @@ export interface Bucket {
   bucket_path: string;
 	visibility: Bucket_visibility;
 	allowed_users: string[];
+  Metadata?: {
+    service: Boolean;
+    owner: string;
+  }
 }
 
 export enum Bucket_visibility {

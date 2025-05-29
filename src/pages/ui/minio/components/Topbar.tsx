@@ -15,6 +15,7 @@ import { Bucket,Bucket_visibility } from "../../services/models/service";
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
+  const [serviceAssociate, setServiceAssociate] = useState<Boolean>(false)
   const [bucket, setBucket] = useState<Bucket>({
       bucket_path: "",
       visibility: Bucket_visibility.private,
@@ -26,20 +27,22 @@ function MinioTopbar() {
   useEffect(() => {
     document.title = isOnRoot ? "OSCAR - Buckets" : `OSCAR - Buckets: ${name}`;
       if (!isOnRoot) {
-    const selectBucket = async () => {
-      const allBucket = await getBucketsApi();
-      let foundBucket = allBucket.find(b => b.bucket_path === name);
-      if(!foundBucket){
-        foundBucket={
-          bucket_path: "",
-          visibility: Bucket_visibility.private,
-          allowed_users: [],
-        }
+        const selectBucket = async () => {
+          const allBucket = await getBucketsApi();
+          let foundBucket = allBucket.find(b => b.bucket_path === name);
+          setServiceAssociate(!!!foundBucket?.Metadata?.service)
+          if(!foundBucket){
+            foundBucket={
+              bucket_path: "",
+              visibility: Bucket_visibility.private,
+              allowed_users: [],
+            }
+          }
+          setBucket(foundBucket);
+        };
+        selectBucket()
       }
-      setBucket(foundBucket);
-    };
-    selectBucket()
-  }
+      setServiceAssociate(false)
 
   }, [isOnRoot, name]);
 
@@ -129,7 +132,14 @@ function MinioTopbar() {
             {breadcrumbs.length > 0 && breadcrumbs}
           </nav>
         </div>
-        {isOnRoot ? <AddBucketButton bucket={bucket} create={true} /> : <div className="flex flex-row items-center gap-1"> <AddBucketButton bucket={bucket} create={false} />  <AddFolderButton /> <AddFileButton /></div>}
+        {isOnRoot ? 
+        <AddBucketButton bucket={bucket} create={true} /> 
+        :
+        <div className="flex flex-row items-center gap-1"> 
+          {serviceAssociate?<></> :<AddBucketButton bucket={bucket} create={false} /> } 
+          <AddFolderButton /> <AddFileButton />
+        </div>
+        }
       </div>
       <UserInfo />
     </header>
