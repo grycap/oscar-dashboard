@@ -19,28 +19,26 @@ import {
 } from "@/components/ui/select";
 import { AllowedUsersPopover } from "@/pages/ui/services/components/ServiceForm/components/GeneralTab/components/AllowedUsersPopover";
 
+interface Props {
+  bucket:Bucket;
+  create: Boolean;
+}
 
-export default function AddBucketButton() {
-  
-  //const [bucketVisibility, setBucketVisibility] = useState("");
-  //const [bucketAllowUser, setBucketAllowUser] = useState("");
-  const bucket: Bucket={
-    bucket_path:"",
-    visibility: Bucket_visibility.private,
-    allowed_users: [],
-  }
+export default function AddBucketButton({bucket, create}: Props) {
   const [ formBucket, setFormBucket ] = useState<Bucket>(bucket);
-
+  const createButtom=create
   const [isOpen, setIsOpen] = useState(false);
-  const { createBucket } = useMinio();
+  const { createBucket,updateBucketsVisibilityControl } = useMinio();
 
   const handleCreateBucket = async () => {
-    console.log("Creating bucket", formBucket.bucket_path);
-    console.log("Creating bucket", formBucket);
     await createBucket(formBucket);
     setIsOpen(false);
   };
 
+  const handleUpdateBucket = async () => {
+    await updateBucketsVisibilityControl(formBucket);
+    setIsOpen(false);
+  };
   const setAllowedUsers = (users: string[]) => {
     setFormBucket((prev) => ({
       ...prev,
@@ -70,16 +68,16 @@ export default function AddBucketButton() {
       <PopoverTrigger asChild>
         <Button variant="mainGreen">
           <Plus size={20} className="mr-2" />
-          Create bucket
+          {createButtom? "Create bucket" :"Update bucket"}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium leading-none">Create bucket</h4>
+            <h4 className="font-medium leading-none"> {createButtom? "Create bucket" :"Update bucket"}</h4>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="bucketName">Bucket Name</Label>
+            <Label htmlFor="bucketName">Bucket Name:</Label>
             <Input
               id="bucketName"
               value={formBucket?.bucket_path}
@@ -94,12 +92,11 @@ export default function AddBucketButton() {
               placeholder="Enter bucket name"
             />
           </div>
+          <Label htmlFor="bucketName">Visibility:</Label>
           <Select
                 value={formBucket?.visibility}
                 onValueChange={(value:Bucket_visibility) => {
                   setFormBucket((bucket: Bucket) => {
-                  console.log(bucket)
-
                     return {
                       ...bucket,
                       visibility: value,
@@ -120,19 +117,26 @@ export default function AddBucketButton() {
                   })}
                 </SelectContent>
               </Select>
-          <div className="flex flex-row gap-2 items-center">
+          {formBucket.visibility=="restricted" ? <div className="flex flex-row gap-2 items-center">
                 <strong>Allowed users:</strong>
                   <AllowedUsersPopover
                   allowed_users={formBucket.allowed_users}
                   setAllowedUsersInExternalVar={setAllowedUsers} />
-              </div>
+          </div> :
+          <></>
+          }
+   
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
+            {createButtom? 
             <Button onClick={handleCreateBucket} >
               Create
-            </Button>
+            </Button> :
+            <Button onClick={handleUpdateBucket} >
+              Update
+            </Button>}
           </div>
         </div>
       </PopoverContent>
