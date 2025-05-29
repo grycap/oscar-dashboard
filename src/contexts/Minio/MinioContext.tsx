@@ -132,11 +132,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!client) return;
     try {
       await updateBucketsApi(bucket)
-      /*const command = new CreateBucketCommand({
-        Bucket: bucketName,
-      });
-      await client.send(command);*/
-      alert.success("Bucket created successfully");
+      alert.success("Bucket updated successfully");
     } catch (error) {
       console.error(error);
       alert.error("Error creating bucket");

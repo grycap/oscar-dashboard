@@ -28,7 +28,7 @@ export default function AddBucketButton({bucket, create}: Props) {
   const [ formBucket, setFormBucket ] = useState<Bucket>(bucket);
   const createButtom=create
   const [isOpen, setIsOpen] = useState(false);
-  const { createBucket,updateBucketsVisibilityControl } = useMinio();
+  const { createBucket, updateBucketsVisibilityControl } = useMinio();
 
   const handleCreateBucket = async () => {
     await createBucket(formBucket);
