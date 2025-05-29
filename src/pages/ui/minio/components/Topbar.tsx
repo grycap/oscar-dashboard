@@ -30,7 +30,7 @@ function MinioTopbar() {
         const selectBucket = async () => {
           const allBucket = await getBucketsApi();
           let foundBucket = allBucket.find(b => b.bucket_path === name);
-          setServiceAssociate(!!!foundBucket?.Metadata?.service)
+          setServiceAssociate(!!foundBucket?.Metadata?.service)
           if(!foundBucket){
             foundBucket={
               bucket_path: "",
