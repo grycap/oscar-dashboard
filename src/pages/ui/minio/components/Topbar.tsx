@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import OscarColors, { OscarStyles } from "@/styles";
@@ -7,16 +7,50 @@ import AddBucketButton from "./AddBucketButton";
 import AddFolderButton from "./AddFolderButton";
 import useSelectedBucket from "../hooks/useSelectedBucket";
 import AddFileButton from "./AddFileButton";
+//import UpdateBucketButton from "./UpdateBucketButton";
+import getBucketsApi from "@/api/buckets/getBucketsApi";
+import { Bucket,Bucket_visibility } from "../../services/models/service";
+
 
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
+  const [serviceAssociate, setServiceAssociate] = useState<Boolean>(true)
+  const [bucket, setBucket] = useState<Bucket>({
+      bucket_path: "",
+      visibility: Bucket_visibility.private,
+      allowed_users: [],
+    });
 
   const isOnRoot = name === undefined;
 
   useEffect(() => {
-    document.title = isOnRoot ? "OSCAR - MinIO" : `OSCAR - MinIO: ${name}`;
+    document.title = isOnRoot ? "OSCAR - Buckets" : `OSCAR - Buckets: ${name}`;
+      if (!isOnRoot) {
+        const selectBucket = async () => {
+          const allBucket = await getBucketsApi();
+          let foundBucket = allBucket.find(b => b.bucket_path === name);
+          console.log(allBucket)
+          console.log(foundBucket?.metadata?.service)
+          if(foundBucket?.metadata?.service == undefined || foundBucket?.metadata?.service == "true"){
+            setServiceAssociate(true)
+          }else{
+            setServiceAssociate(false)
+          }
+          if(!foundBucket){
+            foundBucket={
+              bucket_path: "",
+              visibility: Bucket_visibility.private,
+              allowed_users: [],
+            }
+          }
+          setBucket(foundBucket);
+        };
+        selectBucket()
+      }
+
   }, [isOnRoot, name]);
+
 
   const breadcrumbs = useMemo(() => {
     return pathSegments.map((segment, index) => {
@@ -103,7 +137,18 @@ function MinioTopbar() {
             {breadcrumbs.length > 0 && breadcrumbs}
           </nav>
         </div>
-        {isOnRoot ? <AddBucketButton /> : <div><AddFolderButton /> <AddFileButton /></div>}
+        {isOnRoot ? 
+        <AddBucketButton bucket={bucket} create={true} /> 
+        :
+        <div className="flex flex-row items-center gap-1"> 
+          { !serviceAssociate ? 
+          <AddBucketButton bucket={bucket} create={false} />
+          :
+          <></> 
+          } 
+          <AddFolderButton /> <AddFileButton />
+        </div>
+        }
       </div>
       <UserInfo />
     </header>

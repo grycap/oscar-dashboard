@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { alert } from "@/lib/alert";
+import { Plus } from "lucide-react";
 
 import { Check, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -31,13 +32,20 @@ import { Link } from "react-router-dom";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
 
 function JunoView() {
+  
   const { buckets } = useMinio();
   const { systemConfig } = useAuth();
   const { authData } = useAuth();
+  const [ kindInputBucket, setkindInputBucket ] = useState(false);
 
+  
   const namePrefix =
     authData?.egiSession?.sub ?? authData?.token ?? authData?.user;
   const namePrefixSlice = namePrefix?.slice(0, 6);
+
+  useEffect(() => {
+      document.title ="OSCAR - Notebooks"
+    });
 
   const oidcGroups = systemConfig?.config.oidc_groups ?? [];
 
@@ -98,25 +106,27 @@ function JunoView() {
           storage_provider: service.mount?.storage_provider ?? "minio.default",
         },
         environment: {
-          ...service.environment,
           variables: {
             ...service.environment.variables,
             JHUB_BASE_URL: `/system/services/juno${namePrefixSlice}/exposed`,
             JUPYTER_DIRECTORY: "/mnt/"+ formData.bucket,
             GRANT_SUDO: "yes",
             OSCAR_ENDPOINT: authData.endpoint,
-            JUPYTER_TOKEN: authData?.token ?? "",
           },
           secrets:{
+            ...service.environment.secrets,
+            JUPYTER_TOKEN:	 authData?.token ?? "junooscar",
           }
         },
       };
+      console.log(modifiedService)
 
       await createServiceApi(modifiedService);
       refreshServices();
 
       alert.success("Jupyter Notebook instance deployed");
     } catch (error) {
+      console.log(error)
       alert.error("Error deploying Jupyter Notebook instance");
     }
   };
@@ -140,21 +150,10 @@ function JunoView() {
   }
 
   return (
-    <div
-      style={{
-        width: "60vw",
-        paddingTop: "40px",
-        paddingLeft: "20%",
-        paddingRight: "20%",
-        display: "flex",
-        flexDirection: "column",
-        flexGrow: 1,
-        flexBasis: 0,
-        overflowY: "auto",
-        rowGap: "24px",
-      }}
-    >
-      <h1 style={{ fontSize: "24px", fontWeight: "500" }}>Jupyter Notebook</h1>
+    <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-[40px] min-w-[300px] max-w-[700px] content-start">
+      <h1 className="text-center sm:text-left" style={{ fontSize: "24px", fontWeight: "500" }}>
+        Jupyter Notebook
+      </h1>
       <Card>
         <CardHeader>
           <CardTitle key={isDeployed.toString()}>
@@ -164,7 +163,7 @@ function JunoView() {
 
         <CardContent>
           {!isDeployed ? (
-            <form className="space-y-4">
+            <form className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="cpu-cores">CPU Cores</Label>
                 <Input
@@ -210,26 +209,56 @@ function JunoView() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bucket">Bucket</Label>
-                <Select
-                  value={formData.bucket}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, bucket: value })
-                  }
-                >
-                  <SelectTrigger id="bucket">
-                    <SelectValue
-                      id="bucket-value"
-                      placeholder="Select a bucket"
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {buckets.map((bucket) => (
-                      <SelectItem key={bucket.Name} value={bucket.Name!}>
-                        {bucket.Name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {kindInputBucket? 
+                <Input
+                  id="bucket-value"
+                  type="input"
+                  onFocus={(e) => (e.target.type = "text")}
+                  style={{ width: "100%",
+                    fontWeight: "normal",
+                   }}
+                  onChange={(e) => {
+                     setFormData({ ...formData, bucket: e.target?.value })
+                  }}
+                 
+                  placeholder="Select a bucket"
+                />
+                :
+                  <Select
+                    value={formData.bucket}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, bucket: value })
+                    }
+                  >
+                    <SelectTrigger id="bucket">
+                      <SelectValue
+                        id="bucket-value"
+                        placeholder="Select a bucket"
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {buckets.map((bucket) => (
+                        <SelectItem key={bucket.Name} value={bucket.Name!}>
+                          {bucket.Name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                }
+                <div className="flex justify-end space-x-2">
+                <Button 
+                        id="add-annotations-button"
+                        size={"sm"}
+                        style={{
+                          width: "max-content",
+                        }}
+                        onClick={() => {
+                            setkindInputBucket(!kindInputBucket);
+                        }}
+                      >
+                  <Plus className="h-4 w-4 mr-2" /> {kindInputBucket?"Buckets created":"New Bucket"}
+                </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="vo">VO</Label>
@@ -262,13 +291,13 @@ function JunoView() {
             </Alert>
           )}
         </CardContent>
-        <CardFooter className="flex justify-end space-x-2">
+        <CardFooter className="grid grid-cols-1">
           {!isDeployed ? (
-            <RequestButton id="juno-deploy-button" request={handleDeploy}>
+            <RequestButton id="juno-deploy-button " request={handleDeploy} className="sm:justify-self-end">
               Deploy
             </RequestButton>
           ) : (
-            <>
+            <div className="grid grid-cols-2 sm:grid-cols-[auto_auto] gap-2 justify-end">
               <Link
                 key={`juno-${namePrefixSlice}`}
                 to={`${
@@ -278,7 +307,7 @@ function JunoView() {
                 }`}
                 target="_blank"
               >
-                <Button id="juno-visit-button">
+                <Button id="juno-visit-button" className="w-full">
                   <ExternalLink className="w-5 h-5 mr-2" />
                   Visit
                 </Button>
@@ -290,7 +319,7 @@ function JunoView() {
               >
                 Delete
               </RequestButton>
-            </>
+            </div>
           )}
         </CardFooter>
       </Card>

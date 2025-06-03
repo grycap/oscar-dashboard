@@ -104,6 +104,22 @@ export enum LOG_LEVEL {
   NOTSET = "NOTSET",
 }
 
+export interface Bucket {
+  bucket_path: string;
+	visibility: Bucket_visibility;
+	allowed_users: string[];
+  metadata?: {
+    service: string;
+    owner: string;
+  }
+}
+
+export enum Bucket_visibility {
+  private = "private",
+  restricted = "restricted",
+  public = "public",
+}
+
 export interface Service {
   allowed_users: string[];
   name: string;

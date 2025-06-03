@@ -9,17 +9,41 @@ import {
 } from "@/components/ui/popover";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Plus } from "lucide-react";
+import { Bucket, Bucket_visibility } from "@/pages/ui/services/models/service"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AllowedUsersPopover } from "@/pages/ui/services/components/ServiceForm/components/GeneralTab/components/AllowedUsersPopover";
 
-export default function AddBucketButton() {
-  const [bucketName, setBucketName] = useState("");
+interface Props {
+  bucket:Bucket;
+  create: Boolean;
+}
+
+export default function AddBucketButton({bucket, create}: Props) {
+  const [ formBucket, setFormBucket ] = useState<Bucket>(bucket);
+  const createButtom=create
   const [isOpen, setIsOpen] = useState(false);
-  const { createBucket } = useMinio();
+  const { createBucket, updateBucketsVisibilityControl } = useMinio();
 
   const handleCreateBucket = async () => {
-    console.log("Creating bucket", bucketName);
-    await createBucket(bucketName);
-    setBucketName("");
+    await createBucket(formBucket);
     setIsOpen(false);
+  };
+
+  const handleUpdateBucket = async () => {
+    await updateBucketsVisibilityControl(formBucket);
+    setIsOpen(false);
+  };
+  const setAllowedUsers = (users: string[]) => {
+    setFormBucket((prev) => ({
+      ...prev,
+      allowed_users: users
+    }));
   };
 
   useEffect(() => {
@@ -44,30 +68,75 @@ export default function AddBucketButton() {
       <PopoverTrigger asChild>
         <Button variant="mainGreen">
           <Plus size={20} className="mr-2" />
-          Create bucket
+          {createButtom? "Create bucket" :"Update bucket"}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium leading-none">Create bucket</h4>
+            <h4 className="font-medium leading-none"> {createButtom? "Create bucket" :"Update bucket"}</h4>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="bucketName">Bucket Name</Label>
+            <Label htmlFor="bucketName">Bucket Name:</Label>
             <Input
               id="bucketName"
-              value={bucketName}
-              onChange={(e) => setBucketName(e.target.value)}
+              value={formBucket?.bucket_path}
+              onChange={(e) => {
+                setFormBucket((bucket: Bucket) => {
+                    return {
+                      ...bucket,
+                      bucket_path: e.target.value,
+                    };
+                  });
+                }}
               placeholder="Enter bucket name"
             />
           </div>
+          <Label htmlFor="bucketName">Visibility:</Label>
+          <Select
+                value={formBucket?.visibility}
+                onValueChange={(value:Bucket_visibility) => {
+                  setFormBucket((bucket: Bucket) => {
+                    return {
+                      ...bucket,
+                      visibility: value,
+                    };
+                  });
+                }}
+              >
+                <SelectTrigger id="bucket-select-trigger">
+                  <SelectValue placeholder="Select a Bucket Visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(Bucket_visibility) as Array<keyof typeof Bucket_visibility>)?.map((kind) => {
+                    return (
+                      <SelectItem key={kind} value={kind}>
+                        {kind}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+          {formBucket.visibility=="restricted" ? <div className="flex flex-row gap-2 items-center">
+                <strong>Allowed users:</strong>
+                  <AllowedUsersPopover
+                  allowed_users={formBucket.allowed_users}
+                  setAllowedUsersInExternalVar={setAllowedUsers} />
+          </div> :
+          <></>
+          }
+   
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateBucket} disabled={!bucketName.trim()}>
+            {createButtom? 
+            <Button onClick={handleCreateBucket} >
               Create
-            </Button>
+            </Button> :
+            <Button onClick={handleUpdateBucket} >
+              Update
+            </Button>}
           </div>
         </div>
       </PopoverContent>

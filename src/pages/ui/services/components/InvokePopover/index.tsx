@@ -69,14 +69,19 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
       uploadedFile.type === "application/x-yaml" ||
       uploadedFile.type === "text/yaml" ||
       uploadedFile.name.endsWith(".yaml") ||
-      uploadedFile.name.endsWith(".yml")
+      uploadedFile.name.endsWith(".yml")||
+      uploadedFile.name.endsWith(".npy") ||
+      uploadedFile.name.endsWith(".gzip") ||
+      uploadedFile.name.endsWith(".tar") ||
+      uploadedFile.name.endsWith(".rar") ||
+      uploadedFile.name.endsWith(".7z")
     ) {
       setFileType("text");
       setSelectedLanguage("yaml");
     } else if (uploadedFile.type.startsWith("image/")) {
       setFileType("image");
     } else {
-      alert.error("Tipo de archivo no soportado");
+      alert.error("Type file not supported");
       return;
     }
 
@@ -139,7 +144,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   };
 
   const renderUploadView = () => (
-    <div className="space-y-4 w-[800px]">
+    <div className="grid grid-cols-1 w-full">
       {!file ? (
         <>
           <input
@@ -151,32 +156,33 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
             className="hidden"
             accept="image/*,.json,.yaml,.yml"
           />
-          <div
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed cursor-pointer border-gray-300 rounded-lg p-8 h-80 text-center flex flex-col items-center justify-center gap-4"
-          >
-            <Upload className="h-8 w-8" />
-            Drag and drop your file here or click to open file explorer
-            <Button>Upload file</Button>
-          </div>
-          <div className="flex justify-center items-center">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCurrentView("editor");
-                setFile(null);
-                setFileType(null);
-              }}
+          <div className="grid grid-cols-1 grid-rows-[1fr_auto] gap-2">
+            <div className="h-full my-auto border-2 border-dashed cursor-pointer border-gray-300 rounded-lg p-8 text-center flex flex-col items-center justify-center gap-4"
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
             >
-              Or use code editor
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
+              <Upload className="h-8 w-8" />
+              Drag and drop your file here or click to open file explorer
+              <Button>Upload file</Button>
+            </div>
+            <div className="flex justify-center items-center">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setCurrentView("editor");
+                  setFile(null);
+                  setFileType(null);
+                }}
+              >
+                Or use code editor
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
           </div>
         </>
       ) : (
-        <div className="bg-muted p-4 rounded-lg w-[800px]">
+        <div className="grid grid-cols-1 grid-rows-[auto_1fr] bg-muted rounded-lg w-full h-full ">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
               {fileType === "image" ? (
@@ -203,7 +209,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
             </Button>
           </div>
           {fileType === "image" && (
-            <div className="mt-4">
+            <div className="grid grid-cols-1 grid-rows-[auto_1fr] mt-4">
               <h4 className="text-md font-semibold mb-2">Preview</h4>
               <img
                 src={URL.createObjectURL(file)}
@@ -231,7 +237,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   }, [responseType]);
 
   const renderEditorView = () => (
-    <div className="space-y-4 w-[75vw]">
+    <div className="grid grid-cols-1 grid-rows-[auto_1fr] w-full gap-2">
       <div className="flex justify-between items-start gap-4">
         <Button
           variant="outline"
@@ -251,7 +257,8 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
         </Select>
       </div>
       <Editor
-        height="60vh"
+        height="100%"
+        width="100%"
         language={selectedLanguage}
         value={fileContent}
         onChange={handleEditorChange}
@@ -262,7 +269,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
 
   const renderResponseView = () => {
     return (
-      <div className="space-y-4 w-[800px]">
+      <div className="grid grid-cols-1 grid-rows-[auto_1fr] w-full gap-2">
         <Select
           value={responseType}
           onValueChange={(value) =>
@@ -278,7 +285,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
             <SelectItem value="file">File</SelectItem>
           </SelectContent>
         </Select>
-        <div className="min-h-[40vh]">
+        <div className="h-full">
           {responseType === "text" && (
             <div
               style={{
@@ -342,7 +349,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-fit">
+      <DialogContent className="grid grid-cols-1 grid-rows-[auto_1fr_auto] w-screen sm:w-[70%] 2xl:w-[60%] h-[90%] sm:h-[80%] 2xl:h-[60%] overflow-y-auto gap-5">
         <DialogHeader>
           <DialogTitle>
             <span style={{ color: OscarColors.DarkGrayText }}>
@@ -354,7 +361,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
         {currentView === "upload" && renderUploadView()}
         {currentView === "editor" && renderEditorView()}
         {currentView === "response" && renderResponseView()}
-        <div className="mt-4 flex justify-end">
+        <div className="grid grid-cols-1 sm:grid-cols-[auto] sm:justify-end">
           {currentView !== "response" ? (
             <RequestButton variant="mainGreen" request={invokeService}>
               Invoke Service

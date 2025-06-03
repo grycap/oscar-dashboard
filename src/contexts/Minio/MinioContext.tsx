@@ -24,13 +24,16 @@ import JSZip from "jszip";
 import env from "@/env";
 import createBucketsApi from "@/api/buckets/createBucketsApi";
 import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
+import updateBucketsApi from "@/api/buckets/updateBucketsApi";
+import { Bucket as Bucket_oscar } from "@/pages/ui/services/models/service"
 
 export type MinioProviderData = {
   providerInfo: MinioStorageProvider;
   setProviderInfo: (providerInfo: MinioStorageProvider) => void;
   buckets: Bucket[];
   setBuckets: (buckets: Bucket[]) => void;
-  createBucket: (bucketName: string) => Promise<void>;
+  createBucket: (bucketName: Bucket_oscar) => Promise<void>;
+  updateBucketsVisibilityControl: (bucketName: Bucket_oscar) => Promise<void>; 
   updateBuckets: () => Promise<void>;
   getBucketItems: (
     bucketName: string,
@@ -125,6 +128,20 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+ async function updateBucketsVisibilityControl(bucket:Bucket_oscar) {
+    if (!client) return;
+    try {
+      await updateBucketsApi(bucket)
+      alert.success("Bucket updated successfully");
+    } catch (error) {
+      console.error(error);
+      alert.error("Error creating bucket");
+    }
+    updateBuckets();
+  
+  }
+
+
   async function updateBuckets() {
     if (!client) return;
 
@@ -135,17 +152,15 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     setBuckets(buckets);
   }
 
-  async function createBucket(bucketName: string) {
+  async function createBucket(bucketName: Bucket_oscar) {
     if (!client) return;
 
     try {
-      await createBucketsApi(bucketName,undefined)
-      //console.log(command)
+      await createBucketsApi(bucketName)
       /*const command = new CreateBucketCommand({
         Bucket: bucketName,
-      });*/
-
-      //await client.send(command);
+      });
+      await client.send(command);*/
       alert.success("Bucket created successfully");
     } catch (error) {
       console.error(error);
@@ -160,8 +175,9 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
       await deleteBucketsApi(bucketName)
-      // const command = new DeleteBucketCommand({ Bucket: bucketName });
-      //console.log(command)
+      /*const command = new DeleteBucketCommand({ Bucket: bucketName });
+      await client.send(command);*/
+
       alert.success("Bucket deleted successfully");
     } catch (error) {
       console.error(error);
@@ -361,6 +377,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         createBucket,
         createFolder,
         updateBuckets,
+        updateBucketsVisibilityControl,
         getBucketItems,
         deleteBucket,
         uploadFile,

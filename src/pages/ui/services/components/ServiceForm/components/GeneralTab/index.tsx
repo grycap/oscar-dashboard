@@ -22,6 +22,8 @@ import InputOutputEditor from "../InputOutputTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import EnviromentSecrets from "./components/EnviromentSecrets";
+import Annotations from "./components/Annotations";
+
 import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
 
 function ServiceGeneralTab() {
@@ -35,6 +37,14 @@ function ServiceGeneralTab() {
   const [memoryUnits, setMemoryUnits] = useState<"Mi" | "Gi">(formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi");
   const [memory, setMemory] = useState<string>(formService?.memory?.replace(/[a-zA-Z]/g, ""));
 
+
+  const setAllowedUsers = (users: string[]) => {
+    setFormService((prev) => ({
+      ...prev,
+      allowed_users: users
+    }));
+  };
+
   return (
     <div
       style={{
@@ -44,59 +54,42 @@ function ServiceGeneralTab() {
       }}
     >
       <ServiceFormCell title="General Settings">
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            gap: 10,
-          }}
-        >
-          <section
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              width: "100%",
-              gap: 10,
-              alignItems: "top",
-            }}
-          >
-            <Input
-              id="service-name-input"
-              flex={1}
-              value={formService?.name}
-              onChange={(e) => {
-                handleChange(e, "name");
-              }}
-              label="Service name"
-              error={errors.name}
-              onBlur={() => onBlur("name")}
-              required
-              disabled={formMode === ServiceViewMode.Update}
-              className="disabled:bg-gray"
-            />
-            <Input
-              id="docker-image-input"
-              flex={2}
-              value={formService?.image}
-              label="Docker image"
-              onChange={(e) => {
-                handleChange(e, "image");
-              }}
-              error={errors.image}
-              onBlur={() => onBlur("image")}
-              required
-            />
-          </section>
-          <div className="flex flex-row w-full items-end gap-5">
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.375rem",
-                minWidth: "200px",
-              }}
-            >
+        <div className="grid grid-cols-1 gap-[10px] w-full max-w-5xl min-w-[720px]">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 items-end w-full">
+            <div className="col-span-1">
+              <Input
+                id="service-name-input"
+                flex={1}
+                value={formService?.name}
+                onChange={(e) => {
+                  handleChange(e, "name");
+                }}
+                label="Service name"
+                error={errors.name}
+                onBlur={() => onBlur("name")}
+                required
+                disabled={formMode === ServiceViewMode.Update}
+                className="disabled:bg-gray"
+              />
+            </div>
+            <div className="col-span-1 lg:col-span-2">
+              <Input
+                id="docker-image-input"
+                flex={2}
+                value={formService?.image}
+                label="Docker image"
+                onChange={(e) => {
+                  handleChange(e, "image");
+                }}
+                error={errors.image}
+                onBlur={() => onBlur("image")}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-[auto_auto_1fr] gap-5 items-end w-full">
+            <div className="min-w-[154px]">
               <Label>VO</Label>
               <Select
                 value={formService?.vo}
@@ -124,14 +117,7 @@ function ServiceGeneralTab() {
               </Select>
             </div>
 
-            <div
-              style={{
-                width: "50%",
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.375rem",
-              }}
-            >
+            <div className="min-w-[152px]">
               <Label>Log level</Label>
               <Select
                 value={formService?.log_level}
@@ -144,10 +130,7 @@ function ServiceGeneralTab() {
                   });
                 }}
               >
-                <SelectTrigger
-                  className="w-[250px]"
-                  id="log-level-select-trigger"
-                >
+                <SelectTrigger id="log-level-select-trigger">
                   <SelectValue placeholder="Log level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -162,36 +145,28 @@ function ServiceGeneralTab() {
               </Select>
             </div>
             {formService.token && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "end",
-
-                  gap: 10,
-                }}
+              <div 
+               className="col-span-1"
               >
-                <Input
-                  id="token-input"
-                  value={formService?.token}
-                  readOnly
-                  label="Token"
-                  type="password"
-                  width="600px"
-                />
-                <Button
-                  id="copy-token-button"
-                  variant="ghost"
-                  style={{
-                    height: "39px",
-                  }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(formService?.token || "");
-                    alert.success("Token copied to clipboard");
-                  }}
-                >
-                  <CopyIcon />
-                </Button>
+                <div className="grid grid-cols-[1fr_auto] items-end w-full">
+                  <Input
+                    id="token-input"
+                    value={formService?.token}
+                    readOnly
+                    label="Token"
+                    type="password"
+                  />
+                  <Button
+                    id="copy-token-button"
+                    variant="ghost"
+                    onClick={() => {
+                      navigator.clipboard.writeText(formService?.token || "");
+                      alert.success("Token copied to clipboard");
+                    }}
+                  >
+                    <CopyIcon size={20}/>
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -240,7 +215,7 @@ function ServiceGeneralTab() {
 
               <div className="flex flex-row gap-2 items-center">
                 <strong>Allowed users:</strong>
-                  <AllowedUsersPopover />
+                  <AllowedUsersPopover allowed_users={formService.allowed_users} setAllowedUsersInExternalVar={setAllowedUsers}/>
               </div>
             </div>
           )}
@@ -248,24 +223,9 @@ function ServiceGeneralTab() {
       </ServiceFormCell>
       <Divider />
       <ServiceFormCell title="Service specifications">
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            gap: 10,
-          }}
-        >
-          <ScriptButton />
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              width: "100%",
-              alignItems: "end",
-              gap: 10,
-            }}
-          >
+        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5 w-full max-w-6xl min-w-[720px]">
+          <ScriptButton  />
+          <div className="grid grid-cols-[210px_210px_150px] gap-[10px] 2xl:pl-[40px] items-end">
             <Input
               id="cpu-input"
               value={formService?.cpu}
@@ -317,12 +277,20 @@ function ServiceGeneralTab() {
         </div>
       </ServiceFormCell>
       <Divider />
-      <ServiceFormCell title="Enviroment variables">
-        <EnviromentVariables />
+      <ServiceFormCell title="Annotations">
+        <Annotations />
       </ServiceFormCell>
-      <ServiceFormCell title="Enviroment secrets">
-        <EnviromentSecrets />
-      </ServiceFormCell>
+      <Divider />
+      <div className="grid grid-cols-1 2xl:grid-cols-2 w-ful max-w-[1250px] min-w-[720px]">
+        <div className="2xl:border-r-2 border-b-2 2xl:border-b-0">
+          <ServiceFormCell title="Enviroment variables">
+            <EnviromentVariables />
+          </ServiceFormCell>
+        </div>
+        <ServiceFormCell title="Enviroment secrets">
+          <EnviromentSecrets />
+        </ServiceFormCell>
+      </div>
       <Divider />
       <InputOutputEditor />
     </div>

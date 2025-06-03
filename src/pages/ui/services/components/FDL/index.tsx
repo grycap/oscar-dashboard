@@ -12,6 +12,8 @@ import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import { Input } from "@/components/ui/input";
 import createServiceApi from "@/api/services/createServiceApi";
+import getServiceApi from "@/api/services/getServiceApi";
+import updateServiceApi from "@/api/services/updateServiceApi";
 import { alert } from "@/lib/alert";
 import RequestButton from "@/components/RequestButton";
 import yamlToServices from "./utils/yamlToService";
@@ -54,8 +56,14 @@ function FDLForm() {
     const services = yamlToServices(fdl, script);
 
     const promises = services.map(async (service) => {
-      const response = await createServiceApi(service);
-      return response;
+      try{
+        await getServiceApi(service.name);
+      }catch (error) {
+        const response = await createServiceApi(service);
+        return response;
+      }
+        const response = await updateServiceApi(service);
+        return response;
     });
 
     const results = await Promise.allSettled(promises);
@@ -63,7 +71,7 @@ function FDLForm() {
     results.forEach((result, index) => {
       if (result.status === "rejected") {
         alert.error(
-          `Error creating service ${services[index].name}: ${result.reason}`
+          `Error creating service ${services[index].name}: ${result.reason.response.data}`
         );
       } else {
         alert.success(`Service ${services[index].name} created successfully`);
@@ -101,21 +109,21 @@ function FDLForm() {
   return (
     <Dialog open={showFDLModal} onOpenChange={setShowFDLModal}>
       {/* <DialogTrigger>Open</DialogTrigger> */}
-      <DialogContent style={{ maxWidth: "80vw", width: "80vw" }}>
+      <DialogContent className="grid grid-cols-1 grid-rows-[auto_1fr_auto] w-screen sm:w-[70%] 2xl:w-[60%] h-[90%] sm:h-[80%] 2xl:h-[60%] overflow-y-auto gap-4">
         <DialogHeader>
           <DialogTitle>Create the service using FDL</DialogTitle>
           <DialogDescription>
             Use the code editor to edit the FDL file and the script.
           </DialogDescription>
         </DialogHeader>
-        <Tabs
+        <Tabs className="grid grid-cols-1 grid-rows-[auto_1fr]"
           defaultValue="account"
           value={selectedTab}
           onValueChange={(value) => {
             setSelectedTab(value as "fdl" | "script");
           }}
         >
-          <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-2 justify-items-start">
             <TabsList>
               <TabsTrigger style={{ padding: "7px 30px" }} value="fdl">
                 FDL
@@ -136,7 +144,7 @@ function FDLForm() {
                 setFdl(e || "");
               }}
               width="100%"
-              height="60vh"
+              height="100%"
               options={{
                 minimap: {
                   enabled: false,
@@ -148,7 +156,7 @@ function FDLForm() {
             value="script"
             style={{ outline: "none", width: "100%" }}
           >
-            <Editor
+            <Editor 
               key={`script-${editorKey}`}
               language="javascript"
               value={script}
@@ -156,7 +164,7 @@ function FDLForm() {
                 setScript(e || "");
               }}
               width="100%"
-              height="60vh"
+              height="100%"
               options={{
                 minimap: {
                   enabled: false,
@@ -166,7 +174,7 @@ function FDLForm() {
           </TabsContent>
         </Tabs>
         <DialogFooter>
-          <RequestButton request={handleSave}>Save</RequestButton>
+          <RequestButton request={handleSave}>Create Service</RequestButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

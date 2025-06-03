@@ -13,7 +13,6 @@ import {
   Search,
 } from "lucide-react";
 import OscarColors from "@/styles";
-import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import GenericTable from "@/components/Table";
 import { Input } from "@/components/ui/input";
 import DeleteDialog from "@/components/DeleteDialog";
@@ -22,9 +21,13 @@ interface User {
   uid: string;
 }
 
-export function AllowedUsersPopover() {
-  const { formService, setFormService } = useServicesContext();
-  const allowedUsersDefault = formService.allowed_users.map((user) => {return {uid: user}});
+interface Props {
+  allowed_users: string[];
+  setAllowedUsersInExternalVar: (users: string[]) => void;
+}
+
+export function AllowedUsersPopover({allowed_users, setAllowedUsersInExternalVar}: Props ) {
+  const allowedUsersDefault = allowed_users.map((user) => {return {uid: user}});
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [allowedUsers, setAllowedUsers] = useState<User[]>(allowedUsersDefault);
@@ -49,10 +52,8 @@ export function AllowedUsersPopover() {
   );
 
   const applyChanges = (users: User[]) => {
-    setFormService((prev) => ({
-      ...prev,
-      allowed_users: users.map((user) => {return user.uid})
-    }));
+    allowed_users = users.map((user) => {return user.uid});
+    setAllowedUsersInExternalVar(allowed_users);
   };
 
   const addAllowedUser = (newUID: string) => {
@@ -145,7 +146,7 @@ export function AllowedUsersPopover() {
             ]}
           />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-6 gap-y-2 gap-x-2 ">
+        <div className="grid grid-cols-2 sm:grid-cols-[140px_140px] grid-row-1 place-content-between gap-y-2 gap-x-2 ">
           <div className="col-span-1">
           <Button 
               className="w-[100%]"
@@ -155,7 +156,7 @@ export function AllowedUsersPopover() {
               Cancel
             </Button>
           </div>
-          <div className="col-span-1 sm:col-end-7">
+          <div className="col-span-1">
             <Button 
               ref={buttonRefApply}
               className="w-[100%]"

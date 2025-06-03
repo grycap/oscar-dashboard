@@ -4,13 +4,13 @@ import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-function EnviromentSecrets() {
+function Annotations() {
   const { formService, setFormService } = useServicesContext();
 
   const initialArray = useMemo(() => {
-    const secrets = formService.environment?.secrets;
-    const array = secrets
-      ? Object.entries(secrets).map(([key, value]) => {
+    const annotations = formService.annotations;
+    const array = annotations
+      ? Object.entries(annotations).map(([key, value]) => {
           return {
             key,
             value,
@@ -21,20 +21,17 @@ function EnviromentSecrets() {
     return array;
   }, [formService]);
 
-  const [secretsArray, setSecretsArray] = useState(initialArray);
+  const [annotationsArray, setAnnotationsArray] = useState(initialArray);
 
   useEffect(() => {
     setFormService((prev) => ({
       ...prev,
-      environment: {
-        ...prev.environment,
-        secrets: secretsArray.reduce((acc, curr) => {
+        annotations: annotationsArray.reduce((acc, curr) => {
           acc[curr.key] = curr.value;
           return acc;
         }, {} as Record<string, string>),
-      },
     }));
-  }, [secretsArray]);
+  }, [annotationsArray]);
 
   return (
     <div
@@ -44,45 +41,45 @@ function EnviromentSecrets() {
         gap: "9px",
       }}
     >
-      {secretsArray.map((variable, index) => (
+      {annotationsArray.map((variable, index) => (
         <div
           key={index}
           style={{ display: "flex", gap: "5px", alignItems: "center" }}
         >
           <Input
-            id={`secret-name-input-${index}`}
+            id={`annotations-name-input-${index}`}
             value={variable.key}
             onChange={(e) => {
-              const newVariablesArray = [...secretsArray];
+              const newVariablesArray = [...annotationsArray];
               newVariablesArray[index].key = e.target.value;
-              setSecretsArray(newVariablesArray);
+              setAnnotationsArray(newVariablesArray);
             }}
-            placeholder="Secret name"
+            placeholder="Annotation name"
           />
           <Input
-            id={`secret-value-input-${index}`}
+            id={`annotation-value-input-${index}`}
             type="password"
             value={variable.value}
             onFocus={(e) => (e.target.type = "text")}
             onBlur={(e) => (e.target.type = "password")}
             style={{ width: 300 }}
             onChange={(e) => {
-              const newVariablesArray = [...secretsArray];
+              const newVariablesArray = [...annotationsArray];
               newVariablesArray[index].value = e.target.value;
-              setSecretsArray(newVariablesArray);
+              setAnnotationsArray(newVariablesArray);
             }}
             placeholder="Value"
           />
-          {secretsArray.length > 0 && (
+          {annotationsArray.length > 0 && (
             <Button
-              id={`remove-secret-button-${index}`}
+              id={`remove-annotation-button-${index}`}
               size={"icon"}
               variant={"ghost"}
               onClick={() => {
-                const newVariablesArray = secretsArray.filter(
+                const newVariablesArray = annotationsArray.filter(
                   (_, i) => i !== index
                 );
-                setSecretsArray(newVariablesArray);
+                setAnnotationsArray(newVariablesArray);
               }}
             >
               <X size={16} />
@@ -91,19 +88,19 @@ function EnviromentSecrets() {
         </div>
       ))}
       <Button
-        id="add-secret-button"
+        id="add-annotations-button"
         size={"sm"}
         style={{
           width: "max-content",
         }}
         onClick={() => {
-          setSecretsArray([...secretsArray, { key: "", value: "" }]);
+          setAnnotationsArray([...annotationsArray, { key: "", value: "" }]);
         }}
       >
-        <Plus className="h-4 w-4 mr-2" /> Add Secret
+        <Plus className="h-4 w-4 mr-2" /> Add Annotation
       </Button>
     </div>
   );
 }
 
-export default EnviromentSecrets;
+export default Annotations;

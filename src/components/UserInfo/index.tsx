@@ -54,7 +54,14 @@ export default function UserInfo() {
                 whiteSpace: "nowrap",
               }}
             >
-              {`${authContext.authData.user} - ${authContext.authData.endpoint}`}
+              <div className="grid grid-cols-1 xl:grid-cols-[auto_auto]">
+                <div className="truncate">
+                  {`${authContext.authData.user} -\u00A0`}
+                </div>
+                <div className="truncate">
+                  {`${authContext.authData.endpoint}`}
+                </div>
+              </div>
             </span>
             <Copy className="h-4 w-4" />
           </motion.div>
