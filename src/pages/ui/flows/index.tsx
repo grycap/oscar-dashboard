@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { alert } from "@/lib/alert";
-import { Plus } from "lucide-react";
+import { Info, Plus } from "lucide-react";
 
 import { Check, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -30,13 +30,15 @@ import createServiceApi from "@/api/services/createServiceApi";
 import useServicesContext from "../services/context/ServicesContext";
 import { Link } from "react-router-dom";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 function FlowsView() {
   
   const { buckets } = useMinio();
-  const { systemConfig } = useAuth();
+  const { systemConfig, clusterInfo } = useAuth();
   const { authData } = useAuth();
   const [ kindInputBucket, setkindInputBucket ] = useState(false);
+  const [showPasswordInfo, setShowPasswordInfo] = useState(false);
 
   
   const namePrefix =
@@ -67,6 +69,16 @@ function FlowsView() {
     password: "",
   });
 
+  function isVersionLower(version: string, target: string) {
+    const v = version.split('.').map(x => parseInt(x.replace(/\D/g, '')) || 0);
+    const t = target.split('.').map(x => parseInt(x.replace(/\D/g, '')) || 0);
+    for (let i = 0; i < 3; i++) {
+      if ((v[i] ?? 0) < (t[i] ?? 0)) return true;
+      if ((v[i] ?? 0) > (t[i] ?? 0)) return false;
+    }
+    return false;
+  }
+
   const handleDeploy = async () => {
     if (
       !formData.cpuCores ||
@@ -83,7 +95,7 @@ function FlowsView() {
       if (!namePrefix) throw Error("No name prefix found");
 
       const fdlUrl =
-        "https://raw.githubusercontent.com/grycap/oscar-flows/refs/heads/main/fdl.yaml";
+        "https://raw.githubusercontent.com/grycap/oscar-flows/refs/heads/main/flows.yaml";
       const fdlResponse = await fetch(fdlUrl);
       const fdlText = await fdlResponse.text();
 
@@ -96,7 +108,7 @@ function FlowsView() {
       if (!services.length) throw Error("No services found");
 
       const service = services[0];
-      const modifiedService: Service = {
+      let modifiedService: Service = {
         ...service,
         name: `flows${namePrefixSlice}`,
         vo: formData.vo,
@@ -119,6 +131,14 @@ function FlowsView() {
           }
         },
       };
+      if (
+        clusterInfo?.version && 
+        (clusterInfo.version !== "devel" || isVersionLower(clusterInfo.version, "3.6.0"))
+      ) {
+        modifiedService.environment.variables.PASSWORD = modifiedService.environment.secrets.PASSWORD;
+        delete modifiedService.environment.secrets.PASSWORD;
+      }
+      
       console.log(modifiedService)
 
       await createServiceApi(modifiedService);
@@ -208,7 +228,24 @@ function FlowsView() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="admin-password">Admin password</Label>
+                <Label htmlFor="admin-password" className="pr-2">Admin password</Label>
+                {(clusterInfo?.version !== "devel" && isVersionLower(clusterInfo?.version!, "3.6.0")) &&
+                <Popover open={showPasswordInfo} onOpenChange={() => setShowPasswordInfo((v) => !v)}>
+                  <PopoverTrigger asChild>
+                    <span className="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2 py-0.5 rounded cursor-pointer">
+                      <Info className="inline w-3 h-3 mr-1" />
+                        Warning
+                    </span>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80">
+                    <small>
+                      For OSCAR versions queal or lower than <b>3.5.3</b>, the admin password will be set as an
+                      environment variable instead of a secret. All users that have access to the service
+                      will be able to see the password.
+                    </small>
+                  </PopoverContent>
+                </Popover>
+                }
                 <Input
                   id="admin-password"
                   type="password"
