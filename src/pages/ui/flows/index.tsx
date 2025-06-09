@@ -83,12 +83,12 @@ function FlowsView() {
       if (!namePrefix) throw Error("No name prefix found");
 
       const fdlUrl =
-        "https://raw.githubusercontent.com/grycap/oscar/refs/heads/fix-rk181/examples/node-red/with_auth/fdl.yaml";
+        "https://raw.githubusercontent.com/grycap/oscar-flows/refs/heads/main/fdl.yaml";
       const fdlResponse = await fetch(fdlUrl);
       const fdlText = await fdlResponse.text();
 
       const scriptUrl =
-        "https://raw.githubusercontent.com/grycap/oscar/refs/heads/fix-rk181/examples/node-red/with_auth/script.sh";
+        "https://raw.githubusercontent.com/grycap/oscar-flows/refs/heads/main/script.sh";
       const scriptResponse = await fetch(scriptUrl);
       const scriptText = await scriptResponse.text();
 
