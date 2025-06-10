@@ -74,6 +74,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
       uploadedFile.name.endsWith(".gzip") ||
       uploadedFile.name.endsWith(".tar") ||
       uploadedFile.name.endsWith(".rar") ||
+      uploadedFile.name.endsWith(".tar.gz") ||
       uploadedFile.name.endsWith(".7z")
     ) {
       setFileType("text");
