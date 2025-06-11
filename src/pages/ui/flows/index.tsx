@@ -70,6 +70,8 @@ function FlowsView() {
   });
 
   function isVersionLower(version: string, target: string) {
+    if (target === "devel") return true;
+    if (version === "devel") return false;
     const v = version.split('.').map(x => parseInt(x.replace(/\D/g, '')) || 0);
     const t = target.split('.').map(x => parseInt(x.replace(/\D/g, '')) || 0);
     for (let i = 0; i < 3; i++) {
@@ -229,7 +231,7 @@ function FlowsView() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="admin-password" className="pr-2">Admin password</Label>
-                {(clusterInfo?.version !== "devel" && isVersionLower(clusterInfo?.version!, "3.6.0")) &&
+                {clusterInfo?.version && (clusterInfo?.version !== "devel" && isVersionLower(clusterInfo?.version!, "3.6.0")) &&
                 <Popover open={showPasswordInfo} onOpenChange={() => setShowPasswordInfo((v) => !v)}>
                   <PopoverTrigger asChild>
                     <span className="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2 py-0.5 rounded cursor-pointer">
