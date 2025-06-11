@@ -231,9 +231,13 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   const [responseFileContent, setResponseFileContent] = useState<string>("");
   useEffect(() => {
     if (responseType === "file") {
-      const base64 = response.split("\n")[0];
-      const decodedContent = atob(base64);
-      setResponseFileContent(decodedContent);
+      try {
+        const base64 = response.split("\n")[0];
+        const decodedContent = atob(base64);
+        setResponseFileContent(decodedContent);
+      } catch (error) {
+        setResponseFileContent(response);
+      }      
     }
   }, [responseType]);
 
