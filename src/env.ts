@@ -4,7 +4,7 @@ const env = {
     "AI4EOSC_client_id":"$AI4EOSC_KEYCLOAK_CLIENT_ID",
     "AI4EOSC_client_secret":"$AI4EOSC_KEYCLOAK_CLIENT_SECRET",
     "GryCAP_ISSUER":"$GryCAP_KEYCLOAK_ISSUER",
-    "GryCAP_client_id":"GryCAP_KEYCLOAK_CLIENT_ID",
+    "GryCAP_client_id":"$GryCAP_KEYCLOAK_CLIENT_ID",
     "GryCAP_client_secret":"$GryCAP_KEYCLOAK_CLIENT_SECRET",
     "provider_url": "/protocol/",
     "client_id": "$EGI_CHECKIN_CLIENT_ID",
