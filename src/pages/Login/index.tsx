@@ -3,6 +3,7 @@ import OscarColors, { ColorWithOpacity } from "@/styles";
 import BigLogo from "@/assets/oscar-big.png";
 import AI4eoscLogo from "@/assets/ai4eosc-logo.png";
 import AI4eoscButon from "@/assets/ai4eosc-logo.svg";
+import GryCAPButon from "@/assets/grycap-logo.png";
 import ImagineLogo from "@/assets/imagine-logo.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -109,6 +110,15 @@ function Login() {
           localStorage.setItem("url_user_info", env.AI4EOSC_ISSUER + env.url_user_info);
           localStorage.setItem("token_endpoint", env.AI4EOSC_ISSUER + env.token_endpoint);
           window.location.replace(env.redirect_uri);
+        }else if(process === "KeycloakGryCAP"){
+          endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
+          localStorage.setItem("api", endpoint);
+          localStorage.setItem("client_id", env.GryCAP_client_id);
+          localStorage.setItem("client_secret", env.GryCAP_client_secret);
+          localStorage.setItem("provider_url", env.GryCAP_ISSUER + env.provider_url);
+          localStorage.setItem("url_authorize", env.GryCAP_ISSUER + env.url_authorize);
+          localStorage.setItem("url_user_info", env.GryCAP_ISSUER + env.url_user_info);
+          localStorage.setItem("token_endpoint", env.GryCAP_ISSUER + env.token_endpoint);
         }
         
       } catch (error) {
@@ -284,6 +294,25 @@ function Login() {
                   }}
                 />
                 Sign in via Keycloak
+              </Button>
+              <Button
+                name="KeycloakGryCAP"
+                type="submit"
+                size="sm"
+                style={{
+                  width: "100%",
+                  background: OscarColors.Blue,
+                }}
+              > 
+                <img
+                  src={GryCAPButon}
+                  alt="Keycloak GryCAP Check-in"
+                  style={{
+                    width: "24px",
+                    marginRight: "10px",
+                  }}
+                />
+                Sign in via Keycloak GryCAP
               </Button>
             </form>
           </section>
