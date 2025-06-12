@@ -225,6 +225,7 @@ function Login() {
                   if (buttonName === "normal") handleLogin(e);
                   if (buttonName === "EGI") handleLoginEGI(e,buttonName);
                   if (buttonName === "Keycloak") handleLoginEGI(e,buttonName);
+                  if (buttonName === "KeycloakGryCAP") handleLoginEGI(e,buttonName);
                 }
               }}
               style={{
