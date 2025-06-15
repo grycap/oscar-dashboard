@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "deploy_container": "sed -i '/deploy_container/c\\ \\ \\ \\ \"deploy_container\" : \"true\",' src/env.ts && sed -i '/api/c\\ \\ \\ \\ \"api\" : \"\",' src/env.ts && npm install && npm run build"
+    "deploy_container": "node scripts/deploy_container.cjs && npm install && npm run build"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.654.0",
