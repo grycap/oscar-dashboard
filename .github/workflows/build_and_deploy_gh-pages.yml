@@ -19,9 +19,9 @@ jobs:
           sed -i -e "s|\$DEPLOY_CONTAINER|${{ env.DEPLOY_CONTAINER }}|g"  src/env.ts
           sed -i -e "s|\$AI4EOSC_KEYCLOAK_CLIENT_ID|${{ secrets.AI4EOSC_KEYCLOAK_CLIENT_ID }}|g"  src/env.ts
           sed -i -e "s|\$AI4EOSC_KEYCLOAK_CLIENT_SECRET|${{ secrets.AI4EOSC_KEYCLOAK_CLIENT_SECRET }}|g"  src/env.ts
-          sed -i -e "s|\$GryCAP_KEYCLOAK_ISSUER|${{ secrets.GryCAP_KEYCLOAK_ISSUER }}|g"  src/env.ts
-          sed -i -e "s|\$GryCAP_KEYCLOAK_CLIENT_ID|${{ secrets.GryCAP_KEYCLOAK_CLIENT_ID }}|g"  src/env.ts
-          sed -i -e "s|\$GryCAP_KEYCLOAK_CLIENT_SECRET|${{ secrets.GryCAP_KEYCLOAK_CLIENT_SECRET }}|g"  src/env.ts
+          sed -i -e "s|\$GRYCAP_KEYCLOAK_ISSUER|${{ secrets.GRYCAP_KEYCLOAK_ISSUER }}|g"  src/env.ts
+          sed -i -e "s|\$GRYCAP_KEYCLOAK_CLIENT_ID|${{ secrets.GRYCAP_KEYCLOAK_CLIENT_ID }}|g"  src/env.ts
+          sed -i -e "s|\$GRYCAP_KEYCLOAK_CLIENT_SECRET|${{ secrets.GRYCAP_KEYCLOAK_CLIENT_SECRET }}|g"  src/env.ts
 
       - name: Setup Node
         uses: actions/setup-node@v4
