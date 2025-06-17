@@ -295,7 +295,7 @@ function Login() {
                     marginRight: "10px",
                   }}
                 />
-                Sign in via Keycloak
+                Sign in via AI4EOSC
               </Button>
               <Button
                 name="KeycloakGryCAP"
@@ -314,7 +314,7 @@ function Login() {
                     marginRight: "10px",
                   }}
                 />
-                Sign in via Keycloak GryCAP
+                Sign in via GRyCAP
               </Button>
             </form>
           </section>
