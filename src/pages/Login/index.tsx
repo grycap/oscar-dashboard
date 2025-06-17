@@ -24,6 +24,23 @@ function Login() {
 
   const [searchParams] = useSearchParams();
   const endpoint = searchParams.get("endpoint");
+  const process = searchParams.get("process");
+
+  if (process != null){
+    const fakeEvent = {
+      preventDefault: () => {},
+      stopPropagation: () => {},
+      bubbles: true,
+      cancelable: true,
+      defaultPrevented: false,
+      isDefaultPrevented: () => false,
+      isPropagationStopped: () => false,
+      persist: () => {},
+      timeStamp: Date.now(),
+      type: 'submit',
+    } as unknown as FormEvent<HTMLFormElement>;
+    handleLoginEGI(fakeEvent,process)
+  }
   
   function isDeployContainer(){
     if (env.deploy_container ==="true"){
@@ -79,12 +96,19 @@ function Login() {
     event.preventDefault();
     if (isDeployContainer()){
       const oscarEndpoint = window.location.origin
-      const url = isDemoServer()?env.external_ui_demo+"/#/login?endpoint="+oscarEndpoint : env.external_ui+"/#/login?endpoint="+oscarEndpoint;
+      const url = (isDemoServer() && process === "EGI") ?
+            env.external_ui_demo+"/#/login?endpoint="+oscarEndpoint+"&process="+process 
+            :
+            env.external_ui+"/#/login?endpoint="+oscarEndpoint+"&process="+process ;
       window.location.replace(url);
     }else{
       const form = event.target as HTMLFormElement;
       const formData = new FormData(form);
       let endpoint = formData.get("endpoint") as string;
+      if (endpoint == null){
+        const [searchParams] = useSearchParams();
+        endpoint = searchParams.get("endpoint") as string;
+      }
       // Check if the endpoint is a valid URL
       if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
         alert.error("Invalid endpoint");
