@@ -91,7 +91,7 @@ function JunoView() {
       const scriptText = await scriptResponse.text();
 
       const services = yamlToServices(fdlText, scriptText);
-      if (!services.length) throw Error("No services found");
+      if (!services?.length) throw Error("No services found");
 
       const service = services[0];
       const modifiedService: Service = {

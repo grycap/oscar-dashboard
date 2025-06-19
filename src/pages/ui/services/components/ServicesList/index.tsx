@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import MoreActionsPopover from "./components/MoreActionsPopover";
 
 function ServicesList() {
-  const { services, servocesAreLoading,setServices, setFormService, filter } =
+  const { services, servicesAreLoading, setServices, setFormService, filter } =
     useServicesContext();
   const { authData } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
@@ -97,7 +97,7 @@ function ServicesList() {
         overflow: "hidden",
       }}
     >
-      {servocesAreLoading === true ?
+      {servicesAreLoading === true ?
         <div className="flex items-center justify-center h-screen">
             <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
         </div>

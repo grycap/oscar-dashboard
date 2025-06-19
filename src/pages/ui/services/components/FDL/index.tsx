@@ -54,7 +54,9 @@ function FDLForm() {
     }
 
     const services = yamlToServices(fdl, script);
-
+    if (!!!services) {
+      return;
+    }
     const promises = services.map(async (service) => {
       try{
         await getServiceApi(service.name);
