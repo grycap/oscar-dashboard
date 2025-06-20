@@ -10,6 +10,7 @@ import MinioRouter from "@/pages/ui/minio/router";
 import InfoView from "@/pages/ui/info";
 import { ServicesProvider } from "@/pages/ui/services/context/ServicesContext";
 import JunoView from "@/pages/ui/juno";
+import FlowsView from "@/pages/ui/flows";
 
 function AppRouter() {
   return (
@@ -31,6 +32,7 @@ function AppRouter() {
           <Route path="minio/*" element={<MinioRouter />} />
           <Route path="info" element={<InfoView />} />
           <Route path="notebooks" element={<JunoView />} />
+          <Route path="flows" element={<FlowsView />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />
