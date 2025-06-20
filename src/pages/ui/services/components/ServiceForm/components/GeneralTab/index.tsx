@@ -33,7 +33,11 @@ function ServiceGeneralTab() {
   const { handleChange, onBlur, errors } = formFunctions;
   const { systemConfig, authData } = useAuth();
   const voGroups = systemConfig?.config.oidc_groups;
-
+  function voGroupsIsEmpthy(){
+    if( voGroups === undefined){ return true}
+    else if (JSON.stringify(voGroups) === '[""]'){ return true}
+    else {return false}
+  } 
   const [memoryUnits, setMemoryUnits] = useState<"Mi" | "Gi">(formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi");
   const [memory, setMemory] = useState<string>(formService?.memory?.replace(/[a-zA-Z]/g, ""));
 
@@ -90,31 +94,38 @@ function ServiceGeneralTab() {
           
           <div className="grid grid-cols-[auto_auto_1fr] gap-5 items-end w-full">
             <div className="min-w-[154px]">
-              <Label>VO</Label>
-              <Select
-                value={formService?.vo}
-                onValueChange={(value) => {
-                  setFormService((service: Service) => {
-                    return {
-                      ...service,
-                      vo: value,
-                    };
-                  });
-                }}
-              >
-                <SelectTrigger id="vo-select-trigger">
-                  <SelectValue placeholder="Select a VO" />
-                </SelectTrigger>
-                <SelectContent>
-                  {voGroups?.map((vo) => {
-                    return (
-                      <SelectItem key={vo} value={vo}>
-                        {vo}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+              {voGroupsIsEmpthy() ?
+               <></>
+                  :
+              <>
+                <Label>VO</Label>
+                <Select
+                  value={formService?.vo}
+                  onValueChange={(value) => {
+                    setFormService((service: Service) => {
+                      return {
+                        ...service,
+                        vo: value,
+                      };
+                    });
+                  }}
+                >
+                  <SelectTrigger id="vo-select-trigger">
+                    <SelectValue placeholder="Select a VO" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {voGroups?.map((vo) => {
+                      return (
+                        <SelectItem key={vo} value={vo}>
+                          {vo}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </>
+              }
+              
             </div>
 
             <div className="min-w-[152px]">

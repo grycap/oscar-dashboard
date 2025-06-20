@@ -120,7 +120,7 @@ export default function AddBucketButton({bucket, create}: Props) {
           {formBucket.visibility=="restricted" ? <div className="flex flex-row gap-2 items-center">
                 <strong>Allowed users:</strong>
                   <AllowedUsersPopover
-                  allowed_users={formBucket.allowed_users}
+                  allowed_users={formBucket.allowed_users?formBucket.allowed_users:[]}
                   setAllowedUsersInExternalVar={setAllowedUsers} />
           </div> :
           <></>
