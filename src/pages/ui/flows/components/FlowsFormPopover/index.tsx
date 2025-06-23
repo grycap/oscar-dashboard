@@ -19,7 +19,7 @@ import { Service } from "@/pages/ui/services/models/service";
 import createServiceApi from "@/api/services/createServiceApi";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
-import { Info } from "lucide-react";
+import { Info, RefreshCcwIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import RequestButton from "@/components/RequestButton";
 
@@ -41,6 +41,7 @@ function FlowsFormPopover() {
       bucket: "",
       vo: "",
       password: "",
+      secret: "",
   });
 
   useEffect(() => {
@@ -48,6 +49,25 @@ function FlowsFormPopover() {
       setFormData((prev) => ({ ...prev, vo: oidcGroups[0] }));
     }
   }, [oidcGroups]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setFormData((prev) => ({
+      ...prev, 
+      secret: genRandomString(),
+      cpuCores: "1.0",
+      memoryRam: "2",
+      memoryUnit: "Gi",
+      bucket: "",
+      password: "",
+    }));
+  }, [isOpen]);
+
+  function genRandomString() {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const values = crypto.getRandomValues(new Uint8Array(32));
+    return Array.from(values, v => charset[v % charset.length]).join('');
+  }
 
   function isVersionLower(version: string, target: string) {
     if (target === "devel") return true;
@@ -112,6 +132,7 @@ function FlowsFormPopover() {
           secrets:{
             ...service.environment.secrets,
             PASSWORD:	 formData.password != "" ? formData.password : "admin",
+            SECRET: formData.secret != "" ? formData.secret : genRandomString(),
           }
         },
         labels: {
@@ -133,6 +154,7 @@ function FlowsFormPopover() {
       refreshServices();
 
       alert.success("Node-RED instance deployed");
+      setIsOpen(false);
     } catch (error) {
       console.log(error)
       alert.error("Error deploying Node-RED instance");
@@ -227,24 +249,24 @@ function FlowsFormPopover() {
             <div>
               <Label htmlFor="password">Password 
                 {clusterInfo?.version && (clusterInfo?.version !== "devel" && isVersionLower(clusterInfo?.version!, "3.6.0")) &&
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2 py-0.5 rounded cursor-pointer ml-2">
-                        <Info className="inline w-3 h-3 mr-1" />
-                        Warning
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent className="w-80 sm:ml-[150px] ml-0">
-                      <small>
-                        For OSCAR versions equal or lower than <b>3.5.3</b>, the admin password will be set as an
-                        environment variable instead of a secret. All users that have access to the service
-                        will be able to see the password.
-                      </small>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              }
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2 py-0.5 rounded cursor-pointer ml-2">
+                          <Info className="inline w-3 h-3 mr-1" />
+                          Warning
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="w-80 sm:ml-[150px] ml-0">
+                        <small>
+                          For OSCAR versions equal or lower than <b>3.5.3</b>, the admin password will be set as an
+                          environment variable instead of a secret. All users that have access to the service
+                          will be able to see the password.
+                        </small>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                }
               </Label>
               <Input
                 id="password"
@@ -257,47 +279,69 @@ function FlowsFormPopover() {
               ></Input>
             </div>
             <div>
+              <Label className="flex items-center">
+                Credentials secret
+                <Button variant={"link"} size={"icon"} 
+                  onClick={() => setFormData({ ...formData, secret: genRandomString()})}
+                >
+                  <RefreshCcwIcon size={16} 
+                    onMouseEnter={(e) => {e.currentTarget.style.transform = 'rotate(90deg)'}}
+                    onMouseLeave={(e) => {e.currentTarget.style.transform = 'rotate(0deg)'}}
+                  />
+                </Button>
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter credentials secret"
+                value={formData.secret}
+                onChange={(e) =>
+                  setFormData({ ...formData, secret: e.target.value })
+                }
+              ></Input>
+            </div>
+            <div>
               <Label>Bucket</Label>
               <hr className="mb-2"/>
               <div>
-              <Label className="inline-flex items-center cursor-pointer">
-                <input type="checkbox" value="" className="sr-only peer" onClick={() => { setNewBucket(!newBucket) }} />
-                <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600"></div>
-                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">New Bucket</span>
-              </Label>
-              {newBucket? 
-              <Input
-                type="input"
-                onFocus={(e) => (e.target.type = "text")}
-                style={{ width: "100%",
-                  fontWeight: "normal",
+                <Label className="inline-flex items-center cursor-pointer">
+                  <input type="checkbox" value="" className="sr-only peer" onClick={() => { setNewBucket(!newBucket) }} />
+                  <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600"></div>
+                  <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">New Bucket</span>
+                </Label>
+                {newBucket? 
+                <Input
+                  type="input"
+                  onFocus={(e) => (e.target.type = "text")}
+                  style={{ width: "100%",
+                    fontWeight: "normal",
+                    }}
+                  onChange={(e) => {
+                      setFormData({ ...formData, bucket: e.target?.value })
                   }}
-                onChange={(e) => {
-                    setFormData({ ...formData, bucket: e.target?.value })
-                }}
-                placeholder="Enter new bucket name"
-              />
-              :
-                <Select
-                  value={formData.bucket}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, bucket: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder="Select a bucket"
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {buckets.map((bucket) => (
-                      <SelectItem key={bucket.Name} value={bucket.Name!}>
-                        {bucket.Name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              }
+                  placeholder="Enter new bucket name"
+                />
+                :
+                  <Select
+                    value={formData.bucket}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, bucket: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder="Select a bucket"
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {buckets.map((bucket) => (
+                        <SelectItem key={bucket.Name} value={bucket.Name!}>
+                          {bucket.Name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                }
               </div>
             </div>
           </div>
