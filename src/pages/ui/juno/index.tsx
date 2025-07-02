@@ -302,7 +302,7 @@ function JunoView() {
                 to={`${
                   authData.endpoint
                 }/system/services/juno${namePrefixSlice}/exposed/lab?token=${
-                  authData.token ?? ""
+                  junoService.environment.variables["JUPYTER_TOKEN"] ?? ""
                 }`}
                 target="_blank"
               >
