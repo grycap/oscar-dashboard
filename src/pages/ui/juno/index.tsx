@@ -19,9 +19,8 @@ import {
 } from "@/components/ui/select";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { alert } from "@/lib/alert";
-import { Plus } from "lucide-react";
 
-import { Check, ExternalLink } from "lucide-react";
+import { Check, ExternalLink, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import yamlToServices from "../services/components/FDL/utils/yamlToService";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +29,7 @@ import createServiceApi from "@/api/services/createServiceApi";
 import useServicesContext from "../services/context/ServicesContext";
 import { Link } from "react-router-dom";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
+import { genRandomString } from "@/lib/utils";
 
 function JunoView() {
   
@@ -37,7 +37,6 @@ function JunoView() {
   const { systemConfig } = useAuth();
   const { authData } = useAuth();
   const [ kindInputBucket, setkindInputBucket ] = useState(false);
-
   
   const namePrefix =
     authData?.egiSession?.sub ?? authData?.token ?? authData?.user;
@@ -45,7 +44,7 @@ function JunoView() {
 
   useEffect(() => {
       document.title ="OSCAR - Notebooks"
-    });
+  });
 
   const oidcGroups = systemConfig?.config.oidc_groups ?? [];
 
@@ -112,10 +111,10 @@ function JunoView() {
             JUPYTER_DIRECTORY: "/mnt/"+ formData.bucket,
             GRANT_SUDO: "yes",
             OSCAR_ENDPOINT: authData.endpoint,
+            JUPYTER_TOKEN: genRandomString(128),
           },
           secrets:{
             ...service.environment.secrets,
-            JUPYTER_TOKEN:	 authData?.token ?? "junooscar",
           }
         },
       };
