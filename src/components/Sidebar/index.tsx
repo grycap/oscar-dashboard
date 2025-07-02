@@ -64,7 +64,7 @@ function AppSidebar() {
     // Clear all local and session storage
     localStorage.clear();
     sessionStorage.clear();
-    // Redirect to the home page learing any authentication state and cache
+    // Ensure the page reloads and clears any cached data
     window.location.href = "/";
   }
 
