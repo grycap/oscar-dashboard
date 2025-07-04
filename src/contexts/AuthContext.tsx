@@ -80,7 +80,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   async function handleGetSystemConfig() {
     if (!authData.authenticated) return;
 
-    const response = await getSystemConfigApi();
+    let response = await getSystemConfigApi() as {
+      config: SystemConfig;
+      minio_provider: MinioStorageProvider;
+    } | null;
+    if (response && authData.token === undefined && response.config.oidc_groups.length === 1 && response.config.oidc_groups[0] === "") {
+      response.config.oidc_groups[0] = " ";
+    }
+
     setSystemConfig(response);
   }
 
