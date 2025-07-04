@@ -8,8 +8,8 @@ function FlowsView() {
   const { authData } = useAuth();
   const { services } = useServicesContext();
 
-  const namePrefix = authData?.egiSession?.sub ?? authData?.token ?? authData?.user;
-  const flowsService = services.filter((service) => service.owner === namePrefix && service.labels["node_red"] === "true");
+  const ownerName = authData?.egiSession?.sub ?? authData?.token ?? (authData?.user === "oscar" ? "cluster_admin" : authData?.user);
+  const flowsService = services.filter((service) => service.owner === ownerName && service.labels["node_red"] === "true");
 
   useEffect(() => {
     document.title ="OSCAR - Flows"

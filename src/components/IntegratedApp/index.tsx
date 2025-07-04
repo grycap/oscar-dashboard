@@ -108,104 +108,104 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
           <DeployInstancePopover />
       </CardTitle>
       </CardHeader>
-      <CardContent>
-      <GenericTable<Service>
-        data={filteredServices}
-        idKey="name"
-        columns={[
-        { header: "Name", accessor: "name", sortBy: "name" },
-        { header: "CPU", accessor: "cpu", sortBy: "cpu" },
-        { header: "Memory", accessor: "memory", sortBy: "memory" },
-        ]}
-        actions={[
-        {
-          button: (service) => (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild title="More actions">
-                <Button variant={"link"} size="icon" tooltipLabel="More Actions">
-                  <MoreVertical size={20}/>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[220px]">
-                <DropdownMenuLabel>
-                <div className="flex flex-col">
-                  <span className="font-semibold">Service options</span>
-                </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => {
-                    handleRestartService(service);
-                  }}
-                >
-                  <RefreshCcwIcon className="mr-2 h-4 w-4" />
-                  <span>Restart</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                      setFormService(service);
-                      navigate(`/ui/services/${service.name}/settings`);
-                  }}
-                >
-                  <Edit className="mr-2 h-4 w-4" />
-                  <span>Edit</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ),
-        },
-        {
-          button: (service) => (
-            <Link
-              to={`${
-                endpoint
-              }/system/services/${service.name}/exposed/${
-                additionalExposedPathArgs ?? ""
-              }`}
-              target="_blank"
-            >
-              <ExternalLink size={20} />
-            </Link>
-          ),
-        },
-        {
-          button: (service) => (
-            <Button
-              variant={"link"}
-              size="icon"
-              onClick={() => setServicesToDelete([service])}
-              tooltipLabel="Delete"
-            >
-              <Trash2 color={OscarColors.Red} size={20} />
-            </Button>
-          ),
-        },
-        ]}
-        bulkActions={[
+      <CardContent className="flex flex-col max-h-[65vh]">
+        <GenericTable<Service>
+          data={filteredServices}
+          idKey="name"
+          columns={[
+          { header: "Name", accessor: "name", sortBy: "name" },
+          { header: "CPU", accessor: "cpu", sortBy: "cpu" },
+          { header: "Memory", accessor: "memory", sortBy: "memory" },
+          ]}
+          actions={[
           {
-            button: (service) => {
-              return (
-                <div>
-                  <Button
-                    variant={"destructive"}
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      gap: 8,
-                    }}
-                    onClick={() => setServicesToDelete(service)}
-                  >
-                    <Trash2 className="h-5 w-5" />
-                    Delete services
+            button: (service) => (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild title="More actions">
+                  <Button variant={"link"} size="icon" tooltipLabel="More Actions">
+                    <MoreVertical size={20}/>
                   </Button>
-                </div>
-              );
-            },
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[220px]">
+                  <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span className="font-semibold">Service options</span>
+                  </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      handleRestartService(service);
+                    }}
+                  >
+                    <RefreshCcwIcon className="mr-2 h-4 w-4" />
+                    <span>Restart</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => {
+                        setFormService(service);
+                        navigate(`/ui/services/${service.name}/settings`);
+                    }}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    <span>Edit</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ),
           },
-        ]}
-      />
+          {
+            button: (service) => (
+              <Link
+                to={`${
+                  endpoint
+                }/system/services/${service.name}/exposed/${
+                  additionalExposedPathArgs ?? ""
+                }`}
+                target="_blank"
+              >
+                <ExternalLink size={20} />
+              </Link>
+            ),
+          },
+          {
+            button: (service) => (
+              <Button
+                variant={"link"}
+                size="icon"
+                onClick={() => setServicesToDelete([service])}
+                tooltipLabel="Delete"
+              >
+                <Trash2 color={OscarColors.Red} size={20} />
+              </Button>
+            ),
+          },
+          ]}
+          bulkActions={[
+            {
+              button: (service) => {
+                return (
+                  <div>
+                    <Button
+                      variant={"destructive"}
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 8,
+                      }}
+                      onClick={() => setServicesToDelete(service)}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                      Delete services
+                    </Button>
+                  </div>
+                );
+              },
+            },
+          ]}
+        />
       </CardContent>
-      <CardFooter className="grid grid-cols-1">
+      <CardFooter className="grid grid-cols-1 hidden">
       
       </CardFooter>
     </Card>

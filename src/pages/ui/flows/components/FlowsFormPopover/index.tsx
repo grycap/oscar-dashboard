@@ -22,6 +22,7 @@ import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Info, RefreshCcwIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import RequestButton from "@/components/RequestButton";
+import { generateReadableName, genRandomString } from "@/lib/utils";
 
 
 
@@ -63,11 +64,6 @@ function FlowsFormPopover() {
     }));
   }, [isOpen]);
 
-  function genRandomString() {
-    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const values = crypto.getRandomValues(new Uint8Array(32));
-    return Array.from(values, v => charset[v % charset.length]).join('');
-  }
 
   function isVersionLower(version: string, target: string) {
     if (target === "devel") return true;
@@ -109,8 +105,8 @@ function FlowsFormPopover() {
       if (!services?.length) throw Error("No services found");
 
       const service = services[0];
-      const uuid = crypto.randomUUID().split("-");
-      const serviceName = `flows-${uuid[0]+uuid[1]}`;
+      
+      const serviceName = `flows-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
 
       let modifiedService: Service = {
         ...service,
