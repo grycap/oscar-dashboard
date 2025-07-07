@@ -61,6 +61,11 @@ function AppSidebar() {
       token: undefined,
       authenticated: false,
     });
+    // Clear all local and session storage
+    localStorage.clear();
+    sessionStorage.clear();
+    // Ensure the page reloads and clears any cached data
+    window.location.href = "/";
   }
 
   return (
