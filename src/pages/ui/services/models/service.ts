@@ -23,6 +23,7 @@ export interface StorageProviders {
   minio?: Record<string, MinioStorageProvider>;
   onedata?: Record<string, OnedataStorageProvider>;
   webdav?: Record<string, WebdavStorageProvider>;
+  rucio?: Record<string, RucioStorageProvider>;
 }
 
 export type StorageProviderType = keyof StorageProviders;
@@ -36,6 +37,7 @@ export type StorageProvider = {
   | MinioStorageProvider
   | OnedataStorageProvider
   | WebdavStorageProvider
+  | RucioStorageProvider
 );
 
 export type AWSStorageProvider = {
@@ -62,6 +64,16 @@ export type WebdavStorageProvider = {
   hostname: string;
   login: string;
   password: string;
+};
+
+export type RucioStorageProvider = {
+  host: string;
+  auth_host: string;
+  account: string;
+  rse: string;
+  refresh_token: string;
+  oidc_audience: string;
+  token_endpoint: string;
 };
 
 interface Clusters {

@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 } 
 
-export  function genRandomString(length: number = 32) {
+export  function genRandomString(length: number = 32): string {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const values = crypto.getRandomValues(new Uint8Array(length));
   return Array.from(values, v => charset[v % charset.length]).join('');
@@ -28,3 +28,4 @@ export function generateReadableName(length = 6) {
 
   return name;
 }
+
