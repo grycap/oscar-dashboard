@@ -97,7 +97,7 @@ function MinioTopbar() {
         </Link>
       </div>
       <div className="grid grid-cols-[1fr_auto]">
-        <div className="grid grid-flow-col grid-rows-2">
+        <div className="grid grid-flow-col grid-rows-1">
           {!isOnRoot &&
           <>
           <nav className="flex flex-row items-center" aria-label="Breadcrumb">
@@ -113,9 +113,9 @@ function MinioTopbar() {
               </Link>
             
           </nav>
-          <div className="flex flex-row items-center text-xs text-gray-600 truncate mt-1">
+          {/*<div className="flex flex-row items-center text-xs text-gray-600 truncate mt-1">
             Access: PRIVATE | Size: 200Mb | Owner: oscar
-          </div>
+          </div>*/}
           </>
           }
         </div>
