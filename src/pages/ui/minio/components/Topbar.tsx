@@ -140,7 +140,7 @@ function MinioTopbar() {
     
     {!isOnRoot && 
     <div className="flex flex-col">
-      <nav className="grid grid-cols-[auto_1fr] my-2 mx-1 items-center text-sm gap-0 border rounded-lg border-gray-300 bg-gray-50 shadow-sm overflow-hidden" aria-label="Breadcrumb">
+      <nav className="grid grid-cols-[auto_1fr] my-[6px] mx-1 items-center text-sm gap-0 border rounded-lg border-gray-300 bg-gray-50 shadow-sm overflow-hidden" aria-label="Breadcrumb">
         <Link
           to={`/ui/minio/${name}`}
           className="font-bold no-underline hover:text-gray-900 hover:bg-gray-100 px-0 py-2 transition-all duration-200 border-r border-gray-300 bg-white"
