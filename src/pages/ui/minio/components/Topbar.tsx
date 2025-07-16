@@ -152,15 +152,6 @@ function MinioTopbar() {
           </div>
         </Link>
         <div className="flex flex-row items-center px-3 py-2 bg-gradient-to-r from-gray-60 to-gray-100">
-          {/*<Link
-            to={`/ui/minio/${name}`}
-            className="font-bold no-underline"
-            aria-label={`Navigate to bucket ${name}`}
-          >
-            <div className="flex flex-row items-center pr-2">
-              {name}
-            </div>
-          </Link>*/}
           <div className="flex flex-row items-center text-gray-600 gap-1">
             {breadcrumbs.length > 0 && breadcrumbs ? breadcrumbs : <Slash size={12} className="pt-[2px] text-gray-400" aria-hidden="true" />}
           </div>
