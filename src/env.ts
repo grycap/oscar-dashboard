@@ -12,7 +12,7 @@ const env = {
     "url_authorize": "/protocol/openid-connect/auth",
     "url_user_info": "/protocol/openid-connect/userinfo",
     "token_endpoint": "/protocol/openid-connect/token",
-    "deploy_container" : "false",
+    "deploy_container" : "true",
     "minio_local_endpoint" :"localhost",
     "minio_local_port": "30300",
     "minio_local_ssl": false ,
