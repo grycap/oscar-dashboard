@@ -8,6 +8,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import axios from "axios";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   CheckCircle,
   XCircle,
@@ -125,8 +126,7 @@ function DonutChart({ percentage, dangerThreshold }: { percentage: number; dange
     </ResponsiveContainer>
   );
 }
-const username = "oscar";
-const password = "OscaR^tfm_1!";
+
 
 // función para colorear en rojo si el porcentaje libre es bajo
 const getColorByPercentage = (free: number, total: number, thresholdPercent: number) =>
@@ -136,8 +136,6 @@ const formatBytes = (bytes: number) =>
   `${(bytes / 1024 ** 3).toFixed(1)} GB`;
 
 const Dashboard = () => {
-  const [data, setData] = useState<StatusData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     deployment: false,
     jobs: false,
@@ -169,23 +167,27 @@ const Dashboard = () => {
     }));
   };
 
+  //accedemos al contexto de autenticacion
+  const { authData } = useAuth(); 
+  const [data, setData] = useState<StatusData | null>(null);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    axios
-      .get("https://wizardly-ganguly5.im.grycap.net/system/status", {
-        auth: { username, password },
-      })
-      .then((res) => {
-        setData(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching status:", err);
-        setLoading(false);
-      });
-  }, []);
+  axios
+    .get("/system/status")
+    .then((res) => {
+      setData(res.data);
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error("Error fetching status:", err);
+      setLoading(false);
+    });
+}, []);
 
+  if (!authData.authenticated) return <p>Please log in</p>;
   if (loading) return <p className="p-4">Loading...</p>;
   if (!data) return <p className="p-4 text-red-500">Error loading data</p>;
+  
 
   // calcular total real sumando capacidades por nodo
   const cpuTotal = data.detail.reduce((acc, node) => acc + parseInt(node.cpuCapacity), 0);
