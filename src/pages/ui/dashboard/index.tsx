@@ -132,8 +132,17 @@ function DonutChart({ percentage, dangerThreshold }: { percentage: number; dange
 const getColorByPercentage = (free: number, total: number, thresholdPercent: number) =>
   (free / total) <= (thresholdPercent / 100) ? "text-red-500" : "text-green-500";
 
+//paso a bytes
 const formatBytes = (bytes: number) =>
   `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+
+//paso a Cores
+const formatCores = (millicores: number) =>
+  `${(millicores / 1000).toFixed(2)} Cores`;
+
+// paso a kilobytes
+const formatKilobytes = (bytes: number) =>
+  `${(bytes / 1024).toFixed(1)} KB`;
 
 const Dashboard = () => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -226,7 +235,7 @@ const Dashboard = () => {
                     <p className="text-lg font-semibold">
                       Total free CPU:{" "}
                       <span className={`text-xl font-bold ${getColorByPercentage(data.cpuFreeTotal, cpuTotal, 30)}`}>
-                        {data.cpuFreeTotal}
+                          {formatCores(data.cpuFreeTotal)}
                       </span>
                     </p>
                   </div>
@@ -241,7 +250,7 @@ const Dashboard = () => {
                     <p className="text-lg font-semibold">
                        Maximum free CPU:{" "}
                       <span className={`text-xl font-bold ${getColorByPercentage(data.cpuMaxFree, cpuTotal, 30)}`}>
-                        {data.cpuMaxFree}
+                        {formatCores(data.cpuMaxFree)}
                       </span>
                     </p>
                   </div>
@@ -708,7 +717,7 @@ const Dashboard = () => {
                       <div className="space-y-1">
                         <h2 className="text-base font-semibold text-gray-800">Space used</h2>
                         <p className="text-sm font-normal text-gray-600">
-                          {(bucket.size)} bytes
+                          {formatKilobytes(bucket.size)} 
                         </p>
                       </div>
 
