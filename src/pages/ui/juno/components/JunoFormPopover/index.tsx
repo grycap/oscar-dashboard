@@ -170,7 +170,7 @@ return (
           New
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[600px] max-h-[90%] overflow-y-auto gap-4">
+      <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
         <DialogHeader>
         <DialogTitle>
             <span style={{ color: OscarColors.DarkGrayText }}>
@@ -179,7 +179,7 @@ return (
         </DialogTitle>
         </DialogHeader>
           <hr></hr>
-          <div className="grid grid-cols-1 gap-y-2 sm:gap-x-2 ">
+          <div className="grid grid-cols-1 gap-y-2 sm:gap-x-2 overflow-y-auto">
             <div>
               <div className="flex flex-row items-center">
                 <Label>

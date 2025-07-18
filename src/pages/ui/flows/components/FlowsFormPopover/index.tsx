@@ -1,13 +1,6 @@
 import { Button } from "@/components/ui/button";
 import OscarColors from "@/styles";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import {  Dialog,  DialogContent, DialogFooter,  DialogHeader,  DialogTitle,  DialogTrigger} from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -196,7 +189,7 @@ function FlowsFormPopover() {
           New
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[600px] max-h-[90%] overflow-y-auto gap-4">
+      <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
         <DialogHeader>
         <DialogTitle>
             <span style={{ color: OscarColors.DarkGrayText }}>
@@ -205,7 +198,7 @@ function FlowsFormPopover() {
         </DialogTitle>
         </DialogHeader>
           <hr></hr>
-          <div className="grid grid-cols-1 gap-y-2 sm:gap-x-2 ">
+          <div className="grid grid-cols-1 gap-y-2 sm:gap-x-2 overflow-y-auto">
             <div>
               <div className="flex flex-row items-center">
                 <Label>
