@@ -23,7 +23,13 @@ function JunoView() {
 
   return (
     <>
-      <IntegratedApp appName="Jupyter Notebook" endpoint={authData.endpoint} filteredServices={junoService} DeployInstancePopover={JunoFormPopover} />
+      <IntegratedApp 
+        appName="Jupyter Notebook" 
+        endpoint={authData.endpoint} 
+        filteredServices={junoService} 
+        DeployInstancePopover={JunoFormPopover}
+        additionalExposedPathArgs="?token={{JUPYTER_TOKEN}}" 
+      />
     </>
   );
 }
