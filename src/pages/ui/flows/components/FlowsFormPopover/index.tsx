@@ -342,7 +342,7 @@ function FlowsFormPopover() {
                 </Button>
               </div>
               <Input
-                id="password"
+                id="credentials-secret"
                 type="password"
                 placeholder="Enter credentials secret"
                 value={formData.secret}
