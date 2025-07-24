@@ -26,13 +26,27 @@ function JunoFormPopover() {
 
   const oidcGroups = systemConfig?.config.oidc_groups ?? [];
 
+  function nameService() {
+    return `juno-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
+  }
+
   const [formData, setFormData] = useState({
+    name: "",
     cpuCores: "1.0",
     memoryRam: "2",
     memoryUnit: "Gi",
     bucket: "",
     vo: "",
     token: "",
+  });
+
+  const [errors, setErrors] = useState({
+    name: false,
+    cpuCores: false,
+    memoryRam: false,
+    bucket: false,
+    vo: false,
+    token: false,
   });
 
   useEffect(() => {
@@ -45,22 +59,36 @@ function JunoFormPopover() {
     if (!isOpen) return;
     setFormData((prev) => ({
       ...prev, 
+      name: nameService(),
       cpuCores: "1.0",
       memoryRam: "2",
       memoryUnit: "Gi",
       bucket: "",
       token: genRandomString(128),
     }));
+    setErrors({
+      name: false,
+      cpuCores: false,
+      memoryRam: false,
+      bucket: false,
+      vo: false,
+      token: false,
+    });
   }, [isOpen]);
 
   const handleDeploy = async () => {
-    if (
-      !formData.cpuCores ||
-      !formData.memoryRam ||
-      !formData.bucket ||
-      !formData.vo ||
-      !formData.token
-    ) {
+    const newErrors = {
+      name: !formData.name,
+      cpuCores: !formData.cpuCores,
+      memoryRam: !formData.memoryRam,
+      bucket: !formData.bucket,
+      vo: !formData.vo,
+      token: !formData.token,
+    };
+
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).some(error => error)) {
       alert.error("Please fill in all fields");
       return;
     }
@@ -81,8 +109,8 @@ function JunoFormPopover() {
       
       const service = services[0];
 
-      const serviceName = `juno-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
-      
+      const serviceName = formData.name || nameService();
+
       const modifiedService: Service = {
         ...service,
         name: serviceName,
@@ -142,7 +170,7 @@ return (
           New
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[600px] max-h-[90%] overflow-y-auto gap-4">
+      <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
         <DialogHeader>
         <DialogTitle>
             <span style={{ color: OscarColors.DarkGrayText }}>
@@ -151,7 +179,32 @@ return (
         </DialogTitle>
         </DialogHeader>
           <hr></hr>
-          <div className="grid grid-cols-1 gap-y-2 sm:gap-x-2 ">
+          <div className="grid grid-cols-1 gap-y-2 sm:gap-x-2 overflow-y-auto">
+            <div>
+              <div className="flex flex-row items-center">
+                <Label>
+                  Service name
+                </Label>
+                <Button variant={"link"} size={"icon"}
+                  onClick={() => setFormData({ ...formData, name: nameService()})}
+                >
+                  <RefreshCcwIcon size={16} 
+                    onMouseEnter={(e) => {e.currentTarget.style.transform = 'rotate(90deg)'}}
+                    onMouseLeave={(e) => {e.currentTarget.style.transform = 'rotate(0deg)'}}
+                  />
+                </Button>
+              </div>
+              <Input
+                id="name"
+                placeholder="Enter service name"
+                value={formData.name}
+                className={errors.name ? "border-red-500 focus:border-red-500" : ""}
+                onChange={(e) => {
+                  setFormData({ ...formData, name: e.target.value });
+                  if (errors.name) setErrors({ ...errors, name: false });
+                }}
+              ></Input>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
               <div>
                 <Label htmlFor="cpu-cores">CPU Cores</Label>
@@ -161,9 +214,11 @@ return (
                   step={0.1}
                   placeholder="Enter CPU Cores"
                   value={formData.cpuCores}
-                  onChange={(e) =>
-                    setFormData({ ...formData, cpuCores: e.target.value })
-                  }
+                  className={errors.cpuCores ? "border-red-500 focus:border-red-500" : ""}
+                  onChange={(e) => {
+                    setFormData({ ...formData, cpuCores: e.target.value });
+                    if (errors.cpuCores) setErrors({ ...errors, cpuCores: false });
+                  }}
                 ></Input>
               </div>
               <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
@@ -175,9 +230,11 @@ return (
                       step={formData.memoryUnit === "Gi" ? 1 : 256}
                       placeholder="Enter memory RAM"
                       value={formData.memoryRam}
-                      onChange={(e) =>
-                        setFormData({ ...formData, memoryRam: e.target.value })
-                      }
+                      className={errors.memoryRam ? "border-red-500 focus:border-red-500" : ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, memoryRam: e.target.value });
+                        if (errors.memoryRam) setErrors({ ...errors, memoryRam: false });
+                      }}
                     />
                   </div>
                   <Select
@@ -200,11 +257,12 @@ return (
                 <Label htmlFor="vo">VO</Label>
                 <Select
                 value={formData.vo}
-                onValueChange={(value) =>
-                    setFormData({ ...formData, vo: value })
-                }
+                onValueChange={(value) => {
+                    setFormData({ ...formData, vo: value });
+                    if (errors.vo) setErrors({ ...errors, vo: false });
+                }}
                 >
-                <SelectTrigger id="vo">
+                <SelectTrigger id="vo" className={errors.vo ? "border-red-500 focus:border-red-500" : ""}>
                     <SelectValue placeholder="Select a VO" />
                 </SelectTrigger>
                 <SelectContent>
@@ -217,8 +275,10 @@ return (
                 </Select>
             </div>
             <div>
-              <Label className="flex items-center">
-                Token
+              <div className="flex flex-row items-center" >
+                <Label>
+                  Token
+                </Label>
                 <Button variant={"link"} size={"icon"} 
                   onClick={() => setFormData({ ...formData, token: genRandomString(128)})}
                 >
@@ -227,15 +287,17 @@ return (
                     onMouseLeave={(e) => {e.currentTarget.style.transform = 'rotate(0deg)'}}
                   />
                 </Button>
-              </Label>
+              </div>
               <Input
                 id="password"
                 type="password"
                 placeholder="Enter credentials secret"
                 value={formData.token}
-                onChange={(e) =>
-                  setFormData({ ...formData, token: e.target.value })
-                }
+                className={errors.token ? "border-red-500 focus:border-red-500" : ""}
+                onChange={(e) => {
+                  setFormData({ ...formData, token: e.target.value });
+                  if (errors.token) setErrors({ ...errors, token: false });
+                }}
               ></Input>
             </div>
             <div>
@@ -243,7 +305,7 @@ return (
               <hr className="mb-2"/>
               <div>
                 <Label className="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" value="" className="sr-only peer" onClick={() => { setNewBucket(!newBucket) }} />
+                  <input type="checkbox" value="" className="sr-only peer" onClick={() => { setNewBucket(!newBucket); setFormData({ ...formData, bucket: "" }); }} />
                   <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600"></div>
                   <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">New Bucket</span>
                 </Label>
@@ -254,19 +316,22 @@ return (
                   style={{ width: "100%",
                     fontWeight: "normal",
                     }}
+                  className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}
                   onChange={(e) => {
-                      setFormData({ ...formData, bucket: e.target?.value })
+                      setFormData({ ...formData, bucket: e.target?.value });
+                      if (errors.bucket) setErrors({ ...errors, bucket: false });
                   }}
                   placeholder="Enter new bucket name"
                 />
                 :
                   <Select
                     value={formData.bucket}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, bucket: value })
-                    }
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, bucket: value });
+                      if (errors.bucket) setErrors({ ...errors, bucket: false });
+                    }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}>
                       <SelectValue
                         placeholder="Select a bucket"
                       />
