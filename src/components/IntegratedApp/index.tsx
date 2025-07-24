@@ -30,6 +30,20 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
 
   
   const navigate = useNavigate();
+   
+  /**
+   * Interpolate variables in the additionalExposedPathArgs string.
+   * This function replaces variables in the format {{ variableName }} with their corresponding values from the
+   * service's environment variables.
+   */
+  function interpolateVariables(service: Service, additionalExposedPathArgs?: string) {
+    if (!additionalExposedPathArgs) return "";
+
+    return additionalExposedPathArgs.replace(/{{\s*([^}]+)\s*}}/g, (_, variableName) => {
+      return service.environment.variables[variableName] ?? "";
+    });
+    
+  }
 
   async function handleRestartService(service: Service) {
     try {
@@ -160,7 +174,7 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
                 to={`${
                   endpoint
                 }/system/services/${service.name}/exposed/${
-                  additionalExposedPathArgs ?? ""
+                  interpolateVariables(service, additionalExposedPathArgs)
                 }`}
                 target="_blank"
               >
