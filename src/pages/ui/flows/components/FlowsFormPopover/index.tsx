@@ -329,7 +329,7 @@ function FlowsFormPopover() {
             </div>
             <div>
               <div className="flex flex-row items-center">
-                <Label>
+                <Label htmlFor="credentials-secret">
                   Credentials secret
                 </Label>
                 <Button variant={"link"} size={"icon"} 
@@ -342,7 +342,7 @@ function FlowsFormPopover() {
                 </Button>
               </div>
               <Input
-                id="password"
+                id="credentials-secret"
                 type="password"
                 placeholder="Enter credentials secret"
                 value={formData.secret}
