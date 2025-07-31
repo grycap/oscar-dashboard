@@ -29,8 +29,6 @@ export default async function parseROCrateDataJS() {
   var files = data.tree.filter((item) => item.type === 'blob' && item.path.includes('ro-crate-metadata.json'));
 
   var serviceList = [];
-  files.length
-  console.log(`Found ${files.length} ro-crate-metadata.json files.`);
   // Process each ro-crate-metadata.json file
   for (const file of files) {
     var service = { ...RoCrateServiceDefinition };
