@@ -82,7 +82,7 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 												Type
 											</h4>
 											<div>
-												<span className="text-sm bg-green-100 text-green-700 rounded-xl py-1 px-2">
+												<span className={`text-sm ${roCrateServiceDef.type === "asynchronous" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"} rounded-xl py-1 px-2`}>
 													{roCrateServiceDef.type}
 												</span>
 											</div>
@@ -109,7 +109,9 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 									</div>
 
 									<div className="flex mt-6">
-										<Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+										<Button 
+											className="hover:opacity-90 text-white rounded w-full h-8"
+											variant={"mainGreen"}
 											onClick={() => {setIsDialogOpen(true); setIsInfoOpen(false);}}
 										>
 											Try it!
