@@ -7,7 +7,7 @@ const RoCrateServiceDefinition = {
     scriptUrl: "",
     author: "",
     type: "",
-    iconUrl: "",
+    iconUrl: "https://oscar.grycap.net/images/oscar3-logo-trans.png",
     memoryRequirements: "",
     memoryUnits: "",
     cpuRequirements: "",
@@ -16,9 +16,9 @@ const RoCrateServiceDefinition = {
 export default async function parseROCrateDataJS() {
   // Define the GitHub repository details
   // Replace with your GitHub username, repository name, and branch
-  const user = "RK181";
-  const repo = "test-ro-crate";
-  const branch = "master";
+  const user = "grycap";
+  const repo = "oscar-hub";
+  const branch = "main";
   const githubUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/${branch}?recursive=1`;
 
   // Fetch the list of files in the GitHub repository
@@ -54,14 +54,13 @@ export default async function parseROCrateDataJS() {
 
       crateRoot.hasPart.forEach((element) => {
         const type = crate.getEntity(element['@id'])['@type'];
-
         if (service.fdlUrl === "" && type.includes('File') && type.includes('service-fdl')) {
           service.fdlUrl = folderRawFileUrl + element['@id'];
         }
         if (service.scriptUrl === "" && type.includes('File') && type.includes('service-script')) {
           service.scriptUrl = folderRawFileUrl + element['@id'];
         }
-        if (service.iconUrl === "" && type.includes('File') && type.includes('service-icon')) {
+        if (type.includes('File') && type.includes('service-icon')) {
           service.iconUrl = folderRawFileUrl + element['@id'];
         }
       });
@@ -76,7 +75,7 @@ export default async function parseROCrateDataJS() {
       service.name = crateRoot.name;
       service.description = crateRoot.description;
       service.author = crate.getEntity(crateRoot.author['@id']).name;
-      service.type = crateRoot.invocationType;
+      service.type = crateRoot.serviceType;
       service.cpuRequirements = crateRoot.cpuRequirements || 1;
       service.memoryRequirements = /^\d+$/.test(memory[0]) ? memory[0] : 2;
       service.memoryUnits = /^(Gi|Mi)$/i.test(memory[1]) ? memory[1] : "Gi";
