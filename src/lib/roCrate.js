@@ -8,9 +8,10 @@ const RoCrateServiceDefinition = {
     author: "",
     type: "",
     iconUrl: "https://oscar.grycap.net/images/oscar3-logo-trans.png",
-    memoryRequirements: "",
-    memoryUnits: "",
-    cpuRequirements: "",
+    memoryRequirements: "2",
+    memoryUnits: "Mi",
+    cpuRequirements: "1",
+    gpuRequirements: "0",
 };
 
 export default async function parseROCrateDataJS() {
@@ -70,15 +71,22 @@ export default async function parseROCrateDataJS() {
         continue;
       }
 
-      const memory = crateRoot.memoryRequirements.split(' ');
-
       service.name = crateRoot.name;
       service.description = crateRoot.description;
       service.author = crate.getEntity(crateRoot.author['@id']).name;
       service.type = crateRoot.serviceType;
-      service.cpuRequirements = crateRoot.cpuRequirements || 1;
-      service.memoryRequirements = /^\d+$/.test(memory[0]) ? memory[0] : 2;
-      service.memoryUnits = /^(Gi|Mi)$/i.test(memory[1]) ? memory[1] : "Gi";
+
+      const memory = crateRoot.memoryRequirements.split(' ');
+      
+      /^\d+$/.test(memory[0]) && (service.memoryRequirements = memory[0]);
+      service.memoryUnits = memory[1] === "GiB" ? "Gi" : "Mi";
+
+      crateRoot.processorRequirements.forEach((req) => {
+        const splitReq = req.split(' ')
+        const procType = /^(vCPU|GPU)$/i.test(splitReq[1]) ? splitReq[1] : "vCPU";
+        procType === "vCPU" && (service.cpuRequirements = splitReq[0]);
+        procType === "GPU" && (service.gpuRequirements = splitReq[0]);
+      });
 
       serviceList.push(service);
     } catch (error) {

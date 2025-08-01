@@ -9,6 +9,7 @@ export interface RoCrateServiceDefinition {
     memoryRequirements: string;
     memoryUnits: string;
     cpuRequirements: string;
+    gpuRequirements: string;
 };
 
 /**
