@@ -50,6 +50,7 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 								<Button
 									variant="ghost"
 									size="sm"
+									tooltipLabel="Service Info"
 									className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300 "
 								>
 									<Info size={16} />
