@@ -271,7 +271,8 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!byteArray) {
       throw new Error("Failed to transform response body to byte array");
     }
-    const url = URL.createObjectURL(new Blob([byteArray]));
+    const safeArray = new Uint8Array(byteArray); 
+    const url = URL.createObjectURL(new Blob([safeArray]));
 
     return url;
   }
@@ -326,7 +327,8 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
 
           // Añadir archivo al ZIP
           if (fileData) {
-            zip.file(`${folder.Prefix}${relativePath}`, new Blob([fileData]));
+            const safeData = new Uint8Array(fileData); 
+            zip.file(`${folder.Prefix}${relativePath}`, new Blob([safeData]));
           } else {
             throw new Error(`Error al descargar el archivo: ${object.Key}`);
           }
@@ -336,7 +338,8 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       for (const file of singleFiles) {
         const fileData = await downloadFile(bucketName, file.Key!);
         if (fileData) {
-          zip.file(file.Key!, new Blob([fileData]));
+          const safeData = new Uint8Array(fileData);
+          zip.file(file.Key!, new Blob([safeData]));
         } else {
           throw new Error(`Error al descargar el archivo: ${file.Key}`);
         }
