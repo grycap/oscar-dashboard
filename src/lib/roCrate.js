@@ -56,13 +56,22 @@ export default async function parseROCrateDataJS() {
       crateRoot.hasPart.forEach((element) => {
         const type = crate.getEntity(element['@id'])['@type'];
         if (service.fdlUrl === "" && type.includes('File') && type.includes('service-fdl')) {
-          service.fdlUrl = folderRawFileUrl + element['@id'];
+          if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
+            service.fdlUrl = element['@id'];
+          else
+            service.fdlUrl = folderRawFileUrl + element['@id'];
         }
         if (service.scriptUrl === "" && type.includes('File') && type.includes('service-script')) {
-          service.scriptUrl = folderRawFileUrl + element['@id'];
+          if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
+            service.scriptUrl = element['@id'];
+          else
+            service.scriptUrl = folderRawFileUrl + element['@id'];
         }
         if (type.includes('File') && type.includes('service-icon')) {
-          service.iconUrl = folderRawFileUrl + element['@id'];
+          if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
+            service.iconUrl = element['@id'];
+          else
+            service.iconUrl = folderRawFileUrl + element['@id'];
         }
       });
 
