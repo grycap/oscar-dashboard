@@ -113,11 +113,6 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
         vo: formData.vo,
         memory: `${formData.memoryRam}${formData.memoryUnit}`,
         cpu: formData.cpuCores.toString(),
-        mount: {
-          ...service.mount,
-          path: formData.bucket ?? "/notebook",
-          storage_provider: service.mount?.storage_provider ?? "minio.default",
-        },
         input: asyncService ? 
 					[{
 						storage_provider: "minio.default",
@@ -137,8 +132,6 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
           oscar_hub: "true",
         },
       };
-      console.log(modifiedService)
-
       await createServiceApi(modifiedService);
       refreshServices();
 			
