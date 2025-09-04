@@ -29,11 +29,6 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
   const {systemConfig } = useAuth();
   const { refreshServices } = useServicesContext();
 
-  /*
-  const vos = authData.egiSession?.groups && getVOs(authData.egiSession.groups);
-	console.log("vos", vos);
-  */
-
   const oidcGroups = systemConfig?.config.oidc_groups ?? [];
 	const asyncService = roCrateServiceDef.type.toLowerCase() === "asynchronous";
 
