@@ -14,12 +14,12 @@ const RoCrateServiceDefinition = {
     gpuRequirements: "0",
 };
 
-export default async function parseROCrateDataJS() {
+export default async function parseROCrateDataJS(githubUser, githubRepo, githubBranch) {
   // Define the GitHub repository details
   // Replace with your GitHub username, repository name, and branch
-  const user = "grycap";
-  const repo = "oscar-hub";
-  const branch = "main";
+  const user = githubUser;
+  const repo = githubRepo;
+  const branch = githubBranch;
   const githubUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/${branch}?recursive=1`;
 
   // Fetch the list of files in the GitHub repository

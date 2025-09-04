@@ -8,7 +8,7 @@ function HubView() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const roCrateServices = await parseROCrateDataJS();
+      const roCrateServices = await parseROCrateDataJS("grycap", "oscar-hub", "main");
       setServices(roCrateServices);
     };
     fetchData();

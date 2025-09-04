@@ -16,5 +16,5 @@ export interface RoCrateServiceDefinition {
  * Parses the RO-Crate data and returns an array of service definitions.
  * @returns {Promise<RoCrateServiceDefinition[]>} A promise that resolves to an array of service definitions.
  */
-declare const parseROCrateDataJS: () => Promise<RoCrateServiceDefinition[]>;
+declare const parseROCrateDataJS: (githubUser: string, githubRepo: string, githubBranch: string) => Promise<RoCrateServiceDefinition[]>;
 export default parseROCrateDataJS;
