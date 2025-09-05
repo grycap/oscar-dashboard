@@ -1,7 +1,7 @@
 import { Service } from "@/pages/ui/services/models/service";
 import GenericTable from "../Table";
 import { Link, useNavigate } from "react-router-dom";
-import { Edit, ExternalLink, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
+import { Copy, Edit, ExternalLink, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Button } from "../ui/button";
@@ -13,6 +13,7 @@ import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
 import DeleteDialog from "../DeleteDialog";
 import updateServiceApi from "@/api/services/updateServiceApi";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface IntegratedAppProps {
     appName: string;
@@ -27,6 +28,7 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
   const { setFormService } = useServicesContext();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const { setServices } = useServicesContext();
+  const authContext = useAuth();
 
   
   const navigate = useNavigate();
@@ -111,10 +113,27 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-[40px] min-w-[300px] max-w-[700px] content-start">
-    <h1 className="text-center sm:text-left" style={{ fontSize: "24px", fontWeight: "500" }}>
-      {appName}
-    </h1>
+    <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-[40px] min-w-[300px] max-w-[1600px] content-start">
+    <div className="text-center sm:text-left flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+      <h1 className="" style={{ fontSize: "24px", fontWeight: "500" }}>{appName}</h1>
+      <div className="grid grid-cols-1 xl:grid-cols-[auto_auto] text-md text-decoration-underline-hover"
+        onClick={() => {
+                    navigator.clipboard.writeText(authContext.authData.endpoint);
+                    alert.success("Endpoint copied to clipboard");
+                  }}
+            style={{
+              cursor: "pointer",
+            }}
+      >
+        <div className="truncate">
+          {`${authContext.authData.user} -\u00A0`}
+        </div>
+        <div className="flex flex-row items-center justify-center gap-2 truncate">
+          {`${authContext.authData.endpoint}`}
+          <Copy className="h-4 w-4" />
+        </div>
+      </div>
+    </div>
     <Card>
       <CardHeader>
       <CardTitle className="flex flex-row items-center justify-between gap-2">
