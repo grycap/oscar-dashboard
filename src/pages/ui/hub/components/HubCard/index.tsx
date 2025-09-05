@@ -21,17 +21,17 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 
   useEffect(() => {
     const fetchData = async () => {
-			try {
-				const response = await fetch(roCrateServiceDef.fdlUrl);
-				if (response.ok) {
-					const service = yamlToServices(await response.text(), "")![0];
-				 	setService(service);
-				} else {
-					setError(true);
-				}
-			} catch (error) {
+		try {
+			const response = await fetch(roCrateServiceDef.fdlUrl);
+			if (response.ok) {
+				const service = yamlToServices(await response.text(), "")![0];
+				setService(service);
+			} else {
 				setError(true);
 			}
+		} catch (error) {
+			setError(true);
+		}
     };
     fetchData();
   }, []);
@@ -56,7 +56,7 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 									<Info size={16} />
 								</Button>
 							</DialogTrigger>
-							<DialogContent className="max-w-lg">
+							<DialogContent className="max-w-xl">
 								<DialogHeader>
 									<DialogTitle className="flex items-center gap-2">
 										<Info size={20} />
@@ -101,6 +101,52 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 									</div>
 
 									<div className="mt-4">
+										<h4 className="font-semibold text-gray-800 text-sm uppercase tracking-wide mb-3">
+											System Requirements
+										</h4>
+										<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+											<div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+												<div className="flex items-center justify-between mb-2">
+													<h5 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+														CPU
+													</h5>
+													<span className="text-xs text-gray-400">⚡</span>
+												</div>
+												<div className="text-sm text-gray-700 font-medium">
+													{roCrateServiceDef.cpuRequirements || 'Not specified'}
+												</div>
+											</div>
+											
+											<div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+												<div className="flex items-center justify-between mb-2">
+													<h5 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+														GPU
+													</h5>
+													<span className="text-xs text-gray-400">🖥️</span>
+												</div>
+												<div className="text-sm text-gray-700 font-medium">
+													{(Number(roCrateServiceDef.gpuRequirements) > 0 ? roCrateServiceDef.gpuRequirements : 'Not required')}
+												</div>
+											</div>
+											
+											<div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+												<div className="flex items-center justify-between mb-2">
+													<h5 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+														Memory
+													</h5>
+													<span className="text-xs text-gray-400">💾</span>
+												</div>
+												<div className="text-sm text-gray-700 font-medium mb-2">
+													{roCrateServiceDef.memoryRequirements && roCrateServiceDef.memoryUnits 
+														? `${roCrateServiceDef.memoryRequirements} ${roCrateServiceDef.memoryUnits}`
+														: 'Not specified'
+													}
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div className="mt-4">
 										<h4 className="font-semibold text-gray-800 uppercase">
 											Description
 										</h4>
@@ -115,7 +161,7 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 											variant={"mainGreen"}
 											onClick={() => {setIsDialogOpen(true); setIsInfoOpen(false);}}
 										>
-											Try it!
+											Deploy
 										</Button>
 									</div>
 								</div>
