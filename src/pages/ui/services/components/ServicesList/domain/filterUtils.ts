@@ -23,7 +23,7 @@ function handleFilterServices({ services, filter, authData }: Props) {
         );
       }
 
-      if (!service.allowed_users.includes(egiUserId)) {
+      if (!service.owner.includes(egiUserId)) {
         return false;
       }
     }
