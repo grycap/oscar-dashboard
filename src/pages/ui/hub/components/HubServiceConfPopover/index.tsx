@@ -158,7 +158,7 @@ return (
           tooltipLabel={title}
           onClick={() => {setIsOpen(false)}}
         >
-          Try it!
+          Deploy
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
@@ -247,22 +247,22 @@ return (
             <div>
                 <Label htmlFor="vo">VO</Label>
                 <Select
-                value={formData.vo}
-                onValueChange={(value) => {
-                    setFormData({ ...formData, vo: value });
-                    if (errors.vo) setErrors({ ...errors, vo: false });
-                }}
+                  value={formData.vo}
+                  onValueChange={(value) => {
+                      setFormData({ ...formData, vo: value });
+                      if (errors.vo) setErrors({ ...errors, vo: false });
+                  }}
                 >
-                <SelectTrigger id="vo" className={errors.vo ? "border-red-500 focus:border-red-500" : ""}>
-                    <SelectValue placeholder="Select a VO" />
-                </SelectTrigger>
-                <SelectContent>
-                    {oidcGroups.map((group) => (
-                    <SelectItem key={group} value={group}>
-                        {group}
-                    </SelectItem>
-                    ))}
-                </SelectContent>
+                  <SelectTrigger id="vo" className={errors.vo ? "border-red-500 focus:border-red-500" : ""}>
+                      <SelectValue placeholder="Select a VO" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {oidcGroups.map((group) => (
+                      <SelectItem key={group} value={group}>
+                          {group}
+                      </SelectItem>
+                      ))}
+                  </SelectContent>
                 </Select>
             </div>
 						{asyncService && 
