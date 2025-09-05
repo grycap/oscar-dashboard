@@ -1,5 +1,5 @@
 import OscarLogo from "@/assets/oscar-big.png";
-import { Boxes, Codesandbox, Database, Info, LogOut, Notebook, Route } from "lucide-react";
+import { Boxes, Codesandbox, Database, Info, LogOut, Notebook, Route, BarChart2 } from "lucide-react";
 import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 import {
