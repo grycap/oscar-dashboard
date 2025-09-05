@@ -1,6 +1,5 @@
 import OscarLogo from "@/assets/oscar-big.png";
-//importamos barchart para el  nuevo icono de dashboards
-import { Codesandbox, Database, Info, LogOut, Notebook,  Route, BarChart2 } from "lucide-react";
+import { Boxes, Codesandbox, Database, Info, LogOut, Notebook, Route } from "lucide-react";
 import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -45,6 +44,11 @@ function AppSidebar() {
       title: "Flows",
       icon: <Route size={20} />,
       path: "/flows",
+    },
+    {
+      title: "Hub",
+      icon: <Boxes size={20} />,
+      path: "/hub",
     },
     {
       title: "Info",
