@@ -11,6 +11,8 @@ import InfoView from "@/pages/ui/info";
 import { ServicesProvider } from "@/pages/ui/services/context/ServicesContext";
 import JunoView from "@/pages/ui/juno";
 import FlowsView from "@/pages/ui/flows";
+//añadimos la ruta de Dashboard
+import Dashboard from "@/pages/ui/dashboard"
 import HubView from "@/pages/ui/hub";
 
 function AppRouter() {
@@ -34,6 +36,8 @@ function AppRouter() {
           <Route path="info" element={<InfoView />} />
           <Route path="notebooks" element={<JunoView />} />
           <Route path="flows" element={<FlowsView />} />
+           {/*nueva ruta de dashboard*/}
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="hub" element={<HubView />} />
         </Route>
         <Route path="/login" element={<Login />} />

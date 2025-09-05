@@ -55,6 +55,13 @@ function AppSidebar() {
       icon: <Info size={20} />,
       path: "/info",
     },
+    //nuevo botón para el dashboard
+    {
+      title: "Dashboard",
+      icon: <BarChart2  size={20} />,
+      path: "/dashboard",
+    },
+
   ];
 
   function handleLogout() {
