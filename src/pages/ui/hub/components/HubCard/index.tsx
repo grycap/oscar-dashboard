@@ -21,17 +21,17 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 
   useEffect(() => {
     const fetchData = async () => {
-			try {
-				const response = await fetch(roCrateServiceDef.fdlUrl);
-				if (response.ok) {
-					const service = yamlToServices(await response.text(), "")![0];
-				 	setService(service);
-				} else {
-					setError(true);
-				}
-			} catch (error) {
+		try {
+			const response = await fetch(roCrateServiceDef.fdlUrl);
+			if (response.ok) {
+				const service = yamlToServices(await response.text(), "")![0];
+				setService(service);
+			} else {
 				setError(true);
 			}
+		} catch (error) {
+			setError(true);
+		}
     };
     fetchData();
   }, []);
@@ -125,7 +125,7 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 													<span className="text-xs text-gray-400">🖥️</span>
 												</div>
 												<div className="text-sm text-gray-700 font-medium">
-													{roCrateServiceDef.gpuRequirements || 'Not required'}
+													{(Number(roCrateServiceDef.gpuRequirements) > 0 ? roCrateServiceDef.gpuRequirements : 'Not required')}
 												</div>
 											</div>
 											
