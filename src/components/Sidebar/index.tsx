@@ -57,9 +57,9 @@ function AppSidebar() {
     },
     //nuevo botón para el dashboard
     {
-      title: "Dashboard",
+      title: "Cluster Status",
       icon: <BarChart2  size={20} />,
-      path: "/dashboard",
+      path: "/cluster",
     },
 
   ];

@@ -1,4 +1,4 @@
-// src/pages/Dashboard/index.tsx
+// src/pages/cluster_info/index.tsx
 import { useEffect, useState } from "react";
 import {
   Card,
@@ -144,7 +144,7 @@ const formatCores = (millicores: number) =>
 const formatKilobytes = (bytes: number) =>
   `${(bytes / 1024).toFixed(1)} KB`;
 
-const Dashboard = () => {
+const Cluster = () => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     deployment: false,
     jobs: false,
@@ -381,120 +381,127 @@ const Dashboard = () => {
 
 
           {/* Colapsable de Jobs */}
-          <Card className="w-full mt-6">
-            <div
-              onClick={() => toggleSection("jobs")}
-              className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
-            >
-              <CardTitle className="text-lg font-semibold">Jobs</CardTitle>
-              {expandedSections.jobs ? <ChevronDown /> : <ChevronRight />}
-            </div>
+          {data.OSCAR?.jobsCount ?
+            <Card className="w-full mt-6">
+              <div
+                onClick={() => toggleSection("jobs")}
+                className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
+              >
+                <CardTitle className="text-lg font-semibold">Jobs</CardTitle>
+                {expandedSections.jobs ? <ChevronDown /> : <ChevronRight />}
+              </div>
 
-            {expandedSections.jobs && (
-              <CardContent className="flex flex-wrap md:flex-nowrap gap-4">
-                {/* Active - Blue */}
-                <Card className="flex-1 bg-blue-50 border border-blue-200">
-                  <CardContent className="p-4 text-center text-blue-800 font-semibold text-lg">
-                    Active{" "}
-                    <span className="font-bold ml-1">
-                      {data.OSCAR.jobsCount.active}
-                    </span>
-                  </CardContent>
-                </Card>
+              {expandedSections.jobs && (
+                <CardContent className="flex flex-wrap md:flex-nowrap gap-4">
+                  {/* Active - Blue */}
+                  <Card className="flex-1 bg-blue-50 border border-blue-200">
+                    <CardContent className="p-4 text-center text-blue-800 font-semibold text-lg">
+                      Active{" "}
+                      <span className="font-bold ml-1">
+                        {data.OSCAR.jobsCount.active}
+                      </span>
+                    </CardContent>
+                  </Card>
 
-                {/* Failed - Red */}
-                <Card className="flex-1 bg-rose-50 border border-rose-200">
-                  <CardContent className="p-4 text-center text-rose-800 font-semibold text-lg">
-                    Failed{" "}
-                    <span className="font-bold ml-1">
-                      {data.OSCAR.jobsCount.failed}
-                    </span>
-                  </CardContent>
-                </Card>
+                  {/* Failed - Red */}
+                  <Card className="flex-1 bg-rose-50 border border-rose-200">
+                    <CardContent className="p-4 text-center text-rose-800 font-semibold text-lg">
+                      Failed{" "}
+                      <span className="font-bold ml-1">
+                        {data.OSCAR.jobsCount.failed}
+                      </span>
+                    </CardContent>
+                  </Card>
 
-                {/* Succeeded - Green */}
-                <Card className="flex-1 bg-emerald-50 border border-emerald-200">
-                  <CardContent className="p-4 text-center text-emerald-800 font-semibold text-lg">
-                    Succeeded{" "}
-                    <span className="font-bold ml-1">
-                      {data.OSCAR.jobsCount.succeeded}
-                    </span>
-                  </CardContent>
-                </Card>
-              </CardContent>
-            )}
-          </Card>
+                  {/* Succeeded - Green */}
+                  <Card className="flex-1 bg-emerald-50 border border-emerald-200">
+                    <CardContent className="p-4 text-center text-emerald-800 font-semibold text-lg">
+                      Succeeded{" "}
+                      <span className="font-bold ml-1">
+                        {data.OSCAR.jobsCount.succeeded}
+                      </span>
+                    </CardContent>
+                  </Card>
+                </CardContent>
+              )}
+            </Card>
+          : <></>}
+
+
 
           {/* Colapsable de Pods */}
-          <Card className="w-full mt-6">
-            <div
-              onClick={() => toggleSection("pods")}
-              className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
-            >
-              <CardTitle className="text-lg font-semibold">Pods</CardTitle>
-              {expandedSections.pods ? <ChevronDown /> : <ChevronRight />}
-            </div>
+           {data.OSCAR?.podsInfo?.pods ?
+            <Card className="w-full mt-6">
+              <div
+                onClick={() => toggleSection("pods")}
+                className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
+              >
+                <CardTitle className="text-lg font-semibold">Pods</CardTitle>
+                {expandedSections.pods ? <ChevronDown /> : <ChevronRight />}
+              </div>
 
-            {expandedSections.pods && (
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Pod list section */}
-                <Card>
-                  <CardContent className="p-4 space-y-2">
-                    <h2 className="text-sm font-semibold text-gray-700">Total Pods</h2>
-                    <p className="text-xl font-bold mb-2">{data.OSCAR.podsInfo.total}</p>
-                    
-                    {/* Lista de pods con título en negrita */}
-                    <h2 className="text-sm font-semibold text-gray-700">List of Pods</h2>
+              {expandedSections.pods && (
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Pod list section */}
+                  <Card>
+                    <CardContent className="p-4 space-y-2">
+                      <h2 className="text-sm font-semibold text-gray-700">Total Pods</h2>
+                      <p className="text-xl font-bold mb-2">{data.OSCAR.podsInfo.total}</p>
+                      
+                      {/* Lista de pods con título en negrita */}
+                      <h2 className="text-sm font-semibold text-gray-700">List of Pods</h2>
 
-                    <ul className="text-sm text-gray-800 space-y-1">
-                      {data.OSCAR.podsInfo.pods.map((pod, i) => (
-                        <li key={i} className="flex justify-between border-b pb-1">
-                          <span className="truncate">{pod.name}</span>
-                          <span
-                            className={`ml-2 font-semibold ${
-                              pod.state === "Running"
-                                ? "text-green-600"
-                                : pod.state === "Failed"
-                                ? "text-red-600"
-                                : pod.state === "Succeeded"
-                                ? "text-green-600"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            {pod.state}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                {/* Conteo por estado */}
-                <Card>
-                  <CardContent className="p-4 space-y-2">
-                    <h2 className="text-sm font-semibold text-gray-700">Summary by state</h2>
-                    <ul className="text-sm text-gray-800 space-y-1">
-                      {Object.entries(data.OSCAR.podsInfo.states).map(([state, count], i) => {
-                        let countColor = "text-gray-800";
-                        if (state === "Succeeded" && count > 0) {
-                          countColor = "text-green-600";
-                        } else if (state === "Failed" && count > 0) {
-                          countColor = "text-red-600";
-                        }
-
-                        return (
-                          <li key={i} className="flex justify-between">
-                            <span>{state}</span>
-                            <span className={`font-semibold ${countColor}`}>{count}</span>
+                      <ul className="text-sm text-gray-800 space-y-1">
+                        {data.OSCAR.podsInfo.pods.map((pod, i) => (
+                          <li key={i} className="flex justify-between border-b pb-1">
+                            <span className="truncate">{pod.name}</span>
+                            <span
+                              className={`ml-2 font-semibold ${
+                                pod.state === "Running"
+                                  ? "text-green-600"
+                                  : pod.state === "Failed"
+                                  ? "text-red-600"
+                                  : pod.state === "Succeeded"
+                                  ? "text-green-600"
+                                  : "text-gray-600"
+                              }`}
+                            >
+                              {pod.state}
+                            </span>
                           </li>
-                        );
-                      })}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </CardContent>
-            )}
-          </Card>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  {/* Conteo por estado */}
+                  <Card>
+                    <CardContent className="p-4 space-y-2">
+                      <h2 className="text-sm font-semibold text-gray-700">Summary by state</h2>
+                      <ul className="text-sm text-gray-800 space-y-1">
+                        {Object.entries(data.OSCAR.podsInfo.states).map(([state, count], i) => {
+                          let countColor = "text-gray-800";
+                          if (state === "Succeeded" && count > 0) {
+                            countColor = "text-green-600";
+                          } else if (state === "Failed" && count > 0) {
+                            countColor = "text-red-600";
+                          }
+
+                          return (
+                            <li key={i} className="flex justify-between">
+                              <span>{state}</span>
+                              <span className={`font-semibold ${countColor}`}>{count}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </CardContent>
+              )}
+            </Card>
+           :<></>}
+
         
         {/* Bloque desplegable de OIDC */}
         <Card className="w-full mt-6">
@@ -666,87 +673,92 @@ const Dashboard = () => {
       </Card>
     
     {/* Bloque de MinIO */}
-    <Card className="w-full mb-6">
-      <CardHeader>
-        <CardTitle>MinIO</CardTitle>
-        <CardDescription className="text-sm text-gray-500">
-          Detailed information about buckets.
-        </CardDescription>
-      </CardHeader>
+    {data.MinIO?.buckets ? 
+      <Card className="w-full mb-6">
+        <CardHeader>
+          <CardTitle>MinIO</CardTitle>
+          <CardDescription className="text-sm text-gray-500">
+            Detailed information about buckets.
+          </CardDescription>
+        </CardHeader>
 
-      <CardContent>
-        <div className="w-full">
-          {/* Altura máxima aprox. 4 cards visibles con scroll */}
-          <div className="overflow-y-auto max-h-[280px] pr-1 space-y-4">
-            {data.MinIO.buckets.slice(0, 50).map((bucket, index) => {
-              const isExpanded = expandedBuckets[bucket.name] || false;
+        <CardContent>
+          <div className="w-full">
+            {/* Altura máxima aprox. 4 cards visibles con scroll */}
+            <div className="overflow-y-auto max-h-[280px] pr-1 space-y-4">
+              {data.MinIO?.buckets?.slice(0, 50).map((bucket, index) => {
+                const isExpanded = expandedBuckets[bucket.name] || false;
 
-              return (
-                <Card key={index} className="overflow-hidden transition-all">
-                  <div
-                    onClick={() => toggleBucket(bucket.name)}
-                    className="cursor-pointer hover:bg-gray-100 px-4 py-3 flex justify-between items-center"
-                  >
-                    <CardTitle className="text-lg font-semibold">{bucket.name}</CardTitle>
-                    {isExpanded ? <ChevronDown /> : <ChevronRight />}
-                  </div>
+                return (
+                  <Card key={index} className="overflow-hidden transition-all">
+                    <div
+                      onClick={() => toggleBucket(bucket.name)}
+                      className="cursor-pointer hover:bg-gray-100 px-4 py-3 flex justify-between items-center"
+                    >
+                      <CardTitle className="text-lg font-semibold">{bucket.name}</CardTitle>
+                      {isExpanded ? <ChevronDown /> : <ChevronRight />}
+                    </div>
 
-                  {isExpanded && (
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start mt-2">
-                      <div className="space-y-1">
-                        <h2 className="text-base font-semibold text-gray-800">Policy</h2>
-                        <p className="text-sm font-normal text-gray-600">
-                          {bucket.policy_type || "Not defined"}
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <h2 className="text-base font-semibold text-gray-800">Owner</h2>
-                        <p className="text-sm font-normal text-gray-600">
-                          {bucket.owner || "Unknown"}
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <h2 className="text-base font-semibold text-gray-800">Creation date</h2>
-                        <p className="text-sm font-normal text-gray-600">
-                          {new Date(bucket.creation_date).toLocaleString()}
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <h2 className="text-base font-semibold text-gray-800">Space used</h2>
-                        <p className="text-sm font-normal text-gray-600">
-                          {formatKilobytes(bucket.size)} 
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <h2 className="text-base font-semibold text-gray-800">Number of items</h2>
-                        <p className="text-sm font-normal text-gray-600">
-                          {bucket.num_objects}
-                        </p>
-                      </div>
-
-                      {bucket.members && (
-                        <div className="md:col-span-2 space-y-1">
-                          <h2 className="text-base font-semibold text-gray-800">Members with access</h2>
-                          <ul className="list-disc ml-4 text-sm font-normal text-gray-600">
-                            {bucket.members.map((member, i) => (
-                              <li key={i}>{member}</li>
-                            ))}
-                          </ul>
+                    {isExpanded && (
+                      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start mt-2">
+                        <div className="space-y-1">
+                          <h2 className="text-base font-semibold text-gray-800">Policy</h2>
+                          <p className="text-sm font-normal text-gray-600">
+                            {bucket.policy_type || "Not defined"}
+                          </p>
                         </div>
-                      )}
-                    </CardContent>
-                  )}
-                </Card>
-              );
-            })}
+
+                        <div className="space-y-1">
+                          <h2 className="text-base font-semibold text-gray-800">Owner</h2>
+                          <p className="text-sm font-normal text-gray-600">
+                            {bucket.owner || "Unknown"}
+                          </p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h2 className="text-base font-semibold text-gray-800">Creation date</h2>
+                          <p className="text-sm font-normal text-gray-600">
+                            {new Date(bucket.creation_date).toLocaleString()}
+                          </p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h2 className="text-base font-semibold text-gray-800">Space used</h2>
+                          <p className="text-sm font-normal text-gray-600">
+                            {formatKilobytes(bucket.size)} 
+                          </p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h2 className="text-base font-semibold text-gray-800">Number of items</h2>
+                          <p className="text-sm font-normal text-gray-600">
+                            {bucket.num_objects}
+                          </p>
+                        </div>
+
+                        {bucket.members && (
+                          <div className="md:col-span-2 space-y-1">
+                            <h2 className="text-base font-semibold text-gray-800">Members with access</h2>
+                            <ul className="list-disc ml-4 text-sm font-normal text-gray-600">
+                              {bucket.members.map((member, i) => (
+                                <li key={i}>{member}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </CardContent>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    : <></>}
+
+
+    
 
 
     <div className="h-2" />
@@ -754,4 +766,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Cluster;
