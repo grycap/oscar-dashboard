@@ -1,13 +1,15 @@
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { exposedServiceIsAlive } from "@/lib/utils";
+import { exposedServiceIsAlive, isVersionLower } from "@/lib/utils";
 import { Service } from "@/pages/ui/services/models/service";
 import { Link } from "react-router-dom";
 import OscarColors from "@/styles";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }: { service: Service; endpoint: string; additionalExposedPathArgs?: string }) {
   const [isAlive, setIsAlive] = useState<boolean | null>(null);
+  const { clusterInfo } = useAuth();
 
   /**
    * Interpolate variables in the additionalExposedPathArgs string.
@@ -26,6 +28,10 @@ function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }:
   useEffect(() => {
     let isMounted = true;
     const checkStatus = async () => {
+      if (clusterInfo && isVersionLower(clusterInfo.version, "3.6.4")) {
+        if (isMounted) setIsAlive(true);
+        return;
+      }
       try {
         const status = await exposedServiceIsAlive(`${endpoint}/system/services/${service.name}/exposed/`);
         if (isMounted) { 
@@ -42,7 +48,7 @@ function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }:
       isMounted = false;
     };
   }, [service.name, endpoint]);
-  
+
   return isAlive ? (
     <Link
       to={`${
