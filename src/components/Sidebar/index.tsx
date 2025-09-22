@@ -1,5 +1,5 @@
 import OscarLogo from "@/assets/oscar-big.png";
-import { Codesandbox, Database, Info, LogOut, Notebook, Route } from "lucide-react";
+import { Boxes, Codesandbox, Database, Info, LogOut, Notebook, Route, BarChart2 } from "lucide-react";
 import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -46,10 +46,22 @@ function AppSidebar() {
       path: "/flows",
     },
     {
+      title: "Hub",
+      icon: <Boxes size={20} />,
+      path: "/hub",
+    },
+    {
       title: "Info",
       icon: <Info size={20} />,
       path: "/info",
     },
+    //nuevo botón para el dashboard
+    {
+      title: "Cluster Status",
+      icon: <BarChart2  size={20} />,
+      path: "/cluster",
+    },
+
   ];
 
   function handleLogout() {
