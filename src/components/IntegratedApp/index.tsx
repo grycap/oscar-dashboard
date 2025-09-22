@@ -1,7 +1,7 @@
 import { Service } from "@/pages/ui/services/models/service";
 import GenericTable from "../Table";
-import { Link, useNavigate } from "react-router-dom";
-import { Copy, Edit, ExternalLink, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Copy, Edit, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Button } from "../ui/button";
@@ -14,6 +14,7 @@ import { alert } from "@/lib/alert";
 import DeleteDialog from "../DeleteDialog";
 import updateServiceApi from "@/api/services/updateServiceApi";
 import { useAuth } from "@/contexts/AuthContext";
+import ServiceRedirectButton from "../ServiceRedirectButton";
 
 interface IntegratedAppProps {
     appName: string;
@@ -23,7 +24,6 @@ interface IntegratedAppProps {
     additionalExposedPathArgs?: string;
 }
 
-
 function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedPathArgs, DeployInstancePopover}: IntegratedAppProps) {
   const { setFormService } = useServicesContext();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
@@ -32,21 +32,7 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
 
   
   const navigate = useNavigate();
-   
-  /**
-   * Interpolate variables in the additionalExposedPathArgs string.
-   * This function replaces variables in the format {{ variableName }} with their corresponding values from the
-   * service's environment variables.
-   */
-  function interpolateVariables(service: Service, additionalExposedPathArgs?: string) {
-    if (!additionalExposedPathArgs) return "";
-
-    return additionalExposedPathArgs.replace(/{{\s*([^}]+)\s*}}/g, (_, variableName) => {
-      return service.environment.variables[variableName] ?? "";
-    });
-    
-  }
-
+  
   async function handleRestartService(service: Service) {
     try {
       await updateServiceApi(service);
@@ -189,16 +175,11 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
           },
           {
             button: (service) => (
-              <Link
-                to={`${
-                  endpoint
-                }/system/services/${service.name}/exposed/${
-                  interpolateVariables(service, additionalExposedPathArgs)
-                }`}
-                target="_blank"
-              >
-                <ExternalLink size={20} />
-              </Link>
+              <ServiceRedirectButton 
+                service={service}
+                endpoint={endpoint}
+                additionalExposedPathArgs={additionalExposedPathArgs}
+              />
             ),
           },
           {
