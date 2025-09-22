@@ -29,3 +29,35 @@ export function generateReadableName(length = 6) {
   return name;
 }
 
+export async function exposedServiceIsAlive(url: string, delay = 6000, attempts = -1): Promise<boolean> {
+  for (let i = 0; i < attempts || attempts === -1; i++) {
+    try {
+      const response = await fetch(url, { 
+        method: 'HEAD',
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      if (response.ok) {
+        return true;
+      } else if (response.status === 405) {
+        const response = await fetch(url, { 
+          method: 'GET',
+          mode: 'cors',
+          credentials: 'omit'
+        });
+        if (response.ok) {
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error(`Attempt ${i + 1} failed:`, error);
+    }
+    await sleep(delay);
+  }
+  
+  return false;
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
