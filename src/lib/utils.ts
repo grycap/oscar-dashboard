@@ -58,6 +58,18 @@ export async function exposedServiceIsAlive(url: string, delay = 6000, attempts 
   return false;
 }
 
+export function isVersionLower(version: string, target: string) {
+  if (target === "devel") return true;
+  if (version === "devel") return false;
+  const v = version.split('.').map(x => parseInt(x.replace(/\D/g, '')) || 0);
+  const t = target.split('.').map(x => parseInt(x.replace(/\D/g, '')) || 0);
+  for (let i = 0; i < 3; i++) {
+    if ((v[i] ?? 0) < (t[i] ?? 0)) return true;
+    if ((v[i] ?? 0) > (t[i] ?? 0)) return false;
+  }
+  return false;
+}
+
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
