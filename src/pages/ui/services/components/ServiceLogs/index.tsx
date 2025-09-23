@@ -57,9 +57,7 @@ export default function ServiceLogs() {
       if ((next || next === null) && !loading && nextExecution === true) {
         fetchServices();
         setNextExecution(false)
-        //setTimeout(handleScroll, 2000)
-        //setTimeout(() => setNextExecution(false), 2000)
-        //setScrollDir("scrolling up")
+   
       }
 
       
