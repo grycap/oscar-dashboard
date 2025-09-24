@@ -4,19 +4,24 @@ import Log from "../../models/log";
 import { getServiceLogsApi } from "@/api/logs/getServiceLogs";
 import GenericTable from "@/components/Table";
 import { Badge, BadgeProps } from "@/components/ui/badge";
-import { Eye, Loader,  Trash2 } from "lucide-react";
+import { Eye,  Loader,  Trash2, Plus, LoaderPinwheel } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LogDetailsPopover from "./components/LogDetailsPopover";
 import DeleteDialog from "@/components/DeleteDialog";
 import { deleteLogApi } from "@/api/logs/deleteLog";
 import { alert } from "@/lib/alert";
 import deleteServiceLogsApi from "@/api/logs/deleteServiceLogs";
+import OscarColors from "@/styles";
+
 
 export type LogWithName = Log & { name: string };
 
 export default function ServiceLogs() {
   const { formService } = useServicesContext();
   const [logs, setLogs] = useState<Record<string, Log>>({});
+  const [next, setNext] = useState<string | null>(null);
+  const [nextExecution, setNextExecution] = useState<boolean>(true);
+  const [loading, setLoading] = useState(false);
   const logsWithName = useMemo(
     () =>
       Object.entries(logs).map(([name, log]) => ({
@@ -30,13 +35,36 @@ export default function ServiceLogs() {
   const [logsToDelete, setLogsToDelete] = useState<LogWithName[]>([]);
 
   function fetchServices() {
-    if (!formService?.name) return;
-    getServiceLogsApi(formService.name).then(setLogs);
+    if (!formService?.name || loading || next === "") return;
+    setLoading(true);
+    getServiceLogsApi(formService.name, next as string | "").then(data => {
+      const serviceLogs = data.jobs ;
+      setLogs(prevLogs => ({ ...prevLogs, ...serviceLogs }));
+      const newNext = data.next_page
+        ? JSON.stringify(data.next_page).replace(/^"|"$/g, "")
+        : "";
+
+      setNext(newNext);
+    }).catch((error) => {
+      console.error("Failed to fetch service logs:", error);
+      setLogs({});
+    }).finally(() => {
+      setLoading(false);
+    });
   }
 
-  useEffect(() => {
-    fetchServices();
-  }, [formService?.name]);
+    useEffect(() => {
+      if ((next || next === null) && !loading && nextExecution === true) {
+        fetchServices();
+        setNextExecution(false)
+   
+      }
+
+      
+    }, [next, loading, formService?.name, nextExecution]);
+
+
+
 
   function renderStatus(status: Log["status"]) {
     const variant: Record<Log["status"], BadgeProps["variant"]> = {
@@ -137,6 +165,11 @@ export default function ServiceLogs() {
         flexBasis: 0,
         overflow: "hidden",
       }}>
+      { nextExecution ? 
+      <div className="flex items-center justify-center ">
+                    <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+                </div>
+      :<></>}
       <LogDetailsPopover
         log={selectedLog}
         serviceName={formService?.name}
@@ -154,6 +187,8 @@ export default function ServiceLogs() {
         onDelete={handleDeleteLogs}
         itemNames={logsToDelete.map((log) => log.name)}
       />
+      
+        
       <GenericTable<LogWithName>
         data={logsWithName}
         columns={[
@@ -232,8 +267,6 @@ export default function ServiceLogs() {
               </Button>
             ),
           },
-        ]}
-        globalActions={[
           {
             button: () => (
               <Button
@@ -245,6 +278,25 @@ export default function ServiceLogs() {
             ),
           },
         ]}
+        globalActions={[
+         {
+            button: () => (
+              <>
+               {(next != "" && next !== null) ?
+                <Button
+                  variant="mainGreen"
+                  onClick={() => setNextExecution(true)}
+                >
+                  <Plus className="h-5 w-5 mr-2"></Plus> More Logs
+                </Button>
+              :<></>
+              }
+               </>
+            ),
+            
+          }, 
+        ]}
+        
       />
     </div>
   );
