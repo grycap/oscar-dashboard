@@ -79,7 +79,6 @@ export default function AddFileButton() {
           e.target.files && setFileAndIsImage(e.target.files[0])
         }
         className={!file || isImage ? "hidden" : ""}
-        accept="image/*,.*"
       />
       {!file ? (
         <div
