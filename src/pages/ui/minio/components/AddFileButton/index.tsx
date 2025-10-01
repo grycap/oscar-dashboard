@@ -80,7 +80,7 @@ export default function AddFileButton() {
         }
         className={!file || isImage ? "hidden" : ""}
       />
-      {!file ? (
+      {!file ? ( 
         <div
           onDragOver={handleDragOver}
           onDrop={handleDrop}
