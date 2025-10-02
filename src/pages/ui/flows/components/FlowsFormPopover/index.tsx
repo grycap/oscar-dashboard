@@ -12,7 +12,7 @@ import { Service } from "@/pages/ui/services/models/service";
 import createServiceApi from "@/api/services/createServiceApi";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
-import { Info, RefreshCcwIcon } from "lucide-react";
+import { Info, Plus, RefreshCcwIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import RequestButton from "@/components/RequestButton";
 import { generateReadableName, genRandomString } from "@/lib/utils";
@@ -182,11 +182,12 @@ function FlowsFormPopover() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="default"
+          variant="mainGreen"
           tooltipLabel="New Node-RED Instance"
           onClick={() => {setIsOpen(false)}}
         >
-          New
+          <Plus size={20} className="mr-2" />
+          Deploy instance
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">

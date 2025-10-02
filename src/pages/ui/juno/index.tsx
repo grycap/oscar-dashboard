@@ -22,7 +22,7 @@ function JunoView() {
   });
 
   return (
-    <>
+    <div className="flex flex-col h-full w-full">
       <IntegratedApp 
         appName="Jupyter Notebook" 
         endpoint={authData.endpoint} 
@@ -30,7 +30,7 @@ function JunoView() {
         DeployInstancePopover={JunoFormPopover}
         additionalExposedPathArgs="?token={{JUPYTER_TOKEN}}" 
       />
-    </>
+    </div>
   );
 }
 

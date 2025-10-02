@@ -16,9 +16,14 @@ function FlowsView() {
   });
 
   return (
-    <>
-      <IntegratedApp appName="Node-RED" endpoint={authData.endpoint} filteredServices={flowsService} DeployInstancePopover={FlowsFormPopover} />
-    </>
+    <div className="flex flex-col h-full w-full">
+      <IntegratedApp 
+        appName="Node-RED" 
+        endpoint={authData.endpoint} 
+        filteredServices={flowsService} 
+        DeployInstancePopover={FlowsFormPopover} 
+      />
+    </div>
   );
 }
 

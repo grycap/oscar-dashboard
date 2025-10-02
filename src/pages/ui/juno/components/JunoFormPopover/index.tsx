@@ -13,7 +13,7 @@ import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToServi
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
-import { RefreshCcwIcon } from "lucide-react";
+import { Plus, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 
@@ -163,11 +163,12 @@ return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="default"
-          tooltipLabel="New Jupyter Notebook Instance"
+          variant="mainGreen"
+          tooltipLabel="New Node-RED Instance"
           onClick={() => {setIsOpen(false)}}
         >
-          New
+          <Plus size={20} className="mr-2" />
+          Deploy instance
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
