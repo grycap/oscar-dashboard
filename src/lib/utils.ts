@@ -1,3 +1,5 @@
+import { AuthData } from "@/contexts/AuthContext";
+import { SystemConfig } from "@/models/systemConfig";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -70,6 +72,34 @@ export function isVersionLower(version: string, target: string) {
   return false;
 }
 
+export function getUserVOs(authData: AuthData): string[] {
+  const vos: string[] = [];
+  if (authData.egiSession?.eduperson_entitlement) {
+    authData.egiSession.eduperson_entitlement.forEach((entitlement) => {
+      // "urn:mace:egi.eu:group:vo.example.eu:role=member#aai.egi.eu"
+      const match = entitlement.match(/^urn:mace:egi\.eu:group:(vo\..+?):role=member(?:#|$)/);
+      if (match && match[1]) {
+        vos.push(match[1]);
+      }
+    });
+  }
+  if (authData.egiSession?.group_membership) {
+    authData.egiSession.group_membership.forEach((group) => {
+      // "/employees/vo.example.eu"
+      const match = group.match(/^\/.*\/(vo\..+)$/);
+      if (match && match[1]) {
+        vos.push(match[1]);
+      }
+    });
+  }
+  return vos;
+}
+
+export function getAllowedVOs(systemConfig: {config: SystemConfig} | null, authData: AuthData): string[] {
+  if (!systemConfig || !systemConfig.config) return [];
+  const userVOs = getUserVOs(authData);
+  return systemConfig.config.oidc_groups.filter((vo) => authData.user === "oscar" || userVOs.includes(vo));
+}
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
