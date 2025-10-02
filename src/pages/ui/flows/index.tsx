@@ -9,7 +9,7 @@ function FlowsView() {
   const { services } = useServicesContext();
 
   const ownerName = authData?.egiSession?.sub ?? authData?.token ?? (authData?.user === "oscar" ? "cluster_admin" : authData?.user);
-  const flowsService = services.filter((service) => service.owner === ownerName && service.labels["node_red"] === "true");
+  const flowsService = services.filter((service) => (service.owner === ownerName ||  ownerName === "cluster_admin") && service.labels["node_red"] === "true");
 
   useEffect(() => {
     document.title ="OSCAR - Flows"
@@ -18,7 +18,7 @@ function FlowsView() {
   return (
     <div className="flex flex-col h-full w-full">
       <IntegratedApp 
-        appName="Node-RED" 
+        appName="Flows" 
         endpoint={authData.endpoint} 
         filteredServices={flowsService} 
         DeployInstancePopover={FlowsFormPopover} 

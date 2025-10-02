@@ -164,11 +164,11 @@ return (
       <DialogTrigger asChild>
         <Button
           variant="mainGreen"
-          tooltipLabel="New Node-RED Instance"
+          tooltipLabel="New Notebook Instance"
           onClick={() => {setIsOpen(false)}}
         >
           <Plus size={20} className="mr-2" />
-          Deploy instance
+          New
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
