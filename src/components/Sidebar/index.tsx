@@ -56,7 +56,7 @@ function AppSidebar() {
       path: "/info",
     },
     {
-      title: "Cluster Status",
+      title: "Status",
       icon: <BarChart2  size={20} />,
       path: "/cluster",
     },
