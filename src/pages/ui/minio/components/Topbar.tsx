@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Database, FolderRoot, Slash } from "lucide-react";
-import { OscarStyles } from "@/styles";
+import OscarColors, { OscarStyles } from "@/styles";
 import UserInfo from "@/components/UserInfo";
 import AddBucketButton from "./AddBucketButton";
 import AddFolderButton from "./AddFolderButton";
@@ -89,6 +89,7 @@ function MinioTopbar() {
     >
       <div className="grid grid-cols-1 items-center pl-4 text-gray-600 text-lg no-underline">
         <Link
+          style={{ color: OscarColors.DarkGrayText }}
           to="/ui/minio"
           aria-label="Navigate to Buckets"
           className="no-underline hover:text-gray-800 transition-colors duration-200 flex items-center gap-2"
@@ -120,7 +121,7 @@ function MinioTopbar() {
           }
         </div>
 
-        <div className="flex flex-row items-center gap-2 pl-2 pr-2">
+        <div className="flex flex-row items-center gap-2 pl-2">
           {isOnRoot ? 
           <AddBucketButton bucket={bucket} create={true} /> 
           :

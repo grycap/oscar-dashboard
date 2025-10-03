@@ -1,20 +1,19 @@
 import { Service } from "@/pages/ui/services/models/service";
 import GenericTable from "../Table";
 import { useNavigate } from "react-router-dom";
-import { Copy, Edit, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
+import { Edit, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { useState } from "react";
 import getServicesApi from "@/api/services/getServicesApi";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
-import DeleteDialog from "../DeleteDialog";
 import updateServiceApi from "@/api/services/updateServiceApi";
-import { useAuth } from "@/contexts/AuthContext";
 import ServiceRedirectButton from "../ServiceRedirectButton";
+import IntegratedAppTopbar from "./components/Topbar";
+import DeleteDialog from "../DeleteDialog";
 
 interface IntegratedAppProps {
     appName: string;
@@ -28,8 +27,6 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
   const { setFormService } = useServicesContext();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const { setServices } = useServicesContext();
-  const authContext = useAuth();
-
   
   const navigate = useNavigate();
   
@@ -99,40 +96,23 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-[40px] min-w-[300px] max-w-[1600px] content-start">
-    <div className="text-center sm:text-left flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-      <h1 className="" style={{ fontSize: "24px", fontWeight: "500" }}>{appName}</h1>
-      <div className="grid grid-cols-1 xl:grid-cols-[auto_auto] text-md text-decoration-underline-hover"
-        onClick={() => {
-                    navigator.clipboard.writeText(authContext.authData.endpoint);
-                    alert.success("Endpoint copied to clipboard");
-                  }}
-            style={{
-              cursor: "pointer",
-            }}
+    <div className="">
+      <IntegratedAppTopbar appName={appName} DeployInstancePopover={DeployInstancePopover} />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: 1,
+          flexBasis: 0,
+          overflow: "hidden",
+        }}
       >
-        <div className="truncate">
-          {`${authContext.authData.user} -\u00A0`}
-        </div>
-        <div className="flex flex-row items-center justify-center gap-2 truncate">
-          {`${authContext.authData.endpoint}`}
-          <Copy className="h-4 w-4" />
-        </div>
-      </div>
-    </div>
-    <Card>
-      <CardHeader>
-      <CardTitle className="flex flex-row items-center justify-between gap-2">
-          <div>Deployed {appName} Instances</div>
-          <DeployInstancePopover />
-      </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col max-h-[65vh]">
         <GenericTable<Service>
           data={filteredServices}
           idKey="name"
           columns={[
           { header: "Name", accessor: "name", sortBy: "name" },
+          { header: "Image", accessor: "image", sortBy: "image" },
           { header: "CPU", accessor: "cpu", sortBy: "cpu" },
           { header: "Memory", accessor: "memory", sortBy: "memory" },
           ]}
@@ -142,7 +122,7 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
               <DropdownMenu>
                 <DropdownMenuTrigger asChild title="More actions">
                   <Button variant={"link"} size="icon" tooltipLabel="More Actions">
-                    <MoreVertical size={20}/>
+                    <MoreVertical />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[220px]">
@@ -175,11 +155,13 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
           },
           {
             button: (service) => (
-              <ServiceRedirectButton 
-                service={service}
-                endpoint={endpoint}
-                additionalExposedPathArgs={additionalExposedPathArgs}
-              />
+              <div className="p-2">
+                <ServiceRedirectButton 
+                  service={service}
+                  endpoint={endpoint}
+                  additionalExposedPathArgs={additionalExposedPathArgs}
+                />
+              </div>
             ),
           },
           {
@@ -190,7 +172,7 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
                 onClick={() => setServicesToDelete([service])}
                 tooltipLabel="Delete"
               >
-                <Trash2 color={OscarColors.Red} size={20} />
+                <Trash2 color={OscarColors.Red} />
               </Button>
             ),
           },
@@ -218,17 +200,13 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
             },
           ]}
         />
-      </CardContent>
-      <CardFooter className="grid grid-cols-1 hidden">
-      
-      </CardFooter>
-    </Card>
-    <DeleteDialog
-      isOpen={servicesToDelete.length > 0}
-      onClose={() => setServicesToDelete([])}
-      onDelete={handleDeleteService}
-      itemNames={servicesToDelete.map((service) => service.name)}
-    />
+      <DeleteDialog
+        isOpen={servicesToDelete.length > 0}
+        onClose={() => setServicesToDelete([])}
+        onDelete={handleDeleteService}
+        itemNames={servicesToDelete.map((service) => service.name)}
+      />
+      </div>
     </div>
   );
 }
