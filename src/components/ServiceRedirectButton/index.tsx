@@ -58,7 +58,7 @@ function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }:
       }`}
       target="_blank"
     >
-      <ExternalLink size={20} />
+      <ExternalLink />
     </Link>
   ) : (
     <Loader2 className="animate-spin" color={OscarColors.DarkGrayText} />

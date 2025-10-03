@@ -15,22 +15,22 @@ function JunoView() {
   const { services } = useServicesContext();
 
   const ownerName = authData?.egiSession?.sub ?? authData?.token ?? (authData?.user === "oscar" ? "cluster_admin" : authData?.user);
-  const junoService = services.filter((service) => service.owner === ownerName && service.labels["jupyter_notebook"] === "true");
+  const junoService = services.filter((service) => (service.owner === ownerName ||  ownerName === "cluster_admin") && service.labels["jupyter_notebook"] === "true");
 
   useEffect(() => {
     document.title ="OSCAR - Notebooks"
   });
 
   return (
-    <>
+    <div className="flex flex-col h-full w-full">
       <IntegratedApp 
-        appName="Jupyter Notebook" 
+        appName="Notebook" 
         endpoint={authData.endpoint} 
         filteredServices={junoService} 
         DeployInstancePopover={JunoFormPopover}
         additionalExposedPathArgs="?token={{JUPYTER_TOKEN}}" 
       />
-    </>
+    </div>
   );
 }
 
