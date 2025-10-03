@@ -25,6 +25,7 @@ import EnviromentSecrets from "./components/EnviromentSecrets";
 import Annotations from "./components/Annotations";
 
 import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
+import { getAllowedVOs } from "@/lib/utils";
 
 function ServiceGeneralTab() {
   const { formService, setFormService, formMode, formFunctions } =
@@ -32,7 +33,7 @@ function ServiceGeneralTab() {
 
   const { handleChange, onBlur, errors } = formFunctions;
   const { systemConfig, authData } = useAuth();
-  const voGroups = systemConfig?.config.oidc_groups;
+  const voGroups = getAllowedVOs(systemConfig, authData);
   function voGroupsIsEmpthy(){
     if( voGroups === undefined){ return true}
     else if (JSON.stringify(voGroups) === '[""]'){ return true}

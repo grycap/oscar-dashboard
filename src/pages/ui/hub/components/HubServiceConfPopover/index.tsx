@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
-import { generateReadableName, genRandomString } from "@/lib/utils";
+import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
@@ -26,10 +26,10 @@ interface HubServiceConfPopoverProps {
 }
 
 function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, setIsOpen, className = "", variant = "default", title = "Deploy Service" }: HubServiceConfPopoverProps) {
-  const {systemConfig } = useAuth();
+  const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
 
-  const oidcGroups = systemConfig?.config.oidc_groups ?? [];
+  const oidcGroups = getAllowedVOs(systemConfig, authData);
 	const asyncService = roCrateServiceDef.type.toLowerCase() === "asynchronous";
 
   function nameService() {
