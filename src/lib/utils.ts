@@ -96,10 +96,18 @@ export function getUserVOs(authData: AuthData): string[] {
 }
 
 export function getAllowedVOs(systemConfig: {config: SystemConfig} | null, authData: AuthData): string[] {
-  if (!systemConfig || !systemConfig.config) return [];
+  if (!systemConfig || !systemConfig.config || !systemConfig.config.oidc_groups || systemConfig.config.oidc_groups.length === 0) return [];
+  // If user is oscar, return all allowed VOs from system config
+  if (authData.user === "oscar") return systemConfig.config.oidc_groups;
+  // Get user's VOs
   const userVOs = getUserVOs(authData);
-  return systemConfig.config.oidc_groups.filter((vo) => authData.user === "oscar" || userVOs.includes(vo));
+  // If user has no VOs, return all allowed VOs from system config
+  if (userVOs.length === 0) return systemConfig.config.oidc_groups;
+  // Filter allowed VOs based on user's VOs
+  const filteredVOs = systemConfig.config.oidc_groups.filter((vo) => userVOs.includes(vo));
+  return filteredVOs;
 }
+
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
