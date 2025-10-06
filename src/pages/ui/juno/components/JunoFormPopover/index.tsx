@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { alert } from "@/lib/alert";
-import { generateReadableName, genRandomString } from "@/lib/utils";
+import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
@@ -24,7 +24,7 @@ function JunoFormPopover() {
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
 
-  const oidcGroups = systemConfig?.config.oidc_groups ?? [];
+  const oidcGroups = getAllowedVOs(systemConfig, authData);
 
   function nameService() {
     return `juno-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;

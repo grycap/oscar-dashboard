@@ -23,6 +23,8 @@ type EGISessionInfo = {
   preferred_username: string; // Nombre de usuario preferido
   sub: string; // Identificador único del usuario
   voperson_verified_email: string[]; // Lista de correos electrónicos verificados
+  
+  group_membership: string[]; 
 };
 
 export type AuthData = {

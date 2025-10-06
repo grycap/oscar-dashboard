@@ -15,18 +15,18 @@ import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Info, Plus, RefreshCcwIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import RequestButton from "@/components/RequestButton";
-import { generateReadableName, genRandomString } from "@/lib/utils";
+import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 
 
 
 function FlowsFormPopover() {
   const { buckets } = useMinio();
   const [isOpen, setIsOpen] = useState(false);
-  const {systemConfig, clusterInfo } = useAuth();
+  const {systemConfig, clusterInfo, authData } = useAuth();
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
   
-  const oidcGroups = systemConfig?.config?.oidc_groups ?? [];
+  const oidcGroups = getAllowedVOs(systemConfig, authData);
 
   function nameService() {
     return `flows-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
