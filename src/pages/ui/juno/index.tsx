@@ -25,7 +25,7 @@ function JunoView() {
     <div className="flex flex-col h-full w-full">
       <IntegratedApp 
         appName="Notebook" 
-        endpoint={authData.endpoint} 
+        deployedServiceEndpoint={authData.endpoint} 
         filteredServices={junoService} 
         DeployInstancePopover={JunoFormPopover}
         additionalExposedPathArgs="?token={{JUPYTER_TOKEN}}" 
