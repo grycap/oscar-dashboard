@@ -1,6 +1,6 @@
 import { Service } from "@/pages/ui/services/models/service";
 import GenericTable from "../Table";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Edit, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
@@ -12,21 +12,22 @@ import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
 import updateServiceApi from "@/api/services/updateServiceApi";
 import ServiceRedirectButton from "../ServiceRedirectButton";
-import IntegratedAppTopbar from "./components/Topbar";
 import DeleteDialog from "../DeleteDialog";
+import GenericTopbar from "../Topbar";
 
 interface IntegratedAppProps {
     appName: string;
-    endpoint: string;
+    deployedServiceEndpoint: string;
     filteredServices: Service[];
     DeployInstancePopover: React.ComponentType;
     additionalExposedPathArgs?: string;
 }
 
-function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedPathArgs, DeployInstancePopover}: IntegratedAppProps) {
+function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, additionalExposedPathArgs, DeployInstancePopover}: IntegratedAppProps) {
   const { setFormService } = useServicesContext();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const { setServices } = useServicesContext();
+  const location = useLocation();
   
   const navigate = useNavigate();
   
@@ -97,7 +98,11 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
 
   return (
     <div className="">
-      <IntegratedAppTopbar appName={appName} DeployInstancePopover={DeployInstancePopover} />
+      <GenericTopbar defaultHeader={{title: appName, linkTo: location.pathname}} refresher={handleGetServices}>
+        <div className="flex w-full justify-end">
+          <DeployInstancePopover />
+        </div>
+      </GenericTopbar>
       <div
         style={{
           display: "flex",
@@ -158,7 +163,7 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
               <div className="p-2">
                 <ServiceRedirectButton 
                   service={service}
-                  endpoint={endpoint}
+                  endpoint={deployedServiceEndpoint}
                   additionalExposedPathArgs={additionalExposedPathArgs}
                 />
               </div>
