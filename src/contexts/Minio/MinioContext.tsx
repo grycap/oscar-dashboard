@@ -31,6 +31,7 @@ export type MinioProviderData = {
   providerInfo: MinioStorageProvider;
   setProviderInfo: (providerInfo: MinioStorageProvider) => void;
   buckets: Bucket[];
+  bucketsAreLoading: boolean;
   setBuckets: (buckets: Bucket[]) => void;
   createBucket: (bucketName: Bucket_oscar) => Promise<void>;
   updateBucketsVisibilityControl: (bucketName: Bucket_oscar) => Promise<void>; 
@@ -65,6 +66,7 @@ export const MinioContext = createContext({} as MinioProviderData);
 export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [providerInfo, setProviderInfo] = useState({} as MinioStorageProvider);
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [bucketsAreLoading, setBucketsAreLoading] = useState<boolean>(false);
 
   const client = useMemo(() => {
     if (
@@ -144,12 +146,13 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
 
   async function updateBuckets() {
     if (!client) return;
-
+    setBucketsAreLoading(true);
     const res = await client.send(new ListBucketsCommand({}));
     const buckets = res?.Buckets;
     if (!buckets) return;
 
     setBuckets(buckets);
+    setBucketsAreLoading(false);
   }
 
   async function createBucket(bucketName: Bucket_oscar) {
@@ -376,6 +379,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         providerInfo,
         setProviderInfo,
         buckets,
+        bucketsAreLoading,
         setBuckets,
         createBucket,
         createFolder,
