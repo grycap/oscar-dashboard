@@ -1,7 +1,7 @@
 import { Service } from "@/pages/ui/services/models/service";
 import GenericTable from "../Table";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Edit, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
+import { Edit, LoaderPinwheel, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Button } from "../ui/button";
@@ -28,6 +28,7 @@ function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, add
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const { setServices } = useServicesContext();
   const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
   
@@ -43,11 +44,14 @@ function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, add
 
   async function handleGetServices() {
     try {
+      setIsLoading(true);
       const response = await getServicesApi();
       setServices(response);
     } catch (error) {
       alert.error("Error getting services");
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -103,15 +107,12 @@ function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, add
           <DeployInstancePopover />
         </div>
       </GenericTopbar>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          flexGrow: 1,
-          flexBasis: 0,
-          overflow: "hidden",
-        }}
-      >
+      {isLoading === true ?
+      <div className="flex items-center justify-center h-[80vh]">
+        <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+      </div>
+      :
+      <>
         <GenericTable<Service>
           data={filteredServices}
           idKey="name"
@@ -205,13 +206,14 @@ function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, add
             },
           ]}
         />
-      <DeleteDialog
-        isOpen={servicesToDelete.length > 0}
-        onClose={() => setServicesToDelete([])}
-        onDelete={handleDeleteService}
-        itemNames={servicesToDelete.map((service) => service.name)}
-      />
-      </div>
+        <DeleteDialog
+          isOpen={servicesToDelete.length > 0}
+          onClose={() => setServicesToDelete([])}
+          onDelete={handleDeleteService}
+          itemNames={servicesToDelete.map((service) => service.name)}
+        />
+      </>
+      }
     </div>
   );
 }
