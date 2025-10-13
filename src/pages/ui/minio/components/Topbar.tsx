@@ -10,10 +10,12 @@ import AddFileButton from "./AddFileButton";
 import getBucketsApi from "@/api/buckets/getBucketsApi";
 import { Bucket,Bucket_visibility } from "../../services/models/service";
 import GenericTopbar from "@/components/Topbar";
+import { useMinio } from "@/contexts/Minio/MinioContext";
 
 
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
+  const { updateBuckets } = useMinio();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
   const [serviceAssociate, setServiceAssociate] = useState<Boolean>(true)
   const [bucket, setBucket] = useState<Bucket>({
@@ -80,7 +82,7 @@ function MinioTopbar() {
 
   return (
     <>
-    <GenericTopbar defaultHeader={{title: "Buckets", linkTo: "/ui/minio"}} refresher={undefined} 
+    <GenericTopbar defaultHeader={{title: "Buckets", linkTo: "/ui/minio"}} refresher={updateBuckets} 
     customHeader={
       !isOnRoot ? (
         <Link
