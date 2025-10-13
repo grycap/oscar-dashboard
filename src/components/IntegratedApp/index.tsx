@@ -101,14 +101,20 @@ function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, add
   }
 
   return (
-    <div className="">
+    <div style={{
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: 1,
+        flexBasis: 0,
+        overflow: "hidden",
+      }}>
       <GenericTopbar defaultHeader={{title: appName, linkTo: location.pathname}} refresher={handleGetServices}>
         <div className="flex w-full justify-end">
           <DeployInstancePopover />
         </div>
       </GenericTopbar>
       {isLoading === true ?
-      <div className="flex items-center justify-center h-[80vh]">
+      <div className="flex items-center justify-center h-screen">
         <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
       </div>
       :
