@@ -101,7 +101,7 @@ type StatusData = {
 
 function DonutChart({ percentage, dangerThreshold }: { percentage: number; dangerThreshold: number }) {
   const isDanger = percentage >= dangerThreshold;
-  const COLORS = [isDanger ? "#ef4444" : "#10b981", "#e5e7eb"]; // rojo o verde
+  const COLORS = [isDanger ? "#ef4444" : "#10b981", "#e5e7eb"]; // red or green
 
   const data = [
     { name: "Usado", value: percentage },
@@ -129,19 +129,19 @@ function DonutChart({ percentage, dangerThreshold }: { percentage: number; dange
 }
 
 
-// función para colorear en rojo si el porcentaje libre es bajo
+// function to color in red if the free percentage is low
 const getColorByPercentage = (free: number, total: number, thresholdPercent: number) =>
   (free / total) <= (thresholdPercent / 100) ? "text-red-500" : "text-green-500";
 
-//paso a bytes
+// convert to bytes
 const formatBytes = (bytes: number) =>
   `${(bytes / 1024 ** 3).toFixed(1)} GB`;
 
-//paso a Cores
+// convert to Cores
 const formatCores = (millicores: number) =>
   `${(millicores / 1000).toFixed(2)} Cores`;
 
-// paso a kilobytes
+// convert to kilobytes
 const formatKilobytes = (bytes: number) =>
   `${(bytes / 1024).toFixed(1)} KB`;
 
@@ -177,7 +177,7 @@ const Cluster = () => {
     }));
   };
 
-  //accedemos al contexto de autenticacion
+  // access the authentication context
   const { authData } = useAuth(); 
   const [data, setData] = useState<StatusData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -204,7 +204,7 @@ const Cluster = () => {
   if (!data) return <p className="p-4 text-red-500">Error loading data</p>;
   
 
-  // calcular total real sumando capacidades por nodo
+  // calculate real total by summing capacities per node
   const cpuTotal = data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.cpuCapacity), 0) : 0;
   const memTotal = data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.memoryCapacity), 0) : 0;
 
@@ -222,7 +222,7 @@ const Cluster = () => {
 
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Número de nodos */}
+              {/* Number of nodes */}
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mt-2">
@@ -234,7 +234,7 @@ const Cluster = () => {
                   </CardContent>
                 </Card>
 
-                {/* CPU libre total */}
+                {/* Total free CPU */}
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mt-2">
@@ -312,7 +312,7 @@ const Cluster = () => {
                 </Card>
             </div>
 
-            {/* Bloque desplegable de deployment */}
+            {/* Deployment collapsible block */}
             <Card className="w-full mt-6">
               <div
                 onClick={() => toggleSection("deployment")}
@@ -387,7 +387,7 @@ const Cluster = () => {
             </Card>
 
 
-            {/* Colapsable de Jobs */}
+            {/* Jobs collapsible */}
             {data.OSCAR?.jobsCount ?
               <Card className="w-full mt-6">
                 <div
@@ -436,7 +436,7 @@ const Cluster = () => {
 
 
 
-            {/* Colapsable de Pods */}
+            {/* Pods collapsible */}
             {data.OSCAR?.podsInfo?.pods ?
               <Card className="w-full mt-6">
                 <div
@@ -455,7 +455,7 @@ const Cluster = () => {
                         <h2 className="text-sm font-semibold text-gray-700">Total Pods</h2>
                         <p className="text-xl font-bold mb-2">{data.OSCAR.podsInfo.total}</p>
                         
-                        {/* Lista de pods con título en negrita */}
+                        {/* Pod list with bold title */}
                         <h2 className="text-sm font-semibold text-gray-700">List of Pods</h2>
 
                         <ul className="text-sm text-gray-800 space-y-1">
@@ -481,7 +481,7 @@ const Cluster = () => {
                       </CardContent>
                     </Card>
 
-                    {/* Conteo por estado */}
+                    {/* Count by state */}
                     <Card>
                       <CardContent className="p-4 space-y-2">
                         <h2 className="text-sm font-semibold text-gray-700">Summary by state</h2>
@@ -510,7 +510,7 @@ const Cluster = () => {
             :<></>}
 
           
-          {/* Bloque desplegable de OIDC */}
+          {/* OIDC collapsible block */}
           <Card className="w-full mt-6">
             <div
               onClick={() => toggleSection("oidc")}
@@ -522,7 +522,7 @@ const Cluster = () => {
 
             {expandedSections.oidc && (
               <CardContent className="flex flex-col gap-4">
-                {/* Primera fila: OIDC Enabled */}
+                {/* First row: OIDC Enabled */}
                 <div className="flex">
                   <Card className="w-full">
                     <CardContent className="p-4">
@@ -536,7 +536,7 @@ const Cluster = () => {
                   </Card>
                 </div>
 
-                {/* Segunda fila: Issuer + Authorized groups */}
+                {/* Second row: Issuer + Authorized groups */}
                 <div className="flex flex-col md:flex-row gap-4">
                   {/* Issuer */}
                   <Card className="w-full md:w-1/2">
@@ -577,7 +577,7 @@ const Cluster = () => {
         </CardContent>
       </Card> 
 
-        {/* Bloque de Nodos */}
+        {/* Nodes block */}
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Nodes</CardTitle>
