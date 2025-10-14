@@ -15,6 +15,7 @@ import {
   Cpu,
   MemoryStick,
   ChevronDown, ChevronRight,
+  LoaderPinwheel,
 } from "lucide-react";
 import {
   PieChart,
@@ -23,6 +24,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import GenericTopbar from "@/components/Topbar";
+import OscarColors from "@/styles";
 
 type Condition = {
   type: string;
@@ -200,7 +202,6 @@ const Cluster = () => {
   }, []);
 
   if (!authData.authenticated) return <p>Please log in</p>;
-  if (loading) return <p className="p-4">Loading...</p>;
   if (!data) return <p className="p-4 text-red-500">Error loading data</p>;
   
 
@@ -211,6 +212,11 @@ const Cluster = () => {
   return (
     <div className="w-full h-full"> 
       <GenericTopbar defaultHeader={{title: "Cluster Status", linkTo: "/ui/cluster"}} refresher={fetchData} />
+      {loading ?
+      <div className="flex items-center justify-center h-[80vh]">
+        <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+      </div>
+      :
       <div className="w-full max-w-full mx-auto px-4 pt-6 pb-6 space-y-6">
         <Card className="w-full">
           <CardHeader>
@@ -574,8 +580,8 @@ const Cluster = () => {
               
             )}
           </Card>
-        </CardContent>
-      </Card> 
+          </CardContent>
+        </Card> 
 
         {/* Nodes block */}
         <Card className="w-full">
@@ -763,13 +769,9 @@ const Cluster = () => {
           </CardContent>
         </Card>
       : <></>}
-
-
-      
-
-
       <div className="h-2" />
       </div>
+      }
     </div>
   );
 };

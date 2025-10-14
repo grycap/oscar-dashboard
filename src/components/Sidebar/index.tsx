@@ -51,16 +51,15 @@ function AppSidebar() {
       path: "/hub",
     },
     {
-      title: "Info",
-      icon: <Info size={20} />,
-      path: "/info",
-    },
-    {
       title: "Status",
       icon: <BarChart2  size={20} />,
       path: "/cluster",
     },
-
+    {
+      title: "Info",
+      icon: <Info size={20} />,
+      path: "/info",
+    },
   ];
 
   function handleLogout() {
