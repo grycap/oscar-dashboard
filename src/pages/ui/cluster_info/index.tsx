@@ -205,7 +205,7 @@ const Cluster = () => {
 
   return (
     <div className="w-full h-full"> 
-      <GenericTopbar defaultHeader={{title: "Cluster Status", linkTo: "/ui/cluster"}} refresher={fetchData} />
+      <GenericTopbar defaultHeader={{title: "Status", linkTo: "/ui/cluster"}} refresher={fetchData} />
       {loading || !data ?
       <div className="flex items-center justify-center h-[80vh]">
         <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
