@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import OscarColors from "@/styles";
 import { Bucket } from "@aws-sdk/client-s3";
-import { Trash } from "lucide-react";
+import { LoaderPinwheel, Trash } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 export default function BucketList() {
-  const { buckets, deleteBucket } = useMinio();
+  const { buckets, bucketsAreLoading, deleteBucket } = useMinio();
   const [itemsToDelete, setItemsToDelete] = useState<Bucket[]>([]);
   return (
     <>
@@ -20,6 +20,11 @@ export default function BucketList() {
         }}
         itemNames={itemsToDelete.map((bucket) => bucket.Name!)}
       />
+      {bucketsAreLoading ? 
+      <div className="flex items-center justify-center h-screen">
+        <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+      </div>
+      : 
       <GenericTable<Bucket>
         data={buckets}
         columns={[
@@ -52,6 +57,7 @@ export default function BucketList() {
         ]}
         idKey="Name"
       />
+      }
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { Service } from "@/pages/ui/services/models/service";
 import GenericTable from "../Table";
-import { useNavigate } from "react-router-dom";
-import { Edit, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Edit, LoaderPinwheel, MoreVertical, RefreshCcwIcon, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Button } from "../ui/button";
@@ -12,21 +12,23 @@ import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
 import updateServiceApi from "@/api/services/updateServiceApi";
 import ServiceRedirectButton from "../ServiceRedirectButton";
-import IntegratedAppTopbar from "./components/Topbar";
 import DeleteDialog from "../DeleteDialog";
+import GenericTopbar from "../Topbar";
 
 interface IntegratedAppProps {
     appName: string;
-    endpoint: string;
+    deployedServiceEndpoint: string;
     filteredServices: Service[];
     DeployInstancePopover: React.ComponentType;
     additionalExposedPathArgs?: string;
 }
 
-function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedPathArgs, DeployInstancePopover}: IntegratedAppProps) {
+function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, additionalExposedPathArgs, DeployInstancePopover}: IntegratedAppProps) {
   const { setFormService } = useServicesContext();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const { setServices } = useServicesContext();
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
   
@@ -42,11 +44,14 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
 
   async function handleGetServices() {
     try {
+      setIsLoading(true);
       const response = await getServicesApi();
       setServices(response);
     } catch (error) {
       alert.error("Error getting services");
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -96,17 +101,24 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
   }
 
   return (
-    <div className="">
-      <IntegratedAppTopbar appName={appName} DeployInstancePopover={DeployInstancePopover} />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          flexGrow: 1,
-          flexBasis: 0,
-          overflow: "hidden",
-        }}
-      >
+    <div style={{
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: 1,
+        flexBasis: 0,
+        overflow: "hidden",
+      }}>
+      <GenericTopbar defaultHeader={{title: appName, linkTo: location.pathname}} refresher={handleGetServices}>
+        <div className="flex w-full justify-end">
+          <DeployInstancePopover />
+        </div>
+      </GenericTopbar>
+      {isLoading === true ?
+      <div className="flex items-center justify-center h-screen">
+        <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+      </div>
+      :
+      <>
         <GenericTable<Service>
           data={filteredServices}
           idKey="name"
@@ -158,7 +170,7 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
               <div className="p-2">
                 <ServiceRedirectButton 
                   service={service}
-                  endpoint={endpoint}
+                  endpoint={deployedServiceEndpoint}
                   additionalExposedPathArgs={additionalExposedPathArgs}
                 />
               </div>
@@ -200,13 +212,14 @@ function IntegratedApp({ appName, endpoint, filteredServices, additionalExposedP
             },
           ]}
         />
-      <DeleteDialog
-        isOpen={servicesToDelete.length > 0}
-        onClose={() => setServicesToDelete([])}
-        onDelete={handleDeleteService}
-        itemNames={servicesToDelete.map((service) => service.name)}
-      />
-      </div>
+        <DeleteDialog
+          isOpen={servicesToDelete.length > 0}
+          onClose={() => setServicesToDelete([])}
+          onDelete={handleDeleteService}
+          itemNames={servicesToDelete.map((service) => service.name)}
+        />
+      </>
+      }
     </div>
   );
 }

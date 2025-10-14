@@ -51,17 +51,15 @@ function AppSidebar() {
       path: "/hub",
     },
     {
+      title: "Status",
+      icon: <BarChart2  size={20} />,
+      path: "/cluster",
+    },
+    {
       title: "Info",
       icon: <Info size={20} />,
       path: "/info",
     },
-    //nuevo botón para el dashboard
-    {
-      title: "Cluster Status",
-      icon: <BarChart2  size={20} />,
-      path: "/cluster",
-    },
-
   ];
 
   function handleLogout() {

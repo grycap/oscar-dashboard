@@ -36,7 +36,6 @@ function AppRouter() {
           <Route path="info" element={<InfoView />} />
           <Route path="notebooks" element={<JunoView />} />
           <Route path="flows" element={<FlowsView />} />
-           {/*nueva ruta de dashboard*/}
           <Route path="cluster" element={<Cluster />} />
           <Route path="hub" element={<HubView />} />
         </Route>

@@ -19,7 +19,7 @@ function FlowsView() {
     <div className="flex flex-col h-full w-full">
       <IntegratedApp 
         appName="Flows" 
-        endpoint={authData.endpoint} 
+        deployedServiceEndpoint={authData.endpoint} 
         filteredServices={flowsService} 
         DeployInstancePopover={FlowsFormPopover} 
       />

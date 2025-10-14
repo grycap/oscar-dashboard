@@ -1,4 +1,3 @@
-import { OscarStyles } from "@/styles";
 import { motion, AnimatePresence } from "framer-motion";
 import { Copy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +11,6 @@ export default function UserInfo() {
   return (
     <div
       style={{
-        borderLeft: OscarStyles.border,
         position: "relative",
         padding: "0 16px",
         overflow: "hidden",
