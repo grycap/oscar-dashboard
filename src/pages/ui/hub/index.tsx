@@ -46,9 +46,9 @@ function HubView() {
 
   return (
     <div className="w-full h-full overflow-auto">
-      <GenericTopbar defaultHeader={{title: "OSCAR Hub", linkTo: "/ui/hub"}} refresher={fetchData} />
-      <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-4 min-w-[300px] max-w-[1600px] content-start">
-        <div className="grid grid-cols-[auto_1fr] w-full -mb-3 gap-2">
+      <GenericTopbar defaultHeader={{title: "OSCAR Hub", linkTo: "/ui/hub"}} refresher={fetchData} 
+      secondaryRow={
+        <div className="grid grid-cols-[auto_1fr] w-full px-2 py-1 gap-2">
           <Select
           >
             <SelectTrigger className="w-max">
@@ -102,6 +102,10 @@ function HubView() {
             endIcon={<Search size={16} />}
           />
         </div>
+      }
+      />
+      
+      <div className="grid grid-cols-1 gap-6 w-[95%] mx-auto mt-4 min-w-[300px] max-w-[1600px] content-start">
         {isLoading ? (
         <div className="flex items-center justify-center h-[80vh]">
             <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />

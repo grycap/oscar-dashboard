@@ -20,17 +20,24 @@ function ServicesTopbar() {
   }, []);
 
   return (
-    <GenericTopbar defaultHeader={{title: "Services", linkTo: "/ui/services"}} refresher={refreshServices}>
+    <GenericTopbar defaultHeader={{title: "Services", linkTo: "/ui/services"}} refresher={refreshServices}
+      secondaryRow={
+        formMode === ServiceViewMode.List ? 
+        <div className="w-full p-2 pt-1">
+          <ServicesFilterBy />
+        </div>
+        : null
+      }
+    >
       <div
-        className={"grid items-center justify-between gap-2 " + (formMode === ServiceViewMode.List ? "grid-cols-[auto_auto_auto]" : "grid-cols-[auto_1fr]")}
+        className={"grid items-center justify-between gap-2 " + (formMode === ServiceViewMode.List ? "grid-cols-[auto_1fr_auto]" : "grid-cols-[auto_1fr]")}
       >
         <ServiceBreadcrumb />
 
         {formMode === ServiceViewMode.List ? (
-          <>
-          <ServicesFilterBy />
-          <AddServiceButton />
-          </>
+          <div className="justify-self-end">
+            <AddServiceButton />
+          </div>
         ) : (
           <CreateUpdateServiceTabs mode={formMode} />
         )}
