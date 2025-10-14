@@ -132,7 +132,7 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 											<div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
 												<div className="flex items-center justify-between mb-2">
 													<h5 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-														Memory
+														RAM
 													</h5>
 													<span className="text-xs text-gray-400">💾</span>
 												</div>
