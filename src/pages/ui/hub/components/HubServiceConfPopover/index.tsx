@@ -214,7 +214,7 @@ return (
               </div>
               <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                   <div>
-                    <Label htmlFor="memory-ram">Memory RAM</Label>
+                    <Label htmlFor="memory-ram">RAM</Label>
                     <Input
                       id="memory-ram"
                       type="number"
