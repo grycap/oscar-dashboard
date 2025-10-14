@@ -46,7 +46,7 @@ function HubView() {
 
   return (
     <div className="w-full h-full overflow-auto">
-      <GenericTopbar defaultHeader={{title: "OSCAR Hub", linkTo: "/ui/hub"}} refresher={fetchData} 
+      <GenericTopbar defaultHeader={{title: "Hub", linkTo: "/ui/hub"}} refresher={fetchData} 
       secondaryRow={
         <div className="grid grid-cols-[auto_1fr] w-full px-2 py-1 gap-2">
           <Select

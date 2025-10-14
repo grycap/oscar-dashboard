@@ -30,7 +30,7 @@ function ServicesTopbar() {
       }
     >
       <div
-        className={"grid items-center justify-between gap-2 " + (formMode === ServiceViewMode.List ? "grid-cols-[auto_1fr_auto]" : "grid-cols-[auto_1fr]")}
+        className={"grid items-center justify-between " + (formMode === ServiceViewMode.List ? "grid-cols-[auto_1fr_auto]" : "grid-cols-[auto_1fr]")}
       >
         <ServiceBreadcrumb />
 

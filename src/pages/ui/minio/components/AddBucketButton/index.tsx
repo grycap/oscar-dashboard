@@ -68,13 +68,13 @@ export default function AddBucketButton({bucket, create}: Props) {
       <PopoverTrigger asChild>
         <Button variant="mainGreen">
           <Plus size={20} className="mr-2" />
-          {createButtom? "Create bucket" :"Update bucket"}
+          {createButtom? "New" :"Update bucket"}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium leading-none"> {createButtom? "Create bucket" :"Update bucket"}</h4>
+            <h4 className="font-medium leading-none"> {createButtom? "New" :"Update bucket"}</h4>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="bucketName">Bucket Name:</Label>

@@ -8,7 +8,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import axios from "axios";
-import { useAuth } from "@/contexts/AuthContext";
 import {
   CheckCircle,
   XCircle,
@@ -180,7 +179,6 @@ const Cluster = () => {
   };
 
   // access the authentication context
-  const { authData } = useAuth(); 
   const [data, setData] = useState<StatusData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -201,18 +199,14 @@ const Cluster = () => {
     fetchData();
   }, []);
 
-  if (!authData.authenticated) return <p>Please log in</p>;
-  if (!data) return <p className="p-4 text-red-500">Error loading data</p>;
-  
-
   // calculate real total by summing capacities per node
-  const cpuTotal = data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.cpuCapacity), 0) : 0;
-  const memTotal = data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.memoryCapacity), 0) : 0;
+  const cpuTotal = data && data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.cpuCapacity), 0) : 0;
+  const memTotal = data && data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.memoryCapacity), 0) : 0;
 
   return (
     <div className="w-full h-full"> 
       <GenericTopbar defaultHeader={{title: "Cluster Status", linkTo: "/ui/cluster"}} refresher={fetchData} />
-      {loading ?
+      {loading || !data ?
       <div className="flex items-center justify-center h-[80vh]">
         <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
       </div>

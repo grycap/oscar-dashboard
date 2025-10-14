@@ -29,7 +29,7 @@ function AddServiceButton() {
             gap: 8,
           }}
         >
-          <Plus className="h-5 w-5" /> {!isSmallScreen && "Create service"}
+          <Plus className="h-5 w-5" /> {!isSmallScreen && "New"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
