@@ -24,10 +24,6 @@ function HubView() {
     setIsLoading(false);
   }
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   // Filter services based on search query
   useEffect(() => {
     if (!searchQuery.trim() && !filter.serviceType) {

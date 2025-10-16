@@ -7,11 +7,6 @@ import JunoFormPopover from "./components/JunoFormPopover";
 function JunoView() {
   
   const { authData } = useAuth();
-
-  useEffect(() => {
-      document.title ="OSCAR - Notebooks"
-  });
-
   const { services } = useServicesContext();
 
   const ownerName = authData?.egiSession?.sub ?? authData?.token ?? (authData?.user === "oscar" ? "cluster_admin" : authData?.user);
@@ -19,7 +14,7 @@ function JunoView() {
 
   useEffect(() => {
     document.title ="OSCAR - Notebooks"
-  });
+  }, []);
 
   return (
     <div className="flex flex-col h-full w-full">

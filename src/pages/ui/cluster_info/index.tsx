@@ -1,5 +1,5 @@
 // src/pages/cluster_info/index.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -194,10 +194,6 @@ const Cluster = () => {
       setLoading(false);
     });
   }
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   // calculate real total by summing capacities per node
   const cpuTotal = data && data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.cpuCapacity), 0) : 0;
