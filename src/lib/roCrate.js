@@ -23,7 +23,7 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
   const githubUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/${branch}?recursive=1`;
 
   // Fetch the list of files in the GitHub repository
-  const res = await fetch(githubUrl);
+  const res = await fetch(githubUrl, fetchFromGitHubOptions);
   const data = await res.json();
 
   // Filter for ro-crate-metadata.json files (folder/fileName)
@@ -40,7 +40,7 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
     const folderRawFileUrl = fileUrl.replace('ro-crate-metadata.json', '');
     
     try {
-      const response = await (await fetch(fileUrl)).json();
+      const response = await (await fetch(fileUrl, fetchFromGitHubOptions)).json();
       // Create a new ROCrate instance
       const crate = new ROCrate(response, { array: false, link: false });
       // Validate the ROCrate
