@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { alert } from "@/lib/alert";
-import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
+import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
@@ -96,12 +96,12 @@ function JunoFormPopover() {
     try {
       const fdlUrl =
         "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/juno.yaml";
-      const fdlResponse = await fetch(fdlUrl);
+      const fdlResponse = await fetch(fdlUrl, fetchFromGitHubOptions);
       const fdlText = await fdlResponse.text();
 
       const scriptUrl =
         "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/script.sh";
-      const scriptResponse = await fetch(scriptUrl);
+      const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
       const scriptText = await scriptResponse.text();
 
       const services = yamlToServices(fdlText, scriptText);
@@ -140,15 +140,12 @@ function JunoFormPopover() {
           jupyter_notebook: "true",
         },
       };
-      console.log(modifiedService)
-
       await createServiceApi(modifiedService);
       refreshServices();
 
       alert.success("Jupyter Notebook instance deployed");
       setIsOpen(false);
     } catch (error) {
-      console.log(error)
       alert.error("Error deploying Jupyter Notebook instance");
     }
   };

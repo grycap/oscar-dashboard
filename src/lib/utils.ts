@@ -111,3 +111,11 @@ export function getAllowedVOs(systemConfig: {config: SystemConfig} | null, authD
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export const fetchFromGitHubOptions = {
+  method: 'GET',
+  cache: 'no-cache' as RequestCache,
+  headers: {
+    'Accept': 'text/plain, application/x-yaml, */*'
+  }
+};
