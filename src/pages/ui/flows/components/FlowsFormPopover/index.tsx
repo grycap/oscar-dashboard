@@ -12,17 +12,16 @@ import { Service } from "@/pages/ui/services/models/service";
 import createServiceApi from "@/api/services/createServiceApi";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
-import { Info, Plus, RefreshCcwIcon } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Plus, RefreshCcwIcon } from "lucide-react";
 import RequestButton from "@/components/RequestButton";
-import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
+import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 
 
 
 function FlowsFormPopover() {
   const { buckets } = useMinio();
   const [isOpen, setIsOpen] = useState(false);
-  const {systemConfig, clusterInfo, authData } = useAuth();
+  const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
   
@@ -80,19 +79,6 @@ function FlowsFormPopover() {
     });
   }, [isOpen]);
 
-
-  function isVersionLower(version: string, target: string) {
-    if (target === "devel") return true;
-    if (version === "devel") return false;
-    const v = version.split('.').map(x => parseInt(x.replace(/\D/g, '')) || 0);
-    const t = target.split('.').map(x => parseInt(x.replace(/\D/g, '')) || 0);
-    for (let i = 0; i < 3; i++) {
-      if ((v[i] ?? 0) < (t[i] ?? 0)) return true;
-      if ((v[i] ?? 0) > (t[i] ?? 0)) return false;
-    }
-    return false;
-  }
-
   const handleDeploy = async () => {
 
     const newErrors = {
@@ -112,14 +98,12 @@ function FlowsFormPopover() {
     }
 
     try {
-      const fdlUrl =
-        "https://raw.githubusercontent.com/grycap/oscar-flows/refs/heads/main/flows.yaml";
-      const fdlResponse = await fetch(fdlUrl);
+      const fdlUrl = "https://raw.githubusercontent.com/grycap/oscar-flows/refs/heads/main/flows.yaml";
+      const fdlResponse = await fetch(fdlUrl, fetchFromGitHubOptions);
       const fdlText = await fdlResponse.text();
 
-      const scriptUrl =
-        "https://raw.githubusercontent.com/grycap/oscar-flows/refs/heads/main/script.sh";
-      const scriptResponse = await fetch(scriptUrl);
+      const scriptUrl = "https://raw.githubusercontent.com/grycap/oscar-flows/refs/heads/main/script.sh";
+      const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
       const scriptText = await scriptResponse.text();
 
       const services = yamlToServices(fdlText, scriptText);
@@ -157,23 +141,13 @@ function FlowsFormPopover() {
           node_red: "true",
         },
       };
-      if (
-        clusterInfo?.version && 
-        (clusterInfo.version !== "devel" || isVersionLower(clusterInfo.version, "3.6.0"))
-      ) {
-        modifiedService.environment.variables.PASSWORD = modifiedService.environment.secrets.PASSWORD;
-        delete modifiedService.environment.secrets.PASSWORD;
-      }
       
-      console.log(modifiedService)
-
       await createServiceApi(modifiedService);
       refreshServices();
 
       alert.success("Node-RED instance deployed");
       setIsOpen(false);
     } catch (error) {
-      console.log(error)
       alert.error("Error deploying Node-RED instance");
     }
   };
@@ -295,27 +269,7 @@ function FlowsFormPopover() {
                 </Select>
             </div>
             <div>
-              <Label htmlFor="password">Password 
-                {clusterInfo?.version && (clusterInfo?.version !== "devel" && isVersionLower(clusterInfo?.version!, "3.6.0")) &&
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2 py-0.5 rounded cursor-pointer ml-2">
-                          <Info className="inline w-3 h-3 mr-1" />
-                          Warning
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent className="w-80 sm:ml-[150px] ml-0">
-                        <small>
-                          For OSCAR versions equal or lower than <b>3.5.3</b>, the admin password will be set as an
-                          environment variable instead of a secret. All users that have access to the service
-                          will be able to see the password.
-                        </small>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                }
-              </Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
