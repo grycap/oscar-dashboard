@@ -22,6 +22,14 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
   const branch = githubBranch;
   const githubUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/${branch}?recursive=1`;
 
+  const fetchFromGitHubOptions = {
+    method: 'GET',
+    cache: 'no-cache',
+    headers: {
+      'Accept': 'text/plain, application/x-yaml, */*'
+    }
+  };
+  
   // Fetch the list of files in the GitHub repository
   const res = await fetch(githubUrl, fetchFromGitHubOptions);
   const data = await res.json();
