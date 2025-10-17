@@ -10,13 +10,14 @@ interface GenericTopbarProps {
     refresher?: () => void;
     children?: React.ReactNode;
     secondaryRow?: React.ReactNode;
+    triggerRefresherAtLoad?: boolean; // trigger refresher on load the component
 }
 
-function GenericTopbar({ customHeader, defaultHeader, refresher, children, secondaryRow }: GenericTopbarProps) {
+function GenericTopbar({ customHeader, defaultHeader, refresher, children, secondaryRow, triggerRefresherAtLoad = true }: GenericTopbarProps) {
   const location = useLocation();
 
   useEffect(() => {
-    refresher && refresher();
+    triggerRefresherAtLoad && refresher && refresher();
   }, []);
   
   return (
