@@ -33,7 +33,7 @@ function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }:
         return;
       }
       try {
-        const status = await exposedServiceIsAlive(`${endpoint}/system/services/${service.name}/exposed/`);
+        const status = await exposedServiceIsAlive(`${endpoint}/system/services/${service.name}/exposed/`, 10000, 20);
         if (isMounted) { 
           setIsAlive(status);
         }
