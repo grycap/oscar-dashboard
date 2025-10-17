@@ -1,5 +1,5 @@
 // src/pages/cluster_info/index.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardHeader,
@@ -184,6 +184,10 @@ const Cluster = () => {
   // access the authentication context
   const [data, setData] = useState<StatusData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    document.title ="OSCAR - Status"
+  }, []);
 
   async function fetchData() {
     setLoading(true);

@@ -24,6 +24,10 @@ function HubView() {
     setIsLoading(false);
   }
 
+  useEffect(() => {
+    document.title ="OSCAR - Hub"
+  }, []);
+
   // Filter services based on search query
   useEffect(() => {
     if (!searchQuery.trim() && !filter.serviceType) {
