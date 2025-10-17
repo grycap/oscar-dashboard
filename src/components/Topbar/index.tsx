@@ -1,6 +1,7 @@
 import UserInfo from "@/components/UserInfo";
 import OscarColors, { OscarStyles } from "@/styles";
 import { RefreshCcwIcon } from "lucide-react";
+import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 interface GenericTopbarProps {
@@ -9,10 +10,15 @@ interface GenericTopbarProps {
     refresher?: () => void;
     children?: React.ReactNode;
     secondaryRow?: React.ReactNode;
+    triggerRefresherAtLoad?: boolean; // trigger refresher on load the component
 }
 
-function GenericTopbar({ customHeader, defaultHeader, refresher, children, secondaryRow }: GenericTopbarProps) {
+function GenericTopbar({ customHeader, defaultHeader, refresher, children, secondaryRow, triggerRefresherAtLoad = true }: GenericTopbarProps) {
   const location = useLocation();
+
+  useEffect(() => {
+    triggerRefresherAtLoad && refresher && refresher();
+  }, []);
   
   return (
     <div className={`${secondaryRow ? "grid grid-rows-[auto_auto]" : "grid grid-rows-[auto]"} items-center w-full min-w-max`}>

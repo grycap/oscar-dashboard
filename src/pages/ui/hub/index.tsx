@@ -25,7 +25,7 @@ function HubView() {
   }
 
   useEffect(() => {
-    fetchData();
+    document.title ="OSCAR - Hub"
   }, []);
 
   // Filter services based on search query

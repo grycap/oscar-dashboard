@@ -24,6 +24,7 @@ import {
 } from "recharts";
 import GenericTopbar from "@/components/Topbar";
 import OscarColors from "@/styles";
+import { useLocation } from "react-router-dom";
 
 type Condition = {
   type: string;
@@ -147,6 +148,8 @@ const formatKilobytes = (bytes: number) =>
   `${(bytes / 1024).toFixed(1)} KB`;
 
 const Cluster = () => {
+  const location = useLocation();
+
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     deployment: false,
     jobs: false,
@@ -182,6 +185,10 @@ const Cluster = () => {
   const [data, setData] = useState<StatusData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    document.title ="OSCAR - Status"
+  }, []);
+
   async function fetchData() {
     setLoading(true);
     await axios.get("/system/status")
@@ -195,17 +202,13 @@ const Cluster = () => {
     });
   }
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   // calculate real total by summing capacities per node
   const cpuTotal = data && data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.cpuCapacity), 0) : 0;
   const memTotal = data && data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.memoryCapacity), 0) : 0;
 
   return (
     <div className="w-full h-full"> 
-      <GenericTopbar defaultHeader={{title: "Status", linkTo: "/ui/cluster"}} refresher={fetchData} />
+      <GenericTopbar defaultHeader={{title: "Status", linkTo: location.pathname}} refresher={fetchData} />
       {loading || !data ?
       <div className="flex items-center justify-center h-[80vh]">
         <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
