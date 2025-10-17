@@ -24,6 +24,7 @@ import {
 } from "recharts";
 import GenericTopbar from "@/components/Topbar";
 import OscarColors from "@/styles";
+import { useLocation } from "react-router-dom";
 
 type Condition = {
   type: string;
@@ -147,6 +148,8 @@ const formatKilobytes = (bytes: number) =>
   `${(bytes / 1024).toFixed(1)} KB`;
 
 const Cluster = () => {
+  const location = useLocation();
+
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     deployment: false,
     jobs: false,
@@ -201,7 +204,7 @@ const Cluster = () => {
 
   return (
     <div className="w-full h-full"> 
-      <GenericTopbar defaultHeader={{title: "Status", linkTo: "/ui/cluster"}} refresher={fetchData} />
+      <GenericTopbar defaultHeader={{title: "Status", linkTo: location.pathname}} refresher={fetchData} />
       {loading || !data ?
       <div className="flex items-center justify-center h-[80vh]">
         <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
