@@ -146,13 +146,18 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
 
   async function updateBuckets() {
     if (!client) return;
-    setBucketsAreLoading(true);
-    const res = await client.send(new ListBucketsCommand({}));
-    const buckets = res?.Buckets;
-    if (!buckets) return;
+    try {
+      setBucketsAreLoading(true);
+      const res = await client.send(new ListBucketsCommand({}));
+      const buckets = res?.Buckets;
+      if (!buckets) return;
 
-    setBuckets(buckets);
-    setBucketsAreLoading(false);
+      setBuckets(buckets);
+    } catch (error) {
+      console.error("Error fetching buckets:", error);
+    } finally {
+      setBucketsAreLoading(false);
+    }
   }
 
   async function createBucket(bucketName: Bucket_oscar) {
