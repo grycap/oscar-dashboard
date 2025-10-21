@@ -11,19 +11,19 @@ import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToServi
 import { Service } from "@/pages/ui/services/models/service";
 import createServiceApi from "@/api/services/createServiceApi";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
-import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Plus, RefreshCcwIcon } from "lucide-react";
 import RequestButton from "@/components/RequestButton";
 import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
+import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 
 
 
 function FlowsFormPopover() {
-  const { buckets } = useMinio();
   const [isOpen, setIsOpen] = useState(false);
   const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
+  const buckets = useGetPrivateBuckets();
   
   const oidcGroups = getAllowedVOs(systemConfig, authData);
 
@@ -344,8 +344,8 @@ function FlowsFormPopover() {
                     </SelectTrigger>
                     <SelectContent>
                       {buckets.map((bucket) => (
-                        <SelectItem key={bucket.Name} value={bucket.Name!}>
-                          {bucket.Name}
+                        <SelectItem key={bucket.bucket_name} value={bucket.bucket_name}>
+                          {bucket.bucket_name}
                         </SelectItem>
                       ))}
                     </SelectContent>

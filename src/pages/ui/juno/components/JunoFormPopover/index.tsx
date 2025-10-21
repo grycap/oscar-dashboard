@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMinio } from "@/contexts/Minio/MinioContext";
+import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import { alert } from "@/lib/alert";
 import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
@@ -17,12 +17,13 @@ import { Plus, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 
+
 function JunoFormPopover() {
-  const { buckets } = useMinio();
   const [isOpen, setIsOpen] = useState(false);
   const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
+  const buckets = useGetPrivateBuckets();
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
 
@@ -336,8 +337,8 @@ return (
                     </SelectTrigger>
                     <SelectContent>
                       {buckets.map((bucket) => (
-                        <SelectItem key={bucket.Name} value={bucket.Name!}>
-                          {bucket.Name}
+                        <SelectItem key={bucket.bucket_name} value={bucket.bucket_name}>
+                          {bucket.bucket_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
