@@ -117,11 +117,11 @@ export enum LOG_LEVEL {
 }
 
 export interface Bucket {
-  bucket_path: string;
+  bucket_name: string;
 	visibility: Bucket_visibility;
 	allowed_users: string[];
   metadata?: {
-    service: string;
+    from_service: string;
     owner: string;
   }
 }

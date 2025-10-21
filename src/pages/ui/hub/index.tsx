@@ -49,8 +49,7 @@ function HubView() {
       <GenericTopbar defaultHeader={{title: "Hub", linkTo: "/ui/hub"}} refresher={fetchData} 
       secondaryRow={
         <div className="grid grid-cols-[auto_1fr] w-full px-2 py-1 gap-2">
-          <Select
-          >
+          <Select>
             <SelectTrigger className="w-max">
               <SelectIcon>
                 <Filter size={16} className="mr-2" />

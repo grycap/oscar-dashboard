@@ -18,11 +18,14 @@ function MinioTopbar() {
   const { updateBuckets } = useMinio();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
   const [serviceAssociate, setServiceAssociate] = useState<Boolean>(true)
-  const [bucket, setBucket] = useState<Bucket>({
-      bucket_path: "",
-      visibility: Bucket_visibility.private,
-      allowed_users: [],
-    });
+
+  const emptyBucket: Bucket = {
+    bucket_name: "",
+    visibility: Bucket_visibility.private,
+    allowed_users: [],
+  };
+
+  const [bucket, setBucket] = useState<Bucket>(emptyBucket);
 
   const isOnRoot = name === undefined;
 
@@ -31,17 +34,17 @@ function MinioTopbar() {
       if (!isOnRoot) {
         const selectBucket = async () => {
           const allBucket = await getBucketsApi();
-          let foundBucket = allBucket.find(b => b.bucket_path === name);
+          let foundBucket = allBucket.find(b => b.bucket_name === name);
           console.log(allBucket)
-          console.log(foundBucket?.metadata?.service)
-          if(foundBucket?.metadata?.service == undefined || foundBucket?.metadata?.service == "true"){
+          console.log(foundBucket?.metadata?.from_service)
+          if(foundBucket?.metadata?.from_service){
             setServiceAssociate(true)
           }else{
             setServiceAssociate(false)
           }
           if(!foundBucket){
             foundBucket={
-              bucket_path: "",
+              bucket_name: "",
               visibility: Bucket_visibility.private,
               allowed_users: [],
             }
@@ -90,6 +93,7 @@ function MinioTopbar() {
           to="/ui/minio"
           aria-label="Navigate to Buckets"
           className="no-underline hover:text-gray-800 transition-colors duration-200 flex items-center gap-2"
+          onClick={() => setBucket(emptyBucket)}
         >
           <Database size={40} className="text-gray-500" />
         </Link>
@@ -116,12 +120,17 @@ function MinioTopbar() {
             </div>
           </nav>
         </div>
-      ) : undefined
+      ) 
+      : 
+      <div>
+        
+      </div>
     }
+
     >
       <div className="flex flex-row items-center w-full justify-end gap-2">
         {isOnRoot ? 
-        <AddBucketButton bucket={bucket} create={true} /> 
+        <AddBucketButton bucket={emptyBucket} create={true} /> 
         :
         <div className="flex flex-row items-center w-full justify-between gap-2" > 
           <Link
@@ -132,10 +141,11 @@ function MinioTopbar() {
             <div className="flex flex-row items-center text-lg">
               {name}
             </div>
+            {bucket?.visibility && <span className="text-gray-500 text-sm">{bucket.visibility.toLocaleUpperCase()}</span>}
           </Link>
           <div className="flex flex-row gap-2">
-            { !serviceAssociate ? 
-            <AddBucketButton bucket={bucket} create={false} />
+            { !serviceAssociate && bucket?.visibility ? 
+            <AddBucketButton bucket={{...bucket, bucket_name: name}} create={false} />
             :
             <></> 
             } 
