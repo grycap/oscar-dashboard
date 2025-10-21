@@ -1,4 +1,3 @@
-import getBucketsApi from "@/api/buckets/getBucketsApi";
 import createServiceApi from "@/api/services/createServiceApi";
 import RequestButton from "@/components/RequestButton";
 import { Button } from "@/components/ui/button";
@@ -7,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
+import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import { alert } from "@/lib/alert";
 import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
-import { Bucket as Bucket_OSCAR, Bucket_visibility, Service } from "@/pages/ui/services/models/service";
+import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Plus, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -23,7 +23,7 @@ function JunoFormPopover() {
   const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
-  const [buckets, setBuckets] = useState<Bucket_OSCAR[]>([]);
+  const buckets = useGetPrivateBuckets();
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
 
@@ -55,18 +55,6 @@ function JunoFormPopover() {
       setFormData((prev) => ({ ...prev, vo: oidcGroups[0] }));
     }
   }, [oidcGroups]);
-
-  
-    useEffect(() => {
-      const fetchBuckets = async () => {
-        const bucketsData = await getBucketsApi();
-        const filteredBuckets = bucketsData.filter(bucket => (
-          (!bucket.visibility || bucket.visibility === Bucket_visibility.private)
-        ));
-        setBuckets(filteredBuckets);
-      };
-      fetchBuckets();
-    }, []);
 
   useEffect(() => {
     if (!isOpen) return;
