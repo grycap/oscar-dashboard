@@ -62,24 +62,29 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
       const crateRoot = crate.getEntity(crate.rootId);
 
       crateRoot.hasPart.forEach((element) => {
-        const type = crate.getEntity(element['@id'])['@type'];
-        if (service.fdlUrl === "" && type.includes('File') && type.includes('service-fdl')) {
-          if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
-            service.fdlUrl = element['@id'];
-          else
-            service.fdlUrl = folderRawFileUrl + element['@id'];
-        }
-        if (service.scriptUrl === "" && type.includes('File') && type.includes('service-script')) {
-          if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
-            service.scriptUrl = element['@id'];
-          else
-            service.scriptUrl = folderRawFileUrl + element['@id'];
-        }
-        if (type.includes('File') && type.includes('service-icon')) {
-          if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
-            service.iconUrl = element['@id'];
-          else
-            service.iconUrl = folderRawFileUrl + element['@id'];
+        try {
+          const type = crate.getEntity(element['@id'])['@type'];
+          const encodingFormat = crate.getEntity(element['@id'])['encodingFormat'];
+          if (service.fdlUrl === "" && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/yaml") {
+            if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
+              service.fdlUrl = element['@id'];
+            else
+              service.fdlUrl = folderRawFileUrl + element['@id'];
+          }
+          if (service.scriptUrl === "" && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/x-shellscript") {
+            if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
+              service.scriptUrl = element['@id'];
+            else
+              service.scriptUrl = folderRawFileUrl + element['@id'];
+          }
+          if (type.includes('File') && type.includes('ImageObject')) {
+            if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
+              service.iconUrl = element['@id'];
+            else
+              service.iconUrl = folderRawFileUrl + element['@id'];
+          }
+        } catch (error) {
+          console.error(`Sckip invalid part in service definition file: ${file.path}`);
         }
       });
 
