@@ -8,18 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
-import { Service } from "@/pages/ui/services/models/service";
+import { Bucket as Bucket_OSCAR, Bucket_visibility, Service } from "@/pages/ui/services/models/service";
 import createServiceApi from "@/api/services/createServiceApi";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
-import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Plus, RefreshCcwIcon } from "lucide-react";
 import RequestButton from "@/components/RequestButton";
 import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
+import getBucketsApi from "@/api/buckets/getBucketsApi";
 
 
 
 function FlowsFormPopover() {
-  const { buckets } = useMinio();
+  const [ buckets, setBuckets ] = useState<Bucket_OSCAR[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
@@ -56,6 +56,17 @@ function FlowsFormPopover() {
       setFormData((prev) => ({ ...prev, vo: oidcGroups[0] }));
     }
   }, [oidcGroups]);
+
+  useEffect(() => {
+    const fetchBuckets = async () => {
+      const bucketsData = await getBucketsApi();
+      const filteredBuckets = bucketsData.filter(bucket => (
+        (!bucket.visibility || bucket.visibility === Bucket_visibility.private)
+      ));
+      setBuckets(filteredBuckets);
+    };
+    fetchBuckets();
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -344,8 +355,8 @@ function FlowsFormPopover() {
                     </SelectTrigger>
                     <SelectContent>
                       {buckets.map((bucket) => (
-                        <SelectItem key={bucket.Name} value={bucket.Name!}>
-                          {bucket.Name}
+                        <SelectItem key={bucket.bucket_name} value={bucket.bucket_name}>
+                          {bucket.bucket_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
