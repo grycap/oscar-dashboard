@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Database, FolderRoot, Slash } from "lucide-react";
+import { Copy, Database, ExternalLinkIcon, FolderRoot, Slash } from "lucide-react";
 import OscarColors from "@/styles";
 import AddBucketButton from "./AddBucketButton";
 import AddFolderButton from "./AddFolderButton";
@@ -11,6 +11,7 @@ import getBucketsApi from "@/api/buckets/getBucketsApi";
 import { Bucket,Bucket_visibility } from "../../services/models/service";
 import GenericTopbar from "@/components/Topbar";
 import { useMinio } from "@/contexts/Minio/MinioContext";
+import { alert } from "@/lib/alert";
 
 
 function MinioTopbar() {
@@ -132,17 +133,49 @@ function MinioTopbar() {
         {isOnRoot ? 
         <AddBucketButton bucket={emptyBucket} create={true} /> 
         :
-        <div className="flex flex-row items-center w-full justify-between gap-2" > 
-          <Link
-            to={`/ui/minio/${name}`}
-            className="font-bold text-black no-underline hover:text-gray-700 transition-colors duration-200"
-            aria-label={`Navigate to bucket ${name}`}
-          >
-            <div className="flex flex-row items-center text-lg">
-              {name}
+        <div className="flex flex-row items-center w-full justify-between gap-4" >
+          <div className="flex flex-col">
+            <Link
+              to={`/ui/minio/${name}`}
+              className="font-bold text-black no-underline hover:text-gray-700 transition-colors duration-200"
+              aria-label={`Navigate to bucket ${name}`}
+            >
+              <div className="flex flex-row items-center text-[16px]">
+                {name}
+              </div>
+              <span className="text-gray-600 text-[14px] flex flex-row uppercase">
+                {bucket.visibility ? bucket.visibility : Bucket_visibility.private}
+              </span>
+            </Link>
+            <div className="grid grid-cols-[auto_auto] items-center font-bold text-gray-500 text-[13px] text-nowrap -mt-1 gap-2">
+              {/* Owner Name */}
+              <Link 
+                to=""
+                className="grid grid-cols-[auto_1fr] no-underline hover:underline underline-offset-2"
+                onClick={() => {
+                          navigator.clipboard.writeText(bucket.owner ? bucket.owner : "oscar");
+                          alert.success("Owner copied to clipboard");
+                        }}
+              >
+                <span className="truncate min-w-[100px] max-w-[100px]">
+                  {`Owner: ${bucket.owner ? bucket.owner : "oscar"}`}
+                </span>
+                <Copy size={12} className="self-center" />
+              </Link>
+              {/* Service Name and it is Link */}
+              {bucket.metadata?.from_service &&
+                <Link 
+                  to={`/ui/services/${bucket.metadata?.from_service}/settings`}
+                  className="grid grid-cols-[auto_1fr] no-underline hover:underline underline-offset-2 border-l border-gray-400 pl-2"
+                >
+                  <span className="truncate min-w-[100px] max-w-[400px]">
+                    {`Service: ${bucket.metadata?.from_service}`}
+                  </span>
+                  <ExternalLinkIcon size={12} className="self-center ml-[1px]"/>
+                </Link>
+              }
             </div>
-            {bucket?.visibility && <span className="text-gray-500 text-sm">{bucket.visibility.toLocaleUpperCase()}</span>}
-          </Link>
+          </div> 
           <div className="flex flex-row gap-2">
             { !serviceAssociate && bucket?.visibility ? 
             <AddBucketButton bucket={{...bucket, bucket_name: name}} create={false} />
