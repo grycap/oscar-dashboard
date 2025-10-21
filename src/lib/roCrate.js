@@ -84,7 +84,7 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
               service.iconUrl = folderRawFileUrl + element['@id'];
           }
         } catch (error) {
-          console.error(`Sckip invalid part in service definition file: ${file.path}`);
+          console.error(`Skip invalid part in service definition file: ${file.path}`);
         }
       });
 
