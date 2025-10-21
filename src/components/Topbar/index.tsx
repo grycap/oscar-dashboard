@@ -21,8 +21,8 @@ function GenericTopbar({ customHeader, defaultHeader, refresher, children, secon
   }, []);
   
   return (
-    <div className={`${secondaryRow ? "grid grid-rows-[auto_auto]" : "grid grid-rows-[auto]"} items-center w-full min-w-max`}>
-      <div className="grid grid-cols-[auto_1fr_auto] w-full h-[64px] items-center gap-4 pl-4" style={{borderBottom: OscarStyles.border}}>
+    <div className={`${secondaryRow ? "grid grid-rows-[auto_auto]" : "grid grid-rows-[auto]"} items-center w-full`}>
+      <div className="grid grid-cols-[auto_1fr_auto] w-full h-[69px] items-center gap-4 pl-4" style={{borderBottom: OscarStyles.border}}>
         {customHeader ?? (
         defaultHeader ? (
         <div className="flex flex-row items-center gap-2">
@@ -55,7 +55,7 @@ function GenericTopbar({ customHeader, defaultHeader, refresher, children, secon
         
         <div 
           style={{borderLeft: OscarStyles.border}}
-          className="flex flex-row items-center h-full"
+          className="flex flex-row items-center h-full min-w-max"
         >
           <UserInfo />
         </div>
