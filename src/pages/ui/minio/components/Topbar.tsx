@@ -149,9 +149,8 @@ function MinioTopbar() {
             </Link>
             <div className="grid grid-cols-[auto_auto] items-center font-bold text-gray-500 text-[13px] text-nowrap -mt-1 gap-2">
               {/* Owner Name */}
-              <Link 
-                to=""
-                className="grid grid-cols-[auto_1fr] no-underline hover:underline underline-offset-2"
+              <div 
+                className="grid grid-cols-[auto_1fr] no-underline hover:underline underline-offset-2 cursor-pointer"
                 onClick={() => {
                           navigator.clipboard.writeText(bucket.owner ? bucket.owner : "oscar");
                           alert.success("Owner copied to clipboard");
@@ -161,7 +160,7 @@ function MinioTopbar() {
                   {`Owner: ${bucket.owner ? bucket.owner : "oscar"}`}
                 </span>
                 <Copy size={12} className="self-center" />
-              </Link>
+              </div>
               {/* Service Name and it is Link */}
               {bucket.metadata?.from_service &&
                 <Link 
