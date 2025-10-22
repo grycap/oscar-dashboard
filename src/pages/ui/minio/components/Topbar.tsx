@@ -137,7 +137,7 @@ function MinioTopbar() {
           <div className="flex flex-col">
             <Link
               to={`/ui/minio/${name}`}
-              className="font-bold text-black no-underline hover:text-gray-700 transition-colors duration-200"
+              className="font-bold text-black no-underline hover:text-gray-700 transition-colors duration-200 min-w-max"
               aria-label={`Navigate to bucket ${name}`}
             >
               <div className="flex flex-row items-center text-[16px]">
