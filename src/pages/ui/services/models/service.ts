@@ -120,6 +120,7 @@ export interface Bucket {
   bucket_name: string;
 	visibility: Bucket_visibility;
 	allowed_users: string[];
+  owner?: string;
   metadata?: {
     from_service: string;
     owner: string;
