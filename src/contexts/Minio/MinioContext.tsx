@@ -26,10 +26,12 @@ import createBucketsApi from "@/api/buckets/createBucketsApi";
 import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
 import updateBucketsApi from "@/api/buckets/updateBucketsApi";
 import { Bucket as Bucket_oscar } from "@/pages/ui/services/models/service"
+import getBucketsApi from "@/api/buckets/getBucketsApi";
 
 export type MinioProviderData = {
   providerInfo: MinioStorageProvider;
   setProviderInfo: (providerInfo: MinioStorageProvider) => void;
+  bucketsOSCAR: Bucket_oscar[];
   buckets: Bucket[];
   bucketsAreLoading: boolean;
   setBuckets: (buckets: Bucket[]) => void;
@@ -66,6 +68,7 @@ export const MinioContext = createContext({} as MinioProviderData);
 export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [providerInfo, setProviderInfo] = useState({} as MinioStorageProvider);
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [bucketsOSCAR, setBucketsOSCAR] = useState<Bucket_oscar[]>([]);
   const [bucketsAreLoading, setBucketsAreLoading] = useState<boolean>(false);
 
   const client = useMemo(() => {
@@ -152,6 +155,10 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       const buckets = res?.Buckets;
       if (!buckets) return;
 
+      const bucketsOSCARResponse = await getBucketsApi();
+      const bucketsOSCAR = bucketsOSCARResponse ?? [];
+      
+      setBucketsOSCAR(bucketsOSCAR);
       setBuckets(buckets);
     } catch (error) {
       console.error("Error fetching buckets:", error);
@@ -383,6 +390,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         providerInfo,
         setProviderInfo,
+        bucketsOSCAR,
         buckets,
         bucketsAreLoading,
         setBuckets,
