@@ -28,7 +28,21 @@ import updateBucketsApi from "@/api/buckets/updateBucketsApi";
 import { Bucket as Bucket_oscar } from "@/pages/ui/services/models/service"
 import getBucketsApi from "@/api/buckets/getBucketsApi";
 
+interface BucketsFilterProps {
+  myBuckets: boolean;
+  query: string;
+  by: BucketFilterBy;
+}
+
+export enum BucketFilterBy {
+  NAME = "name",
+  OWNER = "owner",
+  SERVICE = "service",
+}
+
 export type MinioProviderData = {
+  bucketsFilter: BucketsFilterProps;
+  setBucketsFilter: (filter: BucketsFilterProps) => void;
   providerInfo: MinioStorageProvider;
   setProviderInfo: (providerInfo: MinioStorageProvider) => void;
   bucketsOSCAR: Bucket_oscar[];
@@ -70,6 +84,12 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [bucketsOSCAR, setBucketsOSCAR] = useState<Bucket_oscar[]>([]);
   const [bucketsAreLoading, setBucketsAreLoading] = useState<boolean>(false);
+
+  const [bucketsFilter, setBucketsFilter] = useState<BucketsFilterProps>({
+    myBuckets: false,
+    query: "",
+    by: BucketFilterBy.NAME,
+  });
 
   const client = useMemo(() => {
     if (
@@ -388,6 +408,8 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <MinioContext.Provider
       value={{
+        bucketsFilter,
+        setBucketsFilter,
         providerInfo,
         setProviderInfo,
         bucketsOSCAR,
