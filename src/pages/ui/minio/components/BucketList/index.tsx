@@ -23,8 +23,6 @@ export default function BucketList() {
     if (buckets) {
       const updatedBucketsList = buckets.map((bucket) => {
         const oscarBucket = bucketsOSCAR.find((b) => b.bucket_name === bucket.Name);
-        console.log("Mapping bucket:", bucket.Name, "to service:", oscarBucket?.bucket_name);
-        console.log("oscarBucket metadata:", oscarBucket?.metadata);
         return {
           ...bucket,
           from_service: oscarBucket?.metadata?.from_service ?? "",
