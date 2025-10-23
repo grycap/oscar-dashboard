@@ -265,25 +265,15 @@ function GenericTable<T extends object>({
                     const items = data?.filter((item) =>
                       idKeys.includes(item[idKey])
                     );
+                    const hasBulkActions = selectedRows.size > 0 && bulkActions[index].button?.length > 0;
+                    const noBulkActions = bulkActions[index].button?.length == 0
+                    const dataToPass = noBulkActions ? data : hasBulkActions ? items : undefined;
 
-                    return (
-                      <>
-                      { selectedRows.size > 0 && bulkActions[index].button?.length>0 ? 
-                        <motion.div layout key={index}>
-                        {action.button(items)}
+                    return dataToPass ? (
+                      <motion.div layout key={index}>
+                        {action.button(dataToPass)}
                       </motion.div>
-                      :
-                        <></>
-                      }
-                      {  bulkActions[index].button?.length == 0  ? 
-                        <motion.div layout key={index}>
-                        {action.button(data)}
-                      </motion.div>
-                      :
-                        <></>
-                      }
-                      </>
-                    );
+                    ) : (<></>);
                   })}
                 </motion.div>
               )}
