@@ -7,7 +7,6 @@ import AddFolderButton from "./AddFolderButton";
 import useSelectedBucket from "../hooks/useSelectedBucket";
 import AddFileButton from "./AddFileButton";
 //import UpdateBucketButton from "./UpdateBucketButton";
-import getBucketsApi from "@/api/buckets/getBucketsApi";
 import { Bucket,Bucket_visibility } from "../../services/models/service";
 import GenericTopbar from "@/components/Topbar";
 import { useMinio } from "@/contexts/Minio/MinioContext";
@@ -16,7 +15,7 @@ import { alert } from "@/lib/alert";
 
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
-  const { updateBuckets } = useMinio();
+  const { updateBuckets, bucketsOSCAR } = useMinio();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
   const [serviceAssociate, setServiceAssociate] = useState<Boolean>(true)
 
@@ -32,29 +31,23 @@ function MinioTopbar() {
 
   useEffect(() => {
     document.title = isOnRoot ? "OSCAR - Buckets" : `OSCAR - Buckets: ${name}`;
-      if (!isOnRoot) {
-        const selectBucket = async () => {
-          const allBucket = await getBucketsApi();
-          let foundBucket = allBucket.find(b => b.bucket_name === name);
-          console.log(allBucket)
-          console.log(foundBucket?.metadata?.from_service)
-          if(foundBucket?.metadata?.from_service){
-            setServiceAssociate(true)
-          }else{
-            setServiceAssociate(false)
-          }
-          if(!foundBucket){
-            foundBucket={
-              bucket_name: "",
-              visibility: Bucket_visibility.private,
-              allowed_users: [],
-            }
-          }
-          setBucket(foundBucket);
-        };
-        selectBucket()
+    if (!isOnRoot) {
+      let foundBucket = bucketsOSCAR.find(b => b.bucket_name === name);
+      if(foundBucket?.metadata?.from_service){
+        setServiceAssociate(true)
+      }else{
+        setServiceAssociate(false)
       }
-
+      if(!foundBucket){
+        foundBucket={
+          bucket_name: "",
+          visibility: Bucket_visibility.private,
+          allowed_users: [],
+        }
+      }
+      console.log("Found Bucket: ", foundBucket);
+      setBucket(foundBucket);
+    }
   }, [isOnRoot, name]);
 
   const breadcrumbs = useMemo(() => {
@@ -156,7 +149,7 @@ function MinioTopbar() {
                           alert.success("Owner copied to clipboard");
                         }}
               >
-                <span className="truncate min-w-[100px] max-w-[100px]">
+                <span className="truncate min-w-[90px] max-w-[100px]">
                   {`Owner: ${bucket.owner ? bucket.owner : "oscar"}`}
                 </span>
                 <Copy size={12} className="self-center" />
