@@ -122,7 +122,7 @@ export const fetchFromGitHubOptions = {
 
 export function isSafariBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent;
-  // Safari contains "Safari" but not Chrome/Chromium/CriOS/Edg/OPR
-  return /Safari/.test(ua);
+  const ua = navigator.vendor;
+  // Safari contains "Apple"
+  return /Apple/.test(ua);
 }

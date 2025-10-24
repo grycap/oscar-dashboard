@@ -5,7 +5,10 @@ import axios from "axios";
 async function createServiceApi(service: Service) {
   const response = await axios.post("/system/services", service)
   .catch((error) => {
-    if (isSafariBrowser() && error.status === 405 && error.response.data) {
+    console.log("Debug Caught error in createServiceApi:", error);
+    console.log("Debug Error status:", error.status);
+    if (isSafariBrowser()) {
+      console.log("Debug Handling Safari 405 error in createServiceApi");
       return error.response.data;
     }
     throw error;
