@@ -10,7 +10,6 @@ function useGetPrivateBuckets() {
       const bucketsData = await getBucketsApi();
       const filteredBuckets = bucketsData.filter(bucket => (
         (!bucket.visibility || bucket.visibility === Bucket_visibility.private) 
-        && !bucket.metadata?.from_service
       ));
       setBuckets(filteredBuckets);
     };

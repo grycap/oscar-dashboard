@@ -145,9 +145,10 @@ function FlowsFormPopover() {
       await createServiceApi(modifiedService);
       refreshServices();
 
-      alert.success("Node-RED instance deployed");
+      alert.success("Debug after deploy");
       setIsOpen(false);
     } catch (error) {
+      console.error("Debug deploy Error:", error);
       alert.error("Error deploying Node-RED instance");
     }
   };
