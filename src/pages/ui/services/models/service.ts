@@ -118,13 +118,13 @@ export enum LOG_LEVEL {
 
 export interface Bucket {
   bucket_name: string;
-	visibility: Bucket_visibility;
+	visibility?: Bucket_visibility | Bucket_visibility.private;
 	allowed_users: string[];
   owner?: string;
   metadata?: {
-    from_service: string;
-    owner: string;
-  }
+    from_service?: string;
+    owner?: string;
+  };
 }
 
 export enum Bucket_visibility {
