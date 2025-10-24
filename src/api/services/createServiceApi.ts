@@ -1,3 +1,4 @@
+import { isSafariBrowser } from "@/lib/utils";
 import { Service } from "@/pages/ui/services/models/service";
 import axios from "axios";
 
