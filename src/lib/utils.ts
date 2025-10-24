@@ -119,10 +119,3 @@ export const fetchFromGitHubOptions = {
     'Accept': 'text/plain, application/x-yaml, */*'
   }
 };
-
-export function isSafariBrowser(): boolean {
-  if (typeof navigator === "undefined") return false;
-  const ua = navigator.vendor;
-  // Safari contains "Apple"
-  return /Apple/.test(ua);
-}
