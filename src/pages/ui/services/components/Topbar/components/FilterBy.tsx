@@ -36,12 +36,7 @@ function ServicesFilterBy() {
 
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 9,
-      }}
+      className="grid grid-cols-[auto_1fr] w-full items-center gap-2"
     >
       <Select
         value={filter.type}
@@ -102,7 +97,7 @@ function ServicesFilterBy() {
           setInputValue(e.target.value);
         }}
         endIcon={<Search size={16} />}
-        style={{ maxWidth: 300, minWidth: isSmallScreen ? 100 : 150 }}
+        style={{ minWidth: isSmallScreen ? 100 : 150 }}
       />
     </div>
   );

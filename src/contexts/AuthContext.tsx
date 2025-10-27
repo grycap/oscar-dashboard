@@ -23,6 +23,8 @@ type EGISessionInfo = {
   preferred_username: string; // Nombre de usuario preferido
   sub: string; // Identificador único del usuario
   voperson_verified_email: string[]; // Lista de correos electrónicos verificados
+  
+  group_membership: string[]; 
 };
 
 export type AuthData = {
@@ -86,6 +88,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } | null;
     if (response && authData.token === undefined && response.config.oidc_groups.length === 1 && response.config.oidc_groups[0] === "") {
       response.config.oidc_groups[0] = " ";
+    } else if (response && response.config.oidc_groups.length > 1) {
+      response.config.oidc_groups = response.config.oidc_groups.map((group) => group === "" ? " " : group);
     }
 
     setSystemConfig(response);

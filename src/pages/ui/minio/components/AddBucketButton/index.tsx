@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useMinio } from "@/contexts/Minio/MinioContext";
-import { Plus } from "lucide-react";
+import { Plus, ShieldEllipsis } from "lucide-react";
 import { Bucket, Bucket_visibility } from "@/pages/ui/services/models/service"
 import {
   Select,
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AllowedUsersPopover } from "@/pages/ui/services/components/ServiceForm/components/GeneralTab/components/AllowedUsersPopover";
+import { useMediaQuery } from "react-responsive";
 
 interface Props {
   bucket:Bucket;
@@ -29,6 +30,8 @@ export default function AddBucketButton({bucket, create}: Props) {
   const createButtom=create
   const [isOpen, setIsOpen] = useState(false);
   const { createBucket, updateBucketsVisibilityControl } = useMinio();
+  const isSmallScreen = useMediaQuery({ maxWidth: 799 });
+
 
   const handleCreateBucket = async () => {
     await createBucket(formBucket);
@@ -66,26 +69,33 @@ export default function AddBucketButton({bucket, create}: Props) {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="mainGreen">
-          <Plus size={20} className="mr-2" />
-          {createButtom? "Create bucket" :"Update bucket"}
+        <Button variant="mainGreen" style={{gap: 8}}>
+          {createButtom? 
+          <><Plus size={20} />
+          New</>
+          :
+          <><ShieldEllipsis size={20} />
+          {!isSmallScreen && "Change visibility"}</>
+          }
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium leading-none"> {createButtom? "Create bucket" :"Update bucket"}</h4>
+            <h4 className="font-medium leading-none"> {createButtom? "New" :"Change visibility"}</h4>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="bucketName">Bucket Name:</Label>
             <Input
               id="bucketName"
-              value={formBucket?.bucket_path}
+              disabled={!createButtom}
+              className="disabled:bg-gray"
+              value={formBucket?.bucket_name}
               onChange={(e) => {
                 setFormBucket((bucket: Bucket) => {
                     return {
                       ...bucket,
-                      bucket_path: e.target.value,
+                      bucket_name: e.target.value,
                     };
                   });
                 }}

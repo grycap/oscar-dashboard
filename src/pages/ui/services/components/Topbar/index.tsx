@@ -1,11 +1,10 @@
-import { OscarStyles } from "@/styles";
 import ServiceBreadcrumb from "./components/Breadcrumbs";
 import { useEffect } from "react";
 import ServicesFilterBy from "./components/FilterBy";
 import AddServiceButton from "./components/CreateServiceButton";
 import CreateUpdateServiceTabs from "./components/CreateUpdateServiceTabs";
-import UserInfo from "@/components/UserInfo";
 import useServicesContext from "../../context/ServicesContext";
+import GenericTopbar from "@/components/Topbar";
 
 export enum ServiceViewMode {
   List = "List",
@@ -14,38 +13,36 @@ export enum ServiceViewMode {
 }
 
 function ServicesTopbar() {
-  const { formMode } = useServicesContext();
+  const { formMode, refreshServices } = useServicesContext();
 
   useEffect(() => {
     document.title = "OSCAR - Services";
   }, []);
 
   return (
-    <div
-      style={{
-        borderBottom: OscarStyles.border,
-      }}
-      className="grid grid-cols-[1fr_auto] h-[64px]"
+    <GenericTopbar defaultHeader={{title: "Services", linkTo: "/ui/services"}} refresher={refreshServices}
+      secondaryRow={
+        formMode === ServiceViewMode.List ? 
+        <div className="w-full p-2 pt-1">
+          <ServicesFilterBy />
+        </div>
+        : null
+      }
     >
       <div
-        style={{
-          padding: "0 16px",
-        }}
-        className={"grid items-center justify-between gap-2 " + (formMode === ServiceViewMode.List ? "grid-cols-[auto_auto_auto]" : "grid-cols-[auto_1fr]")}
+        className={"grid items-center justify-between " + (formMode === ServiceViewMode.List ? "grid-cols-[auto_1fr_auto]" : "grid-cols-[auto_1fr]")}
       >
         <ServiceBreadcrumb />
 
         {formMode === ServiceViewMode.List ? (
-          <>
-          <ServicesFilterBy />
-          <AddServiceButton />
-          </>
+          <div className="justify-self-end">
+            <AddServiceButton />
+          </div>
         ) : (
           <CreateUpdateServiceTabs mode={formMode} />
         )}
       </div>
-      <UserInfo />
-    </div>
+    </GenericTopbar>
   );
 }
 

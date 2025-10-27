@@ -102,8 +102,8 @@ function GenericTable<T extends object>({
 
   return (
     <div className="relative flex flex-col flex-grow flex-basis-0 overflow-hidden">
-      <Table className="overflow-y-auto">
-        <TableHeader className="sticky top-0 z-10 h-[34px]">
+      <Table id="table">
+        <TableHeader id="table-header" className="sticky top-0 z-10 h-[34px]">
           <TableRow
             style={{
               background: "white",
@@ -145,7 +145,7 @@ function GenericTable<T extends object>({
             )}
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody id="table-body" >
           {sortedData?.map((item, rowIndex) => (
             <TableRow
               key={rowIndex}
@@ -241,7 +241,7 @@ function GenericTable<T extends object>({
                   })}
                 </motion.div>
               )}
-              {bulkActions && selectedRows.size > 0 && (
+              {bulkActions && (
                 <motion.div
                   key="bulk-actions"
                   layoutId="bulk-actions"
@@ -265,12 +265,15 @@ function GenericTable<T extends object>({
                     const items = data?.filter((item) =>
                       idKeys.includes(item[idKey])
                     );
+                    const hasBulkActions = selectedRows.size > 0 && bulkActions[index].button?.length > 0;
+                    const noBulkActions = bulkActions[index].button?.length == 0
+                    const dataToPass = noBulkActions ? data : hasBulkActions ? items : undefined;
 
-                    return (
+                    return dataToPass ? (
                       <motion.div layout key={index}>
-                        {action.button(items)}
+                        {action.button(dataToPass)}
                       </motion.div>
-                    );
+                    ) : (<></>);
                   })}
                 </motion.div>
               )}

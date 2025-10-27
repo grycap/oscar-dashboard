@@ -11,6 +11,9 @@ import InfoView from "@/pages/ui/info";
 import { ServicesProvider } from "@/pages/ui/services/context/ServicesContext";
 import JunoView from "@/pages/ui/juno";
 import FlowsView from "@/pages/ui/flows";
+//añadimos la ruta de Dashboard
+import Cluster from "@/pages/ui/cluster_info"
+import HubView from "@/pages/ui/hub";
 
 function AppRouter() {
   return (
@@ -33,6 +36,8 @@ function AppRouter() {
           <Route path="info" element={<InfoView />} />
           <Route path="notebooks" element={<JunoView />} />
           <Route path="flows" element={<FlowsView />} />
+          <Route path="status" element={<Cluster />} />
+          <Route path="hub" element={<HubView />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />

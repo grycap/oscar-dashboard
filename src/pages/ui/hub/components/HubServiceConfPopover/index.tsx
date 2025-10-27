@@ -1,34 +1,39 @@
 import createServiceApi from "@/api/services/createServiceApi";
 import RequestButton from "@/components/RequestButton";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonProps } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
-import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import { alert } from "@/lib/alert";
-import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
-import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
+import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
-import { Plus, RefreshCcwIcon } from "lucide-react";
+import { RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { RoCrateServiceDefinition } from "@/lib/roCrate";
 
+interface HubServiceConfPopoverProps {
+    roCrateServiceDef: RoCrateServiceDefinition;
+    service: Service;
+    isOpen: boolean;
+    setIsOpen: (open: boolean) => void;
+		className?: ButtonProps["className"];
+		variant?: ButtonProps["variant"];
+		title?: string;
+}
 
-
-function JunoFormPopover() {
-  const [isOpen, setIsOpen] = useState(false);
+function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, setIsOpen, className = "", variant = "default", title = "Deploy Service" }: HubServiceConfPopoverProps) {
   const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
-  const [newBucket, setNewBucket] = useState(false);
-  const buckets = useGetPrivateBuckets();
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
+	const asyncService = roCrateServiceDef.type.toLowerCase() === "asynchronous";
 
   function nameService() {
-    return `juno-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
+    return `hub-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
   }
 
   const [formData, setFormData] = useState({
@@ -58,12 +63,13 @@ function JunoFormPopover() {
 
   useEffect(() => {
     if (!isOpen) return;
+
     setFormData((prev) => ({
       ...prev, 
       name: nameService(),
-      cpuCores: "1.0",
-      memoryRam: "2",
-      memoryUnit: "Gi",
+      cpuCores: roCrateServiceDef.cpuRequirements,
+      memoryRam: roCrateServiceDef.memoryRequirements,
+      memoryUnit: roCrateServiceDef.memoryUnits,
       bucket: "",
       token: genRandomString(128),
     }));
@@ -82,7 +88,7 @@ function JunoFormPopover() {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
       memoryRam: !formData.memoryRam,
-      bucket: !formData.bucket,
+      bucket: !formData.bucket && asyncService,
       vo: !formData.vo,
       token: !formData.token,
     };
@@ -95,21 +101,10 @@ function JunoFormPopover() {
     }
 
     try {
-      const fdlUrl =
-        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/juno.yaml";
-      const fdlResponse = await fetch(fdlUrl, fetchFromGitHubOptions);
-      const fdlText = await fdlResponse.text();
-
-      const scriptUrl =
-        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/script.sh";
-      const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
+      const scriptResponse = await fetch(roCrateServiceDef.scriptUrl);
       const scriptText = await scriptResponse.text();
 
-      const services = yamlToServices(fdlText, scriptText);
-      if (!services?.length) throw Error("No services found");
-      
-      const service = services[0];
-
+      service.script = scriptText
       const serviceName = formData.name || nameService();
 
       const modifiedService: Service = {
@@ -117,37 +112,34 @@ function JunoFormPopover() {
         name: serviceName,
         vo: formData.vo,
         memory: `${formData.memoryRam}${formData.memoryUnit}`,
-        cpu: formData.cpuCores,
-        mount: {
-          ...service.mount,
-          path: formData.bucket ?? "/notebook",
-          storage_provider: service.mount?.storage_provider ?? "minio.default",
-        },
-        environment: {
-          variables: {
-            ...service.environment.variables,
-            JHUB_BASE_URL: `/system/services/${serviceName}/exposed`,
-            JUPYTER_DIRECTORY: "/mnt/"+ formData.bucket,
-            GRANT_SUDO: "yes",
-            OSCAR_ENDPOINT: authData.endpoint,
-            JUPYTER_TOKEN: formData.token,
-          },
-          secrets:{
-            ...service.environment.secrets,
-          },
-        },
+        cpu: formData.cpuCores.toString(),
+        input: asyncService ? 
+					[{
+						storage_provider: "minio.default",
+						path: `${formData.bucket}/input`,
+						suffix: [],
+						prefix: []
+					}] : [],
+				output: asyncService ? 
+					[{
+						storage_provider: "minio.default",
+						path: `${formData.bucket}/output`,
+						suffix: [],
+						prefix: []
+					}] : [],
         labels: {
           ...service.labels,
-          jupyter_notebook: "true",
+          oscar_hub: "true",
         },
       };
       await createServiceApi(modifiedService);
       refreshServices();
-
-      alert.success("Jupyter Notebook instance deployed");
+			
+      alert.success(`Service ${roCrateServiceDef.name} instance deployed`);
       setIsOpen(false);
     } catch (error) {
-      alert.error("Error deploying Jupyter Notebook instance");
+      console.log(error)
+      alert.error(`Error deploying ${roCrateServiceDef.name} instance`);
     }
   };
 
@@ -160,20 +152,20 @@ function JunoFormPopover() {
 return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="mainGreen"
-          tooltipLabel="New Notebook Instance"
+        <Button 
+					className={className}
+          variant={variant}
+          tooltipLabel={title}
           onClick={() => {setIsOpen(false)}}
         >
-          <Plus size={20} className="mr-2" />
-          New
+          Deploy
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
         <DialogHeader>
         <DialogTitle>
             <span style={{ color: OscarColors.DarkGrayText }}>
-            {`Jupyter Notebook Instance Configuration`}
+            {`${roCrateServiceDef.name}`}
             </span>
         </DialogTitle>
         </DialogHeader>
@@ -255,61 +247,28 @@ return (
             <div>
                 <Label htmlFor="vo">VO</Label>
                 <Select
-                value={formData.vo}
-                onValueChange={(value) => {
-                    setFormData({ ...formData, vo: value });
-                    if (errors.vo) setErrors({ ...errors, vo: false });
-                }}
+                  value={formData.vo}
+                  onValueChange={(value) => {
+                      setFormData({ ...formData, vo: value });
+                      if (errors.vo) setErrors({ ...errors, vo: false });
+                  }}
                 >
-                <SelectTrigger id="vo" className={errors.vo ? "border-red-500 focus:border-red-500" : ""}>
-                    <SelectValue placeholder="Select a VO" />
-                </SelectTrigger>
-                <SelectContent>
-                    {oidcGroups.map((group) => (
-                    <SelectItem key={group} value={group}>
-                        {group}
-                    </SelectItem>
-                    ))}
-                </SelectContent>
+                  <SelectTrigger id="vo" className={errors.vo ? "border-red-500 focus:border-red-500" : ""}>
+                      <SelectValue placeholder="Select a VO" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {oidcGroups.map((group) => (
+                      <SelectItem key={group} value={group}>
+                          {group}
+                      </SelectItem>
+                      ))}
+                  </SelectContent>
                 </Select>
             </div>
+						{asyncService && 
             <div>
-              <div className="flex flex-row items-center" >
-                <Label>
-                  Token
-                </Label>
-                <Button variant={"link"} size={"icon"} 
-                  onClick={() => setFormData({ ...formData, token: genRandomString(128)})}
-                >
-                  <RefreshCcwIcon size={16} 
-                    onMouseEnter={(e) => {e.currentTarget.style.transform = 'rotate(90deg)'}}
-                    onMouseLeave={(e) => {e.currentTarget.style.transform = 'rotate(0deg)'}}
-                  />
-                </Button>
-              </div>
+              <Label>New Bucket</Label>
               <Input
-                id="password"
-                type="password"
-                placeholder="Enter credentials secret"
-                value={formData.token}
-                className={errors.token ? "border-red-500 focus:border-red-500" : ""}
-                onChange={(e) => {
-                  setFormData({ ...formData, token: e.target.value });
-                  if (errors.token) setErrors({ ...errors, token: false });
-                }}
-              ></Input>
-            </div>
-            <div>
-              <Label>Bucket</Label>
-              <hr className="mb-2"/>
-              <div>
-                <Label className="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" value="" className="sr-only peer" onClick={() => { setNewBucket(!newBucket); setFormData({ ...formData, bucket: "" }); }} />
-                  <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600"></div>
-                  <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">New Bucket</span>
-                </Label>
-                {newBucket? 
-                <Input
                   type="input"
                   onFocus={(e) => (e.target.type = "text")}
                   style={{ width: "100%",
@@ -322,30 +281,8 @@ return (
                   }}
                   placeholder="Enter new bucket name"
                 />
-                :
-                  <Select
-                    value={formData.bucket}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, bucket: value });
-                      if (errors.bucket) setErrors({ ...errors, bucket: false });
-                    }}
-                  >
-                    <SelectTrigger className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}>
-                      <SelectValue
-                        placeholder="Select a bucket"
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {buckets.map((bucket) => (
-                        <SelectItem key={bucket.bucket_name} value={bucket.bucket_name}>
-                          {bucket.bucket_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                }
-              </div>
             </div>
+						}
           </div>
         <DialogFooter>
           <RequestButton className="grid grid-cols-[auto] sm:grid-cols-1 gap-2" variant={"mainGreen"} request={handleDeploy}>
@@ -357,4 +294,4 @@ return (
   );
 }
 
-export default JunoFormPopover;
+export default HubServiceConfPopover;

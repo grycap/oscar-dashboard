@@ -26,11 +26,28 @@ import createBucketsApi from "@/api/buckets/createBucketsApi";
 import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
 import updateBucketsApi from "@/api/buckets/updateBucketsApi";
 import { Bucket as Bucket_oscar } from "@/pages/ui/services/models/service"
+import getBucketsApi from "@/api/buckets/getBucketsApi";
+
+interface BucketsFilterProps {
+  myBuckets: boolean;
+  query: string;
+  by: BucketFilterBy;
+}
+
+export enum BucketFilterBy {
+  NAME = "name",
+  OWNER = "owner",
+  SERVICE = "service",
+}
 
 export type MinioProviderData = {
+  bucketsFilter: BucketsFilterProps;
+  setBucketsFilter: (filter: BucketsFilterProps) => void;
   providerInfo: MinioStorageProvider;
   setProviderInfo: (providerInfo: MinioStorageProvider) => void;
+  bucketsOSCAR: Bucket_oscar[];
   buckets: Bucket[];
+  bucketsAreLoading: boolean;
   setBuckets: (buckets: Bucket[]) => void;
   createBucket: (bucketName: Bucket_oscar) => Promise<void>;
   updateBucketsVisibilityControl: (bucketName: Bucket_oscar) => Promise<void>; 
@@ -65,6 +82,14 @@ export const MinioContext = createContext({} as MinioProviderData);
 export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [providerInfo, setProviderInfo] = useState({} as MinioStorageProvider);
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [bucketsOSCAR, setBucketsOSCAR] = useState<Bucket_oscar[]>([]);
+  const [bucketsAreLoading, setBucketsAreLoading] = useState<boolean>(false);
+
+  const [bucketsFilter, setBucketsFilter] = useState<BucketsFilterProps>({
+    myBuckets: false,
+    query: "",
+    by: BucketFilterBy.NAME,
+  });
 
   const client = useMemo(() => {
     if (
@@ -144,12 +169,22 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
 
   async function updateBuckets() {
     if (!client) return;
+    try {
+      setBucketsAreLoading(true);
+      const res = await client.send(new ListBucketsCommand({}));
+      const buckets = res?.Buckets;
+      if (!buckets) return;
 
-    const res = await client.send(new ListBucketsCommand({}));
-    const buckets = res?.Buckets;
-    if (!buckets) return;
-
-    setBuckets(buckets);
+      const bucketsOSCARResponse = await getBucketsApi();
+      const bucketsOSCAR = bucketsOSCARResponse ?? [];
+      
+      setBucketsOSCAR(bucketsOSCAR);
+      setBuckets(buckets);
+    } catch (error) {
+      console.error("Error fetching buckets:", error);
+    } finally {
+      setBucketsAreLoading(false);
+    }
   }
 
   async function createBucket(bucketName: Bucket_oscar) {
@@ -373,9 +408,13 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <MinioContext.Provider
       value={{
+        bucketsFilter,
+        setBucketsFilter,
         providerInfo,
         setProviderInfo,
+        bucketsOSCAR,
         buckets,
+        bucketsAreLoading,
         setBuckets,
         createBucket,
         createFolder,
