@@ -1,22 +1,26 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Copy, Database, ExternalLinkIcon, FolderRoot, Slash } from "lucide-react";
+import { Copy, Database, ExternalLinkIcon, Filter, FolderRoot, Search, Slash } from "lucide-react";
 import OscarColors from "@/styles";
 import AddBucketButton from "./AddBucketButton";
 import AddFolderButton from "./AddFolderButton";
 import useSelectedBucket from "../hooks/useSelectedBucket";
 import AddFileButton from "./AddFileButton";
 //import UpdateBucketButton from "./UpdateBucketButton";
-import getBucketsApi from "@/api/buckets/getBucketsApi";
 import { Bucket,Bucket_visibility } from "../../services/models/service";
 import GenericTopbar from "@/components/Topbar";
-import { useMinio } from "@/contexts/Minio/MinioContext";
+import { BucketFilterBy, useMinio } from "@/contexts/Minio/MinioContext";
 import { alert } from "@/lib/alert";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { SelectIcon } from "@radix-ui/react-select";
+import { Checkbox } from "@/components/ui/checkbox";
+import Divider from "@/components/ui/divider";
 
 
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
-  const { updateBuckets } = useMinio();
+  const { updateBuckets, bucketsOSCAR, bucketsFilter, setBucketsFilter } = useMinio();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
   const [serviceAssociate, setServiceAssociate] = useState<Boolean>(true)
 
@@ -32,29 +36,23 @@ function MinioTopbar() {
 
   useEffect(() => {
     document.title = isOnRoot ? "OSCAR - Buckets" : `OSCAR - Buckets: ${name}`;
-      if (!isOnRoot) {
-        const selectBucket = async () => {
-          const allBucket = await getBucketsApi();
-          let foundBucket = allBucket.find(b => b.bucket_name === name);
-          console.log(allBucket)
-          console.log(foundBucket?.metadata?.from_service)
-          if(foundBucket?.metadata?.from_service){
-            setServiceAssociate(true)
-          }else{
-            setServiceAssociate(false)
-          }
-          if(!foundBucket){
-            foundBucket={
-              bucket_name: "",
-              visibility: Bucket_visibility.private,
-              allowed_users: [],
-            }
-          }
-          setBucket(foundBucket);
-        };
-        selectBucket()
+    if (!isOnRoot) {
+      let foundBucket = bucketsOSCAR.find(b => b.bucket_name === name);
+      if(foundBucket?.metadata?.from_service){
+        setServiceAssociate(true)
+      }else{
+        setServiceAssociate(false)
       }
-
+      if(!foundBucket){
+        foundBucket={
+          bucket_name: "",
+          visibility: Bucket_visibility.private,
+          allowed_users: [],
+        }
+      }
+      console.log("Found Bucket: ", foundBucket);
+      setBucket(foundBucket);
+    }
   }, [isOnRoot, name]);
 
   const breadcrumbs = useMemo(() => {
@@ -123,8 +121,65 @@ function MinioTopbar() {
         </div>
       ) 
       : 
-      <div>
-        
+      <div className="grid grid-cols-[auto_1fr] w-full p-2 pt-1 gap-2">
+        <Select
+          value={bucketsFilter.by}
+          onValueChange={(value: BucketFilterBy) => {
+            setBucketsFilter({
+              ...bucketsFilter,
+              by: value,
+            });
+          }}
+        >
+          <SelectTrigger className="w-max">
+            <SelectIcon>
+              <Filter size={16} className="mr-2" />
+            </SelectIcon>
+          </SelectTrigger>
+
+          <SelectContent>
+            {Object.values(BucketFilterBy).map((value) => {
+              return (
+                <SelectItem key={value} value={value}>
+                  {"By " + value.toLocaleLowerCase()}
+                </SelectItem>
+              );
+            })}
+            <Divider />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "6px",
+              }}
+            >
+              <Checkbox
+                id="ownedItems"
+                checked={bucketsFilter.myBuckets}
+                onCheckedChange={(checked) => {
+                  setBucketsFilter({
+                    ...bucketsFilter,
+                    myBuckets: checked as boolean,
+                  });
+                }}
+                style={{ fontSize: 16 }}
+              />
+              <label
+                htmlFor="ownedItems"
+                style={{ fontSize: 14, marginTop: "1px" }}
+              >
+                My services
+              </label>
+            </div>
+          </SelectContent>
+        </Select>
+        <Input
+          placeholder={`Search services by ${bucketsFilter.by}`}
+          value={bucketsFilter.query}
+          onChange={(e) => setBucketsFilter({ ...bucketsFilter, query: e.target.value })}
+          endIcon={<Search size={16} />}
+        />
       </div>
     }
 
@@ -137,7 +192,7 @@ function MinioTopbar() {
           <div className="flex flex-col">
             <Link
               to={`/ui/minio/${name}`}
-              className="font-bold text-black no-underline hover:text-gray-700 transition-colors duration-200"
+              className="font-bold text-black no-underline hover:text-gray-700 transition-colors duration-200 min-w-max"
               aria-label={`Navigate to bucket ${name}`}
             >
               <div className="flex flex-row items-center text-[16px]">
@@ -156,7 +211,7 @@ function MinioTopbar() {
                           alert.success("Owner copied to clipboard");
                         }}
               >
-                <span className="truncate min-w-[100px] max-w-[100px]">
+                <span className="truncate min-w-[90px] max-w-[100px]">
                   {`Owner: ${bucket.owner ? bucket.owner : "oscar"}`}
                 </span>
                 <Copy size={12} className="self-center" />
