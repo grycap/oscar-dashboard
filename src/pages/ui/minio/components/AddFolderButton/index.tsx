@@ -30,6 +30,7 @@ export default function AddFolderButton({ disabled = false }: Props) {
   };
 
   useEffect(() => {
+    if (!isOpen) return;
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setIsOpen(false);

@@ -33,6 +33,7 @@ export default function AddFileButton({ disabled = false }: Props) {
   };
   
   useEffect(() => {
+    if (!isOpen) return;
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setIsOpen(false);
