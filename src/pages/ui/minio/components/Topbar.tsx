@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { SelectIcon } from "@radix-ui/react-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import Divider from "@/components/ui/divider";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 function MinioTopbar() {
@@ -23,6 +24,7 @@ function MinioTopbar() {
   const { updateBuckets, bucketsOSCAR, bucketsFilter, setBucketsFilter } = useMinio();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
   const [serviceAssociate, setServiceAssociate] = useState<Boolean>(true)
+  const {authData} = useAuth();
 
   const emptyBucket: Bucket = {
     bucket_name: "",
@@ -234,7 +236,7 @@ function MinioTopbar() {
             </div>
           </div> 
           <div className={`flex flex-row gap-2 ${isLoading ? 'blur-[3px] animate-pulse' : ''}`} aria-disabled={isLoading}>
-            { !serviceAssociate && bucket?.visibility ? 
+            { !serviceAssociate && bucket?.visibility && bucket?.owner === authData.egiSession?.sub ? 
             <AddBucketButton bucket={{...bucket, bucket_name: name}} create={false} disabled={isLoading} />
             :
             <></> 
