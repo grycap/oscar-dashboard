@@ -23,9 +23,10 @@ import { useMediaQuery } from "react-responsive";
 interface Props {
   bucket:Bucket;
   create: Boolean;
+  disabled?: boolean;
 }
 
-export default function AddBucketButton({bucket, create}: Props) {
+export default function AddBucketButton({bucket, create, disabled = false}: Props) {
   const [ formBucket, setFormBucket ] = useState<Bucket>(bucket);
   const createButtom=create
   const [isOpen, setIsOpen] = useState(false);
@@ -50,6 +51,10 @@ export default function AddBucketButton({bucket, create}: Props) {
   };
 
   useEffect(() => {
+    setFormBucket(bucket);
+  }, [bucket]);
+
+  useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setIsOpen(false);
@@ -69,7 +74,7 @@ export default function AddBucketButton({bucket, create}: Props) {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="mainGreen" style={{gap: 8}}>
+        <Button variant="mainGreen" style={{gap: 8}} disabled={disabled}>
           {createButtom? 
           <><Plus size={20} />
           New</>
