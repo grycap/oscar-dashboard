@@ -83,9 +83,11 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 												Type
 											</h4>
 											<div>
-												<span className={`text-sm ${roCrateServiceDef.type !== "" ? (roCrateServiceDef.type === "asynchronous" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700") : "bg-red-100 text-red-700"} rounded-xl py-1 px-2`}>
-													{roCrateServiceDef.type !== "" ? roCrateServiceDef.type : 'Not specified'}
-												</span>
+												{roCrateServiceDef.type.map((type, index) => (
+													<span key={index} className={`text-sm ${type !== "" ? (type === "asynchronous" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700") : "bg-red-100 text-red-700"} rounded-xl py-1 px-2`}>
+														{type !== "" ? type : 'Not specified'}
+													</span>
+												))}
 											</div>
 										</div>
 										<div className="flex flex-col gap-1">

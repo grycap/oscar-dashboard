@@ -7,7 +7,7 @@ const RoCrateServiceDefinition = {
     fdlUrl: "",
     scriptUrl: "",
     author: "",
-    type: "",
+    type: ["", ""],
     iconUrl: "https://oscar.grycap.net/images/oscar3-logo-trans.png",
     memoryRequirements: "2",
     memoryUnits: "Mi",
@@ -74,7 +74,7 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
 
     // Fetch the content of the file
     const fileUrl = baseRawFileUrl + file.path;
-    const folderRawFileUrl = fileUrl.replace('ro-crate-metadata.json', '');
+    //const folderRawFileUrl = fileUrl.replace('ro-crate-metadata.json', '');
     
     try {
       const response = await (await fetch(fileUrl, {method: 'GET'})).json();
@@ -96,23 +96,20 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
         try {
           const type = crate.getEntity(element['@id'])['@type'];
           const encodingFormat = crate.getEntity(element['@id'])['encodingFormat'];
-          if (service.fdlUrl === "" && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/yaml") {
-            if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
-              service.fdlUrl = element['@id'];
-            else
-              service.fdlUrl = folderRawFileUrl + element['@id'];
+          if (service.fdlUrl === "" && element['@id'] === "fdl.yml" && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/yaml") {
+            service.fdlUrl = crate.getEntity(element['@id'])['url'];
           }
-          if (service.scriptUrl === "" && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/x-shellscript") {
-            if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
-              service.scriptUrl = element['@id'];
-            else
-              service.scriptUrl = folderRawFileUrl + element['@id'];
+          if (service.scriptUrl === "" && element['@id'] === "script.sh" && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/x-shellscript") {
+            service.scriptUrl = crate.getEntity(element['@id'])['url'];
           }
-          if (type.includes('File') && type.includes('ImageObject')) {
+          if (element['@id'] === "icon.png" && type.includes('File') && type.includes('ImageObject')) {
+            /*
             if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
               service.iconUrl = element['@id'];
             else
-              service.iconUrl = folderRawFileUrl + element['@id'];
+              service.iconUrl = folderRawFileUrl + element['@id']; 
+            */
+            service.iconUrl = crate.getEntity(element['@id'])['url'];
           }
         } catch (error) {
           console.error(`Skip invalid part in service definition file: ${file.path}`);
@@ -127,7 +124,7 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
       service.name = crateRoot.name;
       service.description = crateRoot.description;
       service.author = crate.getEntity(crateRoot.author['@id']).name;
-      service.type = crateRoot.serviceType;
+      service.type = Array.isArray(crateRoot.serviceType) ? crateRoot.serviceType : [crateRoot.serviceType];
 
       const memory = crateRoot.memoryRequirements.split(' ');
       
