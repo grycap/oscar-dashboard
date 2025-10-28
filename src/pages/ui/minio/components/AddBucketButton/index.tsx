@@ -52,9 +52,11 @@ export default function AddBucketButton({bucket, create, disabled = false}: Prop
 
   useEffect(() => {
     setFormBucket(bucket);
+    setAllowedUsers(bucket.allowed_users?bucket.allowed_users:[bucket.owner ?? ""]);
   }, [bucket]);
 
   useEffect(() => {
+    if (!isOpen) return;
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setIsOpen(false);
