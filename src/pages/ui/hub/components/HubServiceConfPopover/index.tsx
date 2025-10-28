@@ -30,7 +30,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
   const { refreshServices } = useServicesContext();
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
-	const asyncService = roCrateServiceDef.type.toLowerCase() === "asynchronous";
+	const asyncService = roCrateServiceDef.type.some(t => t.toLowerCase() === "asynchronous");
 
   function nameService() {
     return `hub-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;

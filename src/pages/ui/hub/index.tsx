@@ -37,7 +37,7 @@ function HubView() {
         const query = searchQuery.toLowerCase();
         return (
           service.name.toLowerCase().includes(query) && 
-          (!filter.serviceType || service.type === filter.serviceType)
+          (!filter.serviceType || service.type.some(type => type === filter.serviceType))
         );
       });
       setFilteredServices(filtered);

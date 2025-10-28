@@ -4,7 +4,7 @@ export interface RoCrateServiceDefinition {
     fdlUrl: string;
     scriptUrl: string;
     author: string;
-    type: string;
+    type: Array<string>;
     iconUrl: string;
     memoryRequirements: string;
     memoryUnits: string;

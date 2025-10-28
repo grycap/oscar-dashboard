@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { SelectIcon } from "@radix-ui/react-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import Divider from "@/components/ui/divider";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 function MinioTopbar() {
@@ -23,6 +24,7 @@ function MinioTopbar() {
   const { updateBuckets, bucketsOSCAR, bucketsFilter, setBucketsFilter } = useMinio();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
   const [serviceAssociate, setServiceAssociate] = useState<Boolean>(true)
+  const {authData} = useAuth();
 
   const emptyBucket: Bucket = {
     bucket_name: "",
@@ -31,8 +33,9 @@ function MinioTopbar() {
   };
 
   const [bucket, setBucket] = useState<Bucket>(emptyBucket);
-
   const isOnRoot = name === undefined;
+
+  const [isLoading, setIsLoading] = useState<boolean>(bucketsOSCAR && !isOnRoot);
 
   useEffect(() => {
     document.title = isOnRoot ? "OSCAR - Buckets" : `OSCAR - Buckets: ${name}`;
@@ -49,11 +52,13 @@ function MinioTopbar() {
           visibility: Bucket_visibility.private,
           allowed_users: [],
         }
+      } else {
+        setIsLoading(false);
       }
       console.log("Found Bucket: ", foundBucket);
       setBucket(foundBucket);
     }
-  }, [isOnRoot, name]);
+  }, [isOnRoot, name, bucketsOSCAR]);
 
   const breadcrumbs = useMemo(() => {
     return pathSegments.map((segment, index) => {
@@ -198,11 +203,11 @@ function MinioTopbar() {
               <div className="flex flex-row items-center text-[16px]">
                 {name}
               </div>
-              <span className="text-gray-600 text-[14px] flex flex-row uppercase">
+              <span className={`text-gray-600 text-[14px] flex flex-row uppercase ${isLoading ? 'blur-[3px] animate-pulse' : ''}`}>
                 {bucket.visibility ? bucket.visibility : Bucket_visibility.private}
               </span>
             </Link>
-            <div className="grid grid-cols-[auto_auto] items-center font-bold text-gray-500 text-[13px] text-nowrap -mt-1 gap-2">
+            <div className={`grid grid-cols-[auto_auto] items-center font-bold text-gray-500 text-[13px] text-nowrap -mt-1 gap-2 ${isLoading ? 'blur-[3px] animate-pulse' : ''}`}>
               {/* Owner Name */}
               <div 
                 className="grid grid-cols-[auto_1fr] no-underline hover:underline underline-offset-2 cursor-pointer"
@@ -230,13 +235,13 @@ function MinioTopbar() {
               }
             </div>
           </div> 
-          <div className="flex flex-row gap-2">
-            { !serviceAssociate && bucket?.visibility ? 
-            <AddBucketButton bucket={{...bucket, bucket_name: name}} create={false} />
+          <div className={`flex flex-row gap-2 ${isLoading ? 'blur-[3px] animate-pulse' : ''}`} aria-disabled={isLoading}>
+            { !serviceAssociate && bucket?.visibility && bucket?.owner === authData.egiSession?.sub ? 
+            <AddBucketButton bucket={{...bucket, bucket_name: name}} create={false} disabled={isLoading} />
             :
             <></> 
             } 
-            <AddFolderButton /> <AddFileButton />
+            <AddFolderButton disabled={isLoading} /> <AddFileButton disabled={isLoading} />
           </div>
         </div>
         }

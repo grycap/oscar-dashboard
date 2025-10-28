@@ -12,7 +12,11 @@ import useSelectedBucket from "../../hooks/useSelectedBucket";
 import { Input } from "@/components/ui/input";
 import { useMediaQuery } from "react-responsive";
 
-export default function AddFileButton() {
+interface Props {
+  disabled?: boolean;
+}
+
+export default function AddFileButton({ disabled = false }: Props) {
 
   const { uploadFile } = useMinio();
   const { name: bucketName, path } = useSelectedBucket();
@@ -29,6 +33,7 @@ export default function AddFileButton() {
   };
   
   useEffect(() => {
+    if (!isOpen) return;
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setIsOpen(false);
@@ -125,7 +130,7 @@ export default function AddFileButton() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" style={{gap: 8}}>
+        <Button variant="outline" style={{gap: 8}} disabled={disabled}>
           <Upload size={20} className="h-5 w-5" />
           {!isSmallScreen && "Upload File"}
         </Button>
