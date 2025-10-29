@@ -174,7 +174,7 @@ function MinioTopbar() {
                 htmlFor="ownedItems"
                 style={{ fontSize: 14, marginTop: "1px" }}
               >
-                My services
+                My buckets
               </label>
             </div>
           </SelectContent>
