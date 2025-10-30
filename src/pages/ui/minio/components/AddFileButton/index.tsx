@@ -85,7 +85,7 @@ export default function AddFileButton({ disabled = false }: Props) {
         }
         className={!file || isImage ? "hidden" : ""}
       />
-      {!file ? (
+      {!file ? ( 
         <div
           onDragOver={handleDragOver}
           onDrop={handleDrop}
