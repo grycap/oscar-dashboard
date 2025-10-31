@@ -109,21 +109,26 @@ export default function BucketList() {
           {
             header: "Owner",
             accessor: (row) => (
-              <>
-              {row.owner !== authData.egiSession?.sub ?
               <div 
                 className="grid grid-cols-[auto_1fr] no-underline hover:underline underline-offset-2 cursor-pointer"
                 onClick={() => {navigator.clipboard.writeText(row.owner ? row.owner : "oscar");alert.success("Owner copied to clipboard");}}
               >
-                <span className="truncate min-w-[40px]">
-                  {row.owner}
-                </span>
-                <Copy size={12} className="self-center ml-[2px]" />
+                {row.owner !== authData.egiSession?.sub ?
+                <>
+                  <span className="truncate min-w-[40px]">
+                    {row.owner}
+                  </span>
+                  <Copy size={12} className="self-center ml-[2px]" />
+                </>
+                :
+                <>
+                  <span className="truncate min-w-[40px]">
+                    {"You"}
+                  </span>
+                  <Copy size={12} className="self-center -ml-[14px]" />
+                  </>
+                }
               </div>
-              :
-              <span></span>
-              }
-              </>
             ),
             sortBy: "owner"
           },
