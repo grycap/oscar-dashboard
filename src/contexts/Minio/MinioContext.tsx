@@ -112,10 +112,10 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   }, [providerInfo]);
 
   /**
-   * Lista las carpetas e ítems en una ruta específica dentro de un bucket de S3.
-   * @param bucketName Nombre del bucket de S3.
-   * @param path Ruta dentro del bucket. Usa una cadena vacía para la raíz.
-   * @returns Un objeto que contiene arrays de carpetas e ítems.
+   * Lists folders and items within a specific path inside an S3 bucket.
+   * @param bucketName Name of the S3 bucket.
+   * @param path Path within the bucket. Use an empty string for the root.
+   * @returns An object containing arrays of folders and items.
    */
   async function getBucketItems(
     bucketName: string,
@@ -126,29 +126,29 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   }> {
     if (!client) return { folders: [], items: [] };
 
-    // Asegura que el prefijo termine con '/' si no está vacío
+    // Ensure the prefix ends with '/' when the path is not empty
     const prefix = path ? (path.endsWith("/") ? path : `${path}/`) : "";
 
     const params: ListObjectsV2CommandInput = {
       Bucket: bucketName,
       Prefix: prefix,
-      Delimiter: "/", // Usa '/' como delimitador para agrupar carpetas
+      Delimiter: "/", // Use '/' as delimiter to group folders
     };
 
     try {
       const command = new ListObjectsV2Command(params);
       const response = await client.send(command);
 
-      // Extrae las carpetas (CommonPrefixes)
+      // Extract folders (CommonPrefixes)
       const folders = response.CommonPrefixes ?? [];
 
-      // Extrae los ítems (Contents)
+      // Extract items (Contents)
       const items =
         response.Contents?.filter((item) => item.Key !== prefix) ?? [];
 
       return { folders, items };
     } catch (error) {
-      console.error("Error al listar objetos de S3:", error);
+      console.error("Error listing S3 objects:", error);
       throw error;
     }
   }
@@ -335,7 +335,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     return objects;
   }
 
-  // Función para descargar un archivo como ArrayBuffer
+  // Helper to download a file as an ArrayBuffer
   async function downloadFile(bucketName: string, key: string) {
     const params = { Bucket: bucketName, Key: key };
     const data = await client?.send(new GetObjectCommand(params));
@@ -356,16 +356,16 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
 
         for (const object of objects) {
           const relativePath = object.Key!.replace(folder.Prefix!, "");
-          if (!relativePath) continue; // Ignorar carpetas vacías
+          if (!relativePath) continue; // Skip empty folders
 
           const fileData = await downloadFile(bucketName, object.Key!);
 
-          // Añadir archivo al ZIP
+          // Add file to the ZIP archive
           if (fileData) {
             const safeData = new Uint8Array(fileData); 
             zip.file(`${folder.Prefix}${relativePath}`, new Blob([safeData]));
           } else {
-            throw new Error(`Error al descargar el archivo: ${object.Key}`);
+            throw new Error(`Error downloading file: ${object.Key}`);
           }
         }
       }
@@ -376,16 +376,16 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
           const safeData = new Uint8Array(fileData);
           zip.file(file.Key!, new Blob([safeData]));
         } else {
-          throw new Error(`Error al descargar el archivo: ${file.Key}`);
+          throw new Error(`Error downloading file: ${file.Key}`);
         }
       }
 
-      // Generar el ZIP y descargarlo
+      // Generate the ZIP and return it
       const zipBlob = await zip.generateAsync({ type: "blob" });
       return zipBlob;
     } catch (err) {
       alert.error(
-        err instanceof Error ? err.message : "Error durante la descarga"
+        err instanceof Error ? err.message : "Error during download"
       );
     }
   }

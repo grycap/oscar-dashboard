@@ -682,7 +682,7 @@ const Cluster = () => {
           </CardContent>
         </Card>
       
-      {/* Bloque de MinIO */}
+      {/* MinIO section */}
       {data.MinIO?.buckets ? 
         <Card className="w-full mb-6">
           <CardHeader>
@@ -694,7 +694,7 @@ const Cluster = () => {
 
           <CardContent>
             <div className="w-full">
-              {/* Altura máxima aprox. 4 cards visibles con scroll */}
+              {/* Approximate max height showing about four cards with scroll */}
               <div className="overflow-y-auto max-h-[280px] pr-1 space-y-4">
                 {data.MinIO?.buckets?.slice(0, 50).map((bucket, index) => {
                   const isExpanded = expandedBuckets[bucket.name] || false;

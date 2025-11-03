@@ -120,7 +120,7 @@ export const ServicesProvider = ({
       };
     });
 
-    // Validar el campo específico
+    // Validate the specific field
     try {
       serviceSchema.shape[key].parse(e.target.value);
       setErrors((prevErrors) => ({ ...prevErrors, [key]: undefined }));

@@ -25,7 +25,7 @@ function RequestButton({
 
   async function onClick() {
     if (props.disabled) return;
-    if (isLoading) return; // Evita múltiples clics
+    if (isLoading) return; // Prevent multiple clicks while request is running
     setIsLoading(true);
     await request();
     setIsLoading(false);
