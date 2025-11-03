@@ -219,7 +219,7 @@ return (
                       id="memory-ram"
                       type="number"
                       step={formData.memoryUnit === "Gi" ? 1 : 256}
-                      placeholder="Enter memory RAM"
+                      placeholder="Enter RAM"
                       value={formData.memoryRam}
                       className={errors.memoryRam ? "border-red-500 focus:border-red-500" : ""}
                       onChange={(e) => {
