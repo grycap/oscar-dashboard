@@ -106,8 +106,8 @@ function DonutChart({ percentage, dangerThreshold }: { percentage: number; dange
   const COLORS = [isDanger ? "#ef4444" : "#10b981", "#e5e7eb"]; // red or green
 
   const data = [
-    { name: "Usado", value: percentage },
-    { name: "Libre", value: 100 - percentage },
+    { name: "Used", value: percentage },
+    { name: "Free", value: 100 - percentage },
   ];
 
   return (
