@@ -217,12 +217,12 @@ function FlowsFormPopover() {
               </div>
               <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                   <div>
-                    <Label htmlFor="memory-ram">Memory RAM</Label>
+                    <Label htmlFor="memory-ram">RAM</Label>
                     <Input
                       id="memory-ram"
                       type="number"
                       step={formData.memoryUnit === "Gi" ? 1 : 256}
-                      placeholder="Enter memory RAM"
+                      placeholder="Enter RAM"
                       value={formData.memoryRam}
                       className={errors.memoryRam ? "border-red-500 focus:border-red-500" : ""}
                       onChange={(e) => {

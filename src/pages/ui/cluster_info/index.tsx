@@ -106,8 +106,8 @@ function DonutChart({ percentage, dangerThreshold }: { percentage: number; dange
   const COLORS = [isDanger ? "#ef4444" : "#10b981", "#e5e7eb"]; // red or green
 
   const data = [
-    { name: "Usado", value: percentage },
-    { name: "Libre", value: 100 - percentage },
+    { name: "Used", value: percentage },
+    { name: "Free", value: 100 - percentage },
   ];
 
   return (
@@ -682,7 +682,7 @@ const Cluster = () => {
           </CardContent>
         </Card>
       
-      {/* Bloque de MinIO */}
+      {/* MinIO section */}
       {data.MinIO?.buckets ? 
         <Card className="w-full mb-6">
           <CardHeader>
@@ -694,7 +694,7 @@ const Cluster = () => {
 
           <CardContent>
             <div className="w-full">
-              {/* Altura máxima aprox. 4 cards visibles con scroll */}
+              {/* Approximate max height showing about four cards with scroll */}
               <div className="overflow-y-auto max-h-[280px] pr-1 space-y-4">
                 {data.MinIO?.buckets?.slice(0, 50).map((bucket, index) => {
                   const isExpanded = expandedBuckets[bucket.name] || false;

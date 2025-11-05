@@ -54,7 +54,7 @@ function InfoView() {
           <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           {token ? (
               <>
-                <InfoItem label="EGI UID" value={egiSession?.sub! ?? egiSession?.sub!} enableCopy />
+                <InfoItem label="Subject ID" value={egiSession?.sub! ?? egiSession?.sub!} enableCopy />
                 <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
                 <InfoItem
                   label="Access Token"
