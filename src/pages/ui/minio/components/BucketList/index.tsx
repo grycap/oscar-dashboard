@@ -5,6 +5,7 @@ import { Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { alert } from "@/lib/alert";
+import { Bucket_visibility } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Bucket } from "@aws-sdk/client-s3";
 import { Copy, ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-react";
@@ -14,26 +15,30 @@ import { Link } from "react-router-dom";
 interface BucketList extends Bucket {
   from_service: string;
   owner: string;
-  visibility: "private" | "public" | "restricted";
+  visibility: Bucket_visibility;
 }
 
 const visibilityColors = {
-  private: {
+  [Bucket_visibility.private]: {
     bg: "bg-red-100",
     text: "text-red-700",
     border: "border-red-300"
   },
-  public: {
+  [Bucket_visibility.public]: {
     bg: "bg-green-100",
     text: "text-green-700",
     border: "border-green-300"
   },
-  restricted: {
+  [Bucket_visibility.restricted]: {
     bg: "bg-blue-100",
     text: "text-blue-700",
     border: "border-blue-300"
   }
 };
+
+function isBucketVisibility(value: unknown): boolean {
+  return (value === Bucket_visibility.private || value === Bucket_visibility.public || value === Bucket_visibility.restricted);
+}
 
 export default function BucketList() {
   const { buckets, bucketsOSCAR, bucketsAreLoading, deleteBucket, bucketsFilter } = useMinio();
@@ -50,7 +55,7 @@ export default function BucketList() {
           ...bucket,
           from_service: oscarBucket?.metadata?.from_service ?? "",
           owner: oscarBucket?.owner === "" ? "oscar" : oscarBucket?.owner,
-          visibility: oscarBucket?.visibility ?? "private",
+          visibility: isBucketVisibility(oscarBucket?.visibility) ? oscarBucket?.visibility : "private",
         } as BucketList;
       });
       setBucketsList(updatedBucketsList);
