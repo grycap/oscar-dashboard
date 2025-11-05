@@ -199,7 +199,7 @@ export default function BucketList() {
                       variant={"destructive"}
                     >
                       <Trash  className="w-4 h-4 mr-2"/>
-                      Delete Files
+                      Delete Buckets
                     </Button>
                   </TooltipTrigger>
                 </Tooltip>
