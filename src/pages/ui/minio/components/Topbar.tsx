@@ -180,7 +180,7 @@ function MinioTopbar() {
           </SelectContent>
         </Select>
         <Input
-          placeholder={`Search services by ${bucketsFilter.by}`}
+          placeholder={`Search buckets by ${bucketsFilter.by}`}
           value={bucketsFilter.query}
           onChange={(e) => setBucketsFilter({ ...bucketsFilter, query: e.target.value })}
           endIcon={<Search size={16} />}

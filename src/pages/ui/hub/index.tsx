@@ -73,7 +73,7 @@ function HubView() {
                 <label
                   htmlFor="asyncServices"
                   style={{ fontSize: 14}}
-                >Async. Services</label>
+                >Asynchronous services</label>
               </div>
               <div className="flex flex-row gap-2 items-center p-2">
                 <Checkbox
@@ -90,7 +90,7 @@ function HubView() {
                 <label
                   htmlFor="syncServices"
                   style={{ fontSize: 14}}
-                >Sync. Services</label>
+                >Synchronous services</label>
               </div>
             </SelectContent>
           </Select>
