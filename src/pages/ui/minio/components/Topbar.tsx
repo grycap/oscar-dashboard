@@ -29,7 +29,7 @@ function MinioTopbar() {
   const emptyBucket: Bucket = {
     bucket_name: "",
     visibility: Bucket_visibility.private,
-    allowed_users: [],
+    allowed_users:authData.egiSession?.sub ? [authData.egiSession?.sub] : [],
   };
 
   const [bucket, setBucket] = useState<Bucket>(emptyBucket);
