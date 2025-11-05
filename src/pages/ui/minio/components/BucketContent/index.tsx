@@ -88,7 +88,7 @@ export default function BucketContent() {
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    setIsDroppingFile(false); // Restablecer el estado al soltar
+    setIsDroppingFile(false); // Reset drop state when the file is released
     const files = event.dataTransfer.files;
     if (files.length > 0) {
       uploadFile(bucketName!, path, files[0]);
@@ -97,11 +97,11 @@ export default function BucketContent() {
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    setIsDroppingFile(true); // Cambiar el estado a true cuando se arrastra un archivo
+    setIsDroppingFile(true); // Indicate that a file is being dragged over the drop zone
   };
 
   const handleDragLeave = () => {
-    setIsDroppingFile(false); // Restablecer el estado cuando el archivo ya no está sobre el div
+    setIsDroppingFile(false); // Reset drop state when the file leaves the drop zone
   };
 
   const [itemsToDelete, setItemsToDelete] = useState<BucketItem[]>([]);
@@ -119,7 +119,7 @@ export default function BucketContent() {
           document.body.removeChild(a);
         }
       } catch (error) {
-        console.error("Error al descargar el archivo:", error);
+        console.error("Error downloading file:", error);
       }
     }
   };

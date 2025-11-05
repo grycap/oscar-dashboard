@@ -13,17 +13,17 @@ import React, {
 } from "react";
 
 type EGISessionInfo = {
-  eduperson_assurance: string[]; // Lista de URLs para los niveles de garantía
-  eduperson_entitlement: string[]; // Lista de valores de derechos
-  email: string; // Correo electrónico del usuario
-  email_verified: boolean; // Indica si el correo está verificado
-  family_name: string; // Apellido del usuario
-  given_name: string; // Nombre del usuario
-  name: string; // Nombre completo del usuario
-  preferred_username: string; // Nombre de usuario preferido
-  sub: string; // Identificador único del usuario
-  voperson_verified_email: string[]; // Lista de correos electrónicos verificados
-  
+  eduperson_assurance: string[]; // List of URLs for assurance levels
+  eduperson_entitlement: string[]; // List of entitlement values
+  email: string; // User email address
+  email_verified: boolean; // Indicates whether the email is verified
+  family_name: string; // User last name
+  given_name: string; // User first name
+  name: string; // User full name
+  preferred_username: string; // Preferred username
+  sub: string; // Unique user identifier
+  voperson_verified_email: string[]; // List of verified email addresses
+
   group_membership: string[]; 
 };
 

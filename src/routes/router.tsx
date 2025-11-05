@@ -11,7 +11,7 @@ import InfoView from "@/pages/ui/info";
 import { ServicesProvider } from "@/pages/ui/services/context/ServicesContext";
 import JunoView from "@/pages/ui/juno";
 import FlowsView from "@/pages/ui/flows";
-//añadimos la ruta de Dashboard
+// Add the dashboard route
 import Cluster from "@/pages/ui/cluster_info"
 import HubView from "@/pages/ui/hub";
 
