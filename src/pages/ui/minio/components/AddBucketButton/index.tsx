@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { AllowedUsersPopover } from "@/pages/ui/services/components/ServiceForm/components/GeneralTab/components/AllowedUsersPopover";
 import { useMediaQuery } from "react-responsive";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
   bucket:Bucket;
@@ -32,6 +33,7 @@ export default function AddBucketButton({bucket, create, disabled = false}: Prop
   const [isOpen, setIsOpen] = useState(false);
   const { createBucket, updateBucketsVisibilityControl } = useMinio();
   const isSmallScreen = useMediaQuery({ maxWidth: 799 });
+  const {authData} = useAuth();
 
 
   const handleCreateBucket = async () => {
@@ -52,7 +54,7 @@ export default function AddBucketButton({bucket, create, disabled = false}: Prop
 
   useEffect(() => {
     setFormBucket(bucket);
-    setAllowedUsers(bucket.allowed_users?bucket.allowed_users:[bucket.owner ?? ""]);
+    setAllowedUsers(bucket.allowed_users ? bucket.allowed_users : (bucket.owner ? [bucket.owner] : []));
   }, [bucket]);
 
   useEffect(() => {
@@ -111,34 +113,37 @@ export default function AddBucketButton({bucket, create, disabled = false}: Prop
           </div>
           <Label htmlFor="bucketName">Visibility:</Label>
           <Select
-                value={formBucket?.visibility}
-                onValueChange={(value:Bucket_visibility) => {
-                  setFormBucket((bucket: Bucket) => {
-                    return {
-                      ...bucket,
-                      visibility: value,
-                    };
-                  });
-                }}
-              >
-                <SelectTrigger id="bucket-select-trigger">
-                  <SelectValue placeholder="Select a Bucket Visibility" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(Bucket_visibility) as Array<keyof typeof Bucket_visibility>)?.map((kind) => {
-                    return (
-                      <SelectItem key={kind} value={kind}>
-                        {kind}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-          {formBucket.visibility=="restricted" ? <div className="flex flex-row gap-2 items-center">
-                <strong>Allowed users:</strong>
-                  <AllowedUsersPopover
-                  allowed_users={formBucket.allowed_users?formBucket.allowed_users:[]}
-                  setAllowedUsersInExternalVar={setAllowedUsers} />
+            disabled={authData.egiSession?.sub ? false : true}
+            value={formBucket?.visibility}
+            onValueChange={(value:Bucket_visibility) => {
+              setFormBucket((bucket: Bucket) => {
+                return {
+                  ...bucket,
+                  visibility: value,
+                };
+              });
+            }}
+          >
+            <SelectTrigger id="bucket-select-trigger">
+              <SelectValue placeholder="Select a Bucket Visibility" />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(Bucket_visibility) as Array<keyof typeof Bucket_visibility>)?.map((kind) => {
+                return (
+                  <SelectItem key={kind} value={kind}>
+                    {kind}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+          {authData.egiSession?.sub && formBucket.visibility===Bucket_visibility.restricted ? 
+          <div className="flex flex-row gap-2 items-center">
+            <strong>Allowed users:</strong>
+            <AllowedUsersPopover
+              allowed_users={formBucket.allowed_users?formBucket.allowed_users:[]}
+              setAllowedUsersInExternalVar={setAllowedUsers} 
+            />
           </div> :
           <></>
           }
