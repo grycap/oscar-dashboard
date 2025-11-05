@@ -1,6 +1,7 @@
 import DeleteDialog from "@/components/DeleteDialog";
 import GenericTable from "@/components/Table";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { alert } from "@/lib/alert";
@@ -97,6 +98,7 @@ export default function BucketList() {
       </div>
       : 
       <GenericTable<BucketList>
+        idKey="Name"
         data={filteredBucketsList}
         columns={[
           {
@@ -185,7 +187,26 @@ export default function BucketList() {
             },
           },
         ]}
-        idKey="Name"
+        bulkActions={[
+          {
+            button: (items) => {
+              return (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      className="mt-[2px] ml-[4px]"
+                      onClick={() => setItemsToDelete(items)}
+                      variant={"destructive"}
+                    >
+                      <Trash  className="w-4 h-4 mr-2"/>
+                      Delete Files
+                    </Button>
+                  </TooltipTrigger>
+                </Tooltip>
+              );
+            },
+          },
+        ]}
       />
       }
     </>
