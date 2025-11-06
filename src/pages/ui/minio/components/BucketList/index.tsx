@@ -40,6 +40,10 @@ function isBucketVisibility(value: unknown): boolean {
   return (value === Bucket_visibility.private || value === Bucket_visibility.public || value === Bucket_visibility.restricted);
 }
 
+function isUserOscar(authData: any, bucket: any): boolean {
+  return (authData.user === "oscar" && (bucket.owner === authData.user || bucket.owner === ""));
+}
+
 export default function BucketList() {
   const { buckets, bucketsOSCAR, bucketsAreLoading, deleteBucket, bucketsFilter } = useMinio();
   const [itemsToDelete, setItemsToDelete] = useState<Bucket[]>([]);
@@ -68,7 +72,7 @@ export default function BucketList() {
     let filteredBuckets = bucketsList;
     if (bucketsFilter.myBuckets) {
       filteredBuckets = filteredBuckets.filter(
-        (bucket) => bucket.owner === authData.egiSession?.sub
+        (bucket) => bucket.owner === authData.egiSession?.sub || isUserOscar(authData, bucket)
       );
     }
     if (bucketsFilter.query) {
@@ -120,7 +124,7 @@ export default function BucketList() {
                 className="grid grid-cols-[auto_1fr] no-underline hover:underline underline-offset-2 cursor-pointer"
                 onClick={() => {navigator.clipboard.writeText(row.owner ? row.owner : "oscar");alert.success("Owner copied to clipboard");}}
               >
-                {row.owner !== authData.egiSession?.sub ?
+                {row.owner !== authData.egiSession?.sub && !isUserOscar(authData, row) ?
                 <>
                   <span className="truncate min-w-[40px]">
                     {row.owner}
