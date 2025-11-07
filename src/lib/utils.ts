@@ -119,3 +119,10 @@ export const fetchFromGitHubOptions = {
     'Accept': 'text/plain, application/x-yaml, */*'
   }
 };
+
+export function isSafariBrowser(): boolean {
+  const ua = navigator.userAgent;
+  const provider = navigator.vendor;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(ua) && provider.includes("Apple");
+  return isSafari;
+}
