@@ -16,6 +16,8 @@ import {
   LoaderPinwheel,
   Database,
   Files,
+  Box,
+  ClipboardList,
 } from "lucide-react";
 import {
   PieChart,
@@ -323,8 +325,9 @@ const Cluster = () => {
                   <div className="grid grid-cols-2 gap-4">
                     {/* Total pods */}
                     <Card>
-                      <CardContent className="p-4">
-                        <div className="flex-1 items-center gap-2">
+                      <CardContent className="p-4 h-full">
+                        <div className="flex flex-row justify-center items-center gap-2 h-full">
+                          <Box className="text-blue-600" size={24} />
                           <p className="text-lg font-semibold text-center">
                             Total Pods:{" "}
                             <span className="text-xl font-bold">{data.oscar.pods.total}</span>
@@ -335,8 +338,9 @@ const Cluster = () => {
 
                     {/* Total jobs */}
                     <Card>
-                      <CardContent className="p-4">
-                        <div className="flex-1 items-center gap-2">
+                      <CardContent className="p-4 h-full">
+                        <div className="flex flex-row justify-center items-center gap-2 h-full">
+                          <ClipboardList className="text-purple-600" size={24} />
                           <p className="text-lg font-semibold text-center">
                             Total Jobs:{" "}
                             <span className="text-xl font-bold ">{data.oscar.jobs_count}</span>
@@ -575,7 +579,7 @@ const Cluster = () => {
               <Card>
                 <CardContent className="p-4 h-full">
                   <div className="flex flex-row justify-center items-center h-full gap-2">
-                    <Database className="text-black" />
+                    <Database className="text-black" size={24} />
                     <p className="text-lg font-semibold text-center">
                       Total Buckets:{" "}
                       <span className="text-xl font-bold">{data.minio.buckets_count}</span>
@@ -588,7 +592,7 @@ const Cluster = () => {
               <Card>
                 <CardContent className="p-4 h-full">
                   <div className="flex flex-row justify-center items-center h-full gap-2">
-                    <Files className="text-black" />
+                    <Files className="text-black" size={24} />
                     <p className="text-lg font-semibold text-center">
                       Total Objects:{" "}
                       <span className="text-xl font-bold ">{data.minio.total_objects}</span>
