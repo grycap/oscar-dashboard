@@ -541,17 +541,17 @@ const Cluster = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-start">
                             <h2 className="text-lg font-semibold">CPU usage</h2>
-                            <DonutChart percentage={node.cpu.capacity_cores / node.cpu.usage_cores * 100} dangerThreshold={70} />
+                            <DonutChart percentage={Math.round(node.cpu.usage_cores / node.cpu.capacity_cores * 100)} dangerThreshold={70} />
                             <p className="text-center font-bold text-sm mt-2">
-                              {node.cpu.capacity_cores / node.cpu.usage_cores * 100}% Used
+                              {Number((node.cpu.usage_cores / node.cpu.capacity_cores * 100).toFixed(1))}% Used
                             </p>
                           </div>
 
                           <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-start">
                             <h2 className="text-lg font-semibold">Memory usage</h2>
-                            <DonutChart percentage={node.memory.capacity_bytes / node.memory.usage_bytes * 100} dangerThreshold={60} />
+                            <DonutChart percentage={Math.round(node.memory.usage_bytes * 100 / node.memory.capacity_bytes)} dangerThreshold={60} />
                             <p className="text-center font-bold text-sm mt-2">
-                              {node.memory.capacity_bytes / node.memory.usage_bytes * 100}% Used
+                              {Number((node.memory.usage_bytes / node.memory.capacity_bytes * 100).toFixed(1))}% Used
                             </p>
                           </div>
                         </div>
