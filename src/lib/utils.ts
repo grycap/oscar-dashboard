@@ -112,6 +112,11 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export async function delay(ms: number): Promise<boolean> {
+  await new Promise(resolve => setTimeout(resolve, ms));
+  return true;
+}
+
 export const fetchFromGitHubOptions = {
   method: 'GET',
   cache: 'no-cache' as RequestCache,

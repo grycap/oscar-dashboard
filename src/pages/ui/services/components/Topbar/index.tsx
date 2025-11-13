@@ -13,14 +13,35 @@ export enum ServiceViewMode {
 }
 
 function ServicesTopbar() {
-  const { formMode, refreshServices } = useServicesContext();
+  const { formMode, refreshServices, refreshServiceLogs } = useServicesContext();
+
+  function getDefaultHeader(formMode: ServiceViewMode) {
+    switch (formMode) {
+      case ServiceViewMode.List:
+        return { title: "Services", linkTo: "/ui/services" };
+      case ServiceViewMode.Update:
+        const location = window.location.hash.split("/");
+        let header = location[location.length - 1];
+        let linkTo = window.location.hash.replace('#', '');
+
+        if (header === "logs") {
+          header = "Logs";
+          return { title: header, linkTo: linkTo };
+        }
+        return { title: "Services", linkTo: "/ui/services" };
+      default:
+        return { title: "Services", linkTo: "/ui/services" };
+    }
+  }
 
   useEffect(() => {
     document.title = "OSCAR - Services";
   }, []);
 
   return (
-    <GenericTopbar defaultHeader={{title: "Services", linkTo: "/ui/services"}} refresher={refreshServices}
+    <GenericTopbar
+      defaultHeader={getDefaultHeader(formMode)}
+      refresher={formMode === ServiceViewMode.List ? refreshServices : refreshServiceLogs}
       secondaryRow={
         formMode === ServiceViewMode.List ? 
         <div className="w-full p-2 pt-1">

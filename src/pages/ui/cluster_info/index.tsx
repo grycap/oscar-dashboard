@@ -30,6 +30,7 @@ import OscarColors from "@/styles";
 import { useLocation } from "react-router-dom";
 import getStatusApi from "@/api/status/getStatusApi";
 import { ClusterStatus } from "@/models/clusterStatus";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 function DonutChart({ percentage, dangerThreshold }: { percentage: number; dangerThreshold: number }) {
@@ -78,6 +79,7 @@ const formatCores = (millicores: number) =>
   `${(bytes / 1024).toFixed(1)} KB`;*/
 
 const Cluster = () => {
+  const { authData } = useAuth();
   const location = useLocation();
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -311,6 +313,7 @@ const Cluster = () => {
             </Card>
 
             {/* Pods and Jobs collapsible */}
+            {authData.user && authData.user === "oscar" && (
             <Card className="w-full mt-6">
               <div
                 onClick={() => toggleSection("pods")}
@@ -394,6 +397,7 @@ const Cluster = () => {
                 </CardContent>
               )}
             </Card>
+            )}
             
           {/* OIDC collapsible block */}
           <Card className="w-full mt-6">
@@ -565,6 +569,7 @@ const Cluster = () => {
         </Card>
       
         {/* MinIO section */}
+        {authData.user && authData.user === "oscar" && (
         <Card className="w-full">
           <CardHeader>
             <CardTitle>MinIO</CardTitle>
@@ -603,6 +608,7 @@ const Cluster = () => {
             </div>
           </CardContent>
         </Card>
+        )}
       <div className="h-2" />
       </div>
       }
