@@ -83,9 +83,11 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 												Type
 											</h4>
 											<div>
-												<span className={`text-sm ${roCrateServiceDef.type === "asynchronous" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"} rounded-xl py-1 px-2`}>
-													{roCrateServiceDef.type}
-												</span>
+												{roCrateServiceDef.type.map((type, index) => (
+													<span key={index} className={`text-sm ${type !== "" ? (type === "asynchronous" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700") : "bg-red-100 text-red-700"} rounded-xl py-1 px-2`}>
+														{type !== "" ? type : 'Not specified'}
+													</span>
+												))}
 											</div>
 										</div>
 										<div className="flex flex-col gap-1">
@@ -132,7 +134,7 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 											<div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
 												<div className="flex items-center justify-between mb-2">
 													<h5 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-														Memory
+														RAM
 													</h5>
 													<span className="text-xs text-gray-400">💾</span>
 												</div>

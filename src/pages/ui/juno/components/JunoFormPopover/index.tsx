@@ -6,25 +6,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMinio } from "@/contexts/Minio/MinioContext";
+import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import { alert } from "@/lib/alert";
-import { generateReadableName, genRandomString } from "@/lib/utils";
+import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
-import { RefreshCcwIcon } from "lucide-react";
+import { Plus, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 
+
 function JunoFormPopover() {
-  const { buckets } = useMinio();
   const [isOpen, setIsOpen] = useState(false);
   const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
+  const buckets = useGetPrivateBuckets();
 
-  const oidcGroups = systemConfig?.config.oidc_groups ?? [];
+  const oidcGroups = getAllowedVOs(systemConfig, authData);
 
   function nameService() {
     return `juno-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
@@ -96,12 +97,12 @@ function JunoFormPopover() {
     try {
       const fdlUrl =
         "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/juno.yaml";
-      const fdlResponse = await fetch(fdlUrl);
+      const fdlResponse = await fetch(fdlUrl, fetchFromGitHubOptions);
       const fdlText = await fdlResponse.text();
 
       const scriptUrl =
         "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/script.sh";
-      const scriptResponse = await fetch(scriptUrl);
+      const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
       const scriptText = await scriptResponse.text();
 
       const services = yamlToServices(fdlText, scriptText);
@@ -140,15 +141,12 @@ function JunoFormPopover() {
           jupyter_notebook: "true",
         },
       };
-      console.log(modifiedService)
-
       await createServiceApi(modifiedService);
       refreshServices();
 
       alert.success("Jupyter Notebook instance deployed");
       setIsOpen(false);
     } catch (error) {
-      console.log(error)
       alert.error("Error deploying Jupyter Notebook instance");
     }
   };
@@ -163,10 +161,11 @@ return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="default"
-          tooltipLabel="New Jupyter Notebook Instance"
+          variant="mainGreen"
+          tooltipLabel="New Notebook Instance"
           onClick={() => {setIsOpen(false)}}
         >
+          <Plus size={20} className="mr-2" />
           New
         </Button>
       </DialogTrigger>
@@ -223,12 +222,12 @@ return (
               </div>
               <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                   <div>
-                    <Label htmlFor="memory-ram">Memory RAM</Label>
+                    <Label htmlFor="memory-ram">RAM</Label>
                     <Input
                       id="memory-ram"
                       type="number"
                       step={formData.memoryUnit === "Gi" ? 1 : 256}
-                      placeholder="Enter memory RAM"
+                      placeholder="Enter RAM"
                       value={formData.memoryRam}
                       className={errors.memoryRam ? "border-red-500 focus:border-red-500" : ""}
                       onChange={(e) => {
@@ -338,8 +337,8 @@ return (
                     </SelectTrigger>
                     <SelectContent>
                       {buckets.map((bucket) => (
-                        <SelectItem key={bucket.Name} value={bucket.Name!}>
-                          {bucket.Name}
+                        <SelectItem key={bucket.bucket_name} value={bucket.bucket_name}>
+                          {bucket.bucket_name}
                         </SelectItem>
                       ))}
                     </SelectContent>

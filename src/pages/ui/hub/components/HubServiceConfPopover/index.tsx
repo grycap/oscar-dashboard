@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
-import { generateReadableName, genRandomString } from "@/lib/utils";
+import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
@@ -26,11 +26,11 @@ interface HubServiceConfPopoverProps {
 }
 
 function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, setIsOpen, className = "", variant = "default", title = "Deploy Service" }: HubServiceConfPopoverProps) {
-  const {systemConfig } = useAuth();
+  const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
 
-  const oidcGroups = systemConfig?.config.oidc_groups ?? [];
-	const asyncService = roCrateServiceDef.type.toLowerCase() === "asynchronous";
+  const oidcGroups = getAllowedVOs(systemConfig, authData);
+	const asyncService = roCrateServiceDef.type.some(t => t.toLowerCase() === "asynchronous");
 
   function nameService() {
     return `hub-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
@@ -214,12 +214,12 @@ return (
               </div>
               <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                   <div>
-                    <Label htmlFor="memory-ram">Memory RAM</Label>
+                    <Label htmlFor="memory-ram">RAM</Label>
                     <Input
                       id="memory-ram"
                       type="number"
                       step={formData.memoryUnit === "Gi" ? 1 : 256}
-                      placeholder="Enter memory RAM"
+                      placeholder="Enter RAM"
                       value={formData.memoryRam}
                       className={errors.memoryRam ? "border-red-500 focus:border-red-500" : ""}
                       onChange={(e) => {

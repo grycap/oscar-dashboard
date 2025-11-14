@@ -1,29 +1,31 @@
 import { useEffect, useState } from "react";
 import HubCard from "./components/HubCard/index";
 import parseROCrateDataJS, { RoCrateServiceDefinition } from "@/lib/roCrate";
-import { useAuth } from "@/contexts/AuthContext";
-import { alert } from "@/lib/alert";
 import { Input } from "@/components/ui/input";
-import { Copy, Filter, Search } from "lucide-react";
+import { Filter, LoaderPinwheel, Search } from "lucide-react";
 import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SelectIcon } from "@radix-ui/react-select";
+import GenericTopbar from "@/components/Topbar";
+import OscarColors from "@/styles";
 
 function HubView() {
   const [roCrateServices, setServices] = useState<RoCrateServiceDefinition[]>([]);
   const [filteredServices, setFilteredServices] = useState<RoCrateServiceDefinition[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const authContext = useAuth();
   const [filter, setFilter] = useState<{serviceType: string}>({serviceType: "" });
+  const [isLoading, setIsLoading] = useState(false);
 
+  async function fetchData() {
+    setIsLoading(true);
+    const roCrateServices = await parseROCrateDataJS("grycap", "oscar-hub", "main");
+    setServices(roCrateServices);
+    setFilteredServices(roCrateServices);
+    setIsLoading(false);
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      const roCrateServices = await parseROCrateDataJS("grycap", "oscar-hub", "main");
-      setServices(roCrateServices);
-      setFilteredServices(roCrateServices);
-    };
-    fetchData();
+    document.title ="OSCAR - Hub"
   }, []);
 
   // Filter services based on search query
@@ -35,7 +37,7 @@ function HubView() {
         const query = searchQuery.toLowerCase();
         return (
           service.name.toLowerCase().includes(query) && 
-          (!filter.serviceType || service.type === filter.serviceType)
+          (!filter.serviceType || service.type.some(type => type === filter.serviceType))
         );
       });
       setFilteredServices(filtered);
@@ -43,37 +45,11 @@ function HubView() {
   }, [searchQuery, roCrateServices, filter]);
 
   return (
-    <>
-      <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-[40px] min-w-[300px] max-w-[1600px] content-start">
-        <div className="text-center sm:text-left" >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-            <h1 className="" style={{ fontSize: "24px", fontWeight: "500" }}>OSCAR Hub</h1>
-            <div className="grid grid-cols-1 xl:grid-cols-[auto_auto] text-md text-decoration-underline-hover"
-                onClick={() => {
-                        navigator.clipboard.writeText(authContext.authData.endpoint);
-                        alert.success("Endpoint copied to clipboard");
-                      }}
-                style={{
-                  cursor: "pointer",
-                }}
-            >
-              <div className="truncate">
-                {`${authContext.authData.user} -\u00A0`}
-              </div>
-              <div className="flex flex-row items-center justify-center gap-2 truncate">
-                {`${authContext.authData.endpoint}`}
-                <Copy className="h-4 w-4" />
-              </div>
-            </div>
-          </div>
-          <p className="text-gray-600">
-            A collection of services ready to be deployed in OSCAR.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-[auto_1fr] w-full -mb-3 gap-2">
-          <Select
-          >
+    <div className="w-full h-full overflow-auto">
+      <GenericTopbar defaultHeader={{title: "Hub", linkTo: "/ui/hub"}} refresher={fetchData} 
+      secondaryRow={
+        <div className="grid grid-cols-[auto_1fr] w-full px-2 py-1 gap-2">
+          <Select>
             <SelectTrigger className="w-max">
               <SelectIcon>
                 <Filter size={16} className="mr-2" />
@@ -97,7 +73,7 @@ function HubView() {
                 <label
                   htmlFor="asyncServices"
                   style={{ fontSize: 14}}
-                >Async. Services</label>
+                >Asynchronous services</label>
               </div>
               <div className="flex flex-row gap-2 items-center p-2">
                 <Checkbox
@@ -114,7 +90,7 @@ function HubView() {
                 <label
                   htmlFor="syncServices"
                   style={{ fontSize: 14}}
-                >Sync. Services</label>
+                >Synchronous services</label>
               </div>
             </SelectContent>
           </Select>
@@ -125,13 +101,21 @@ function HubView() {
             endIcon={<Search size={16} />}
           />
         </div>
-        
+      }
+      />
+      
+      <div className="grid grid-cols-1 gap-6 w-[95%] mx-auto mt-4 min-w-[300px] max-w-[1600px] content-start">
+        {isLoading ? (
+        <div className="flex items-center justify-center h-[80vh]">
+            <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+        </div>) : (
         <div className="flex flex-wrap gap-1 justify-center sm:justify-start gap-6">
-          {filteredServices.length > 0 ? (
-            filteredServices.map((service, index) => (
-              <HubCard key={index} roCrateServiceDef={service} />
-            ))
-          ) : (
+          {
+            filteredServices.length > 0 ? (
+              filteredServices.map((service, index) => (
+                <HubCard key={index} roCrateServiceDef={service} />
+              ))
+            ) : (
             <div className="w-full text-center py-8">
               <p className="text-gray-500 text-lg">
                 {searchQuery.trim() 
@@ -145,10 +129,12 @@ function HubView() {
                 </p>
               )}
             </div>
-          )}
+            )
+          }
         </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 

@@ -9,14 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FileCode, Plus, Settings } from "lucide-react";
-import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
 import useServicesContext from "../../../context/ServicesContext";
 
 function AddServiceButton() {
   const navigate = useNavigate();
   const { setShowFDLModal } = useServicesContext();
-  const isSmallScreen = useMediaQuery({ maxWidth: 1100 });
 
   return (
     <DropdownMenu>
@@ -29,7 +27,7 @@ function AddServiceButton() {
             gap: 8,
           }}
         >
-          <Plus className="h-5 w-5" /> {!isSmallScreen && "Create service"}
+          <Plus className="h-5 w-5" /> {"New"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

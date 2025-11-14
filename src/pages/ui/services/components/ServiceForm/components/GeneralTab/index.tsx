@@ -25,6 +25,7 @@ import EnviromentSecrets from "./components/EnviromentSecrets";
 import Annotations from "./components/Annotations";
 
 import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
+import { getAllowedVOs } from "@/lib/utils";
 
 function ServiceGeneralTab() {
   const { formService, setFormService, formMode, formFunctions } =
@@ -32,7 +33,7 @@ function ServiceGeneralTab() {
 
   const { handleChange, onBlur, errors } = formFunctions;
   const { systemConfig, authData } = useAuth();
-  const voGroups = systemConfig?.config.oidc_groups;
+  const voGroups = getAllowedVOs(systemConfig, authData);
   function voGroupsIsEmpthy(){
     if( voGroups === undefined){ return true}
     else if (JSON.stringify(voGroups) === '[""]'){ return true}
@@ -277,7 +278,7 @@ function ServiceGeneralTab() {
               }}
             >
               <SelectTrigger id="memory-units-select" className="w-[75px]">
-                <SelectValue placeholder="Order by" />
+                <SelectValue placeholder="Select unit" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Mi">Mi</SelectItem>
@@ -294,11 +295,11 @@ function ServiceGeneralTab() {
       <Divider />
       <div className="grid grid-cols-1 2xl:grid-cols-2 w-ful max-w-[1250px] min-w-[720px]">
         <div className="2xl:border-r-2 border-b-2 2xl:border-b-0">
-          <ServiceFormCell title="Enviroment variables">
+          <ServiceFormCell title="Environment variables">
             <EnviromentVariables />
           </ServiceFormCell>
         </div>
-        <ServiceFormCell title="Enviroment secrets">
+        <ServiceFormCell title="Environment secrets">
           <EnviromentSecrets />
         </ServiceFormCell>
       </div>
