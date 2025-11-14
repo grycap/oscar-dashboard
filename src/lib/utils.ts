@@ -131,3 +131,7 @@ export function isSafariBrowser(): boolean {
   const isSafari = /^((?!chrome|android).)*safari/i.test(ua) && provider.includes("Apple");
   return isSafari;
 }
+
+export function isUserOscar(authData: { user: string }, bucket: { owner: string }): boolean {
+  return (authData.user === "oscar" && (bucket.owner === authData.user || bucket.owner === ""));
+}
