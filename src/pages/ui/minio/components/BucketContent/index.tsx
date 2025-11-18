@@ -23,6 +23,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { bytesSizeToHumanReadable } from "@/lib/utils";
 
 export type BucketItem =
   | {
@@ -225,10 +226,18 @@ export default function BucketContent() {
           itemNames={itemsToDelete.map((item) => item.Name)}
         />
         <GenericTable
-          data={items}
+          data={items.map((item) => {
+            return {
+              Name: item.Name,
+              Type: item.Type,
+              Key: item.Key,
+              Size: item.Type === "file" ? bytesSizeToHumanReadable(item.Key.Size ?? 0) : undefined,
+              LastModifTime: item.Type === "file" ? item.Key.LastModified?.toLocaleString() : undefined,
+              BucketName: item.BucketName
+          }})}
           onRowClick={(item) => {
             if (item.Type === "file") {
-              setPreviewFile(item);
+              setPreviewFile(item as BucketItem);
             }
           }}
           columns={[
@@ -257,6 +266,22 @@ export default function BucketContent() {
               },
               sortBy: "Name"
             },
+            {
+              header: "Size",
+              accessor: (item) => {
+                if (item.Type === "folder") { return ''}
+                return item.Size;
+              },
+              sortBy: "Size"
+            },
+            {
+              header: "Last Modified Time",
+              accessor: (item) => {
+                if (item.Type === "folder") { return ''}
+                return item.LastModifTime;
+              },
+              sortBy: "LastModifTime"
+            },
           ]}
           idKey="Name"
           actions={[
@@ -270,7 +295,7 @@ export default function BucketContent() {
                           variant="link"
                           size="icon"
                           onClick={() => {
-                            setPreviewFile(item);
+                            setPreviewFile(item as BucketItem);
                           }}
                         >
                           <Eye color={OscarColors.Blue} />
@@ -278,7 +303,7 @@ export default function BucketContent() {
                         <Button
                           variant="link"
                           size="icon"
-                          onClick={() => handleDownloadFile(item)}
+                          onClick={() => handleDownloadFile(item as BucketItem)}
                         >
                           <Download />
                         </Button>
@@ -287,7 +312,7 @@ export default function BucketContent() {
                     <Button
                       variant={"ghost"}
                       size="icon"
-                      onClick={() => setItemsToDelete([...itemsToDelete, item])}
+                      onClick={() => setItemsToDelete([...itemsToDelete, item as BucketItem])}
                     >
                       <Trash color={OscarColors.Red} />
                     </Button>
@@ -305,7 +330,7 @@ export default function BucketContent() {
                       <div>
                         <Button
                           className="mt-[2px]"
-                          onClick={() => handleBulkDownload(items)}
+                          onClick={() => handleBulkDownload(items as BucketItem[])}
                           /*  disabled={items.some(
                             (item) => item.Type === "folder"
                           )} */
@@ -315,7 +340,7 @@ export default function BucketContent() {
                         </Button>
                         <Button
                           className="mt-[2px] ml-[4px]"
-                          onClick={() => setItemsToDelete(items)}
+                          onClick={() => setItemsToDelete(items as BucketItem[])}
                           variant={"destructive"}
                         >
                           <Trash  className="w-4 h-4 mr-2"/>
