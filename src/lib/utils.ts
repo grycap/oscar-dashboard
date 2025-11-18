@@ -1,5 +1,7 @@
+import getBucketItemsApi from "@/api/buckets/getBucketItemsApi";
 import { AuthData } from "@/contexts/AuthContext";
 import { SystemConfig } from "@/models/systemConfig";
+import { _Object, CommonPrefix } from "@aws-sdk/client-s3";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -139,4 +141,20 @@ export function bytesSizeToHumanReadable(size: number): string {
   const i = Math.floor(Math.log(size) / Math.log(k));
   const humanReadableSize = parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   return humanReadableSize;
+}
+
+export async function getCurrentBucketItems(bucketName: string, prefix: string): Promise<{folders: CommonPrefix[], items: _Object[]}> {
+  const buck = await getBucketItemsApi(bucketName)
+  const obj = buck.objects.filter(o => {
+    if (!o.object_name.startsWith(prefix)) return false;
+  
+    const ch = o.object_name.replace(prefix, '').split('/');
+    return (ch.length === 1 || (ch.length === 2 && ch[1] === '')) && o.object_name !== prefix;
+  })
+  
+  const folders = obj.filter(o => o.object_name.endsWith('/'))
+                      .map(folder => ({ Prefix: folder.object_name }));
+  const items = obj.filter(o => !o.object_name.endsWith('/'))
+                    .map(item => ({ Key: item.object_name, Size: item.size_bytes, LastModified: new Date(item.last_modified) }));
+  return {folders, items};
 }
