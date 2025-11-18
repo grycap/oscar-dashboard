@@ -158,3 +158,7 @@ export async function getCurrentBucketItems(bucketName: string, prefix: string):
                     .map(item => ({ Key: item.object_name, Size: item.size_bytes, LastModified: new Date(item.last_modified) }));
   return {folders, items};
 }
+
+export function isUserOscar(authData: { user: string }, bucket: { owner: string }): boolean {
+  return (authData.user === "oscar" && (bucket.owner === authData.user || bucket.owner === ""));
+}
