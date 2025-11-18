@@ -11,6 +11,7 @@ import {
   CheckCircle,
   XCircle,
   Cpu,
+  Gpu,
   MemoryStick,
   ChevronDown, ChevronRight,
   LoaderPinwheel,
@@ -43,12 +44,12 @@ function DonutChart({ percentage, dangerThreshold }: { percentage: number; dange
   ];
 
   return (
-    <ResponsiveContainer width="100%" height={150}>
+    <ResponsiveContainer width="100%" height={180}>
       <PieChart>
         <Pie
           data={data}
-          innerRadius={40}
-          outerRadius={60}
+          innerRadius={50}
+          outerRadius={80}
           dataKey="value"
           startAngle={90}
           endAngle={-270}
@@ -520,8 +521,28 @@ const Cluster = () => {
                             </div>
                           </div>
 
-                          <div className="border rounded-lg px-3 py-5 shadow-sm">
-                            <h2 className="text-lg font-semibold">Node Conditions</h2>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="border rounded-lg p-4 shadow-sm">
+                              <h2 className="text-lg font-semibold">GPU capacity</h2>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Gpu className="text-black" size={24} />
+                                <p className="text-xl font-bold">{node.gpu}</p>
+                              </div>
+                            </div>
+                            <div className="border rounded-lg p-4 shadow-sm">
+                              <h2 className="text-lg font-semibold">InterLink</h2>
+                              <div className="flex items-center gap-2 mt-2">
+                                {!node.is_interlink ? (
+                                  <XCircle className="text-red-500" size={28} />
+                                ) : (
+                                  <CheckCircle className="text-green-500" size={28} />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="border rounded-lg p-4 shadow-sm">
+                            <h2 className="text-lg font-semibold pb-3">Node Conditions</h2>
                             <div className="flex flex-wrap gap-2">
                               {node.conditions.map((condition, i) => {
                                 const isError = isConditionError(condition);
@@ -545,18 +566,22 @@ const Cluster = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-start">
                             <h2 className="text-lg font-semibold">CPU usage</h2>
-                            <DonutChart percentage={Math.round(node.cpu.usage_cores / node.cpu.capacity_cores * 100)} dangerThreshold={70} />
-                            <p className="text-center font-bold text-sm mt-2">
-                              {Number((node.cpu.usage_cores / node.cpu.capacity_cores * 100).toFixed(1))}% Used
-                            </p>
+                            <div className="flex flex-col h-full justify-center">
+                              <DonutChart percentage={Math.round(node.cpu.usage_cores / node.cpu.capacity_cores * 100)} dangerThreshold={70} />
+                              <p className="text-center font-bold text-sm mt-2">
+                                {Number((node.cpu.usage_cores / node.cpu.capacity_cores * 100).toFixed(1))}% Used
+                              </p>
+                            </div>
                           </div>
 
                           <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-start">
                             <h2 className="text-lg font-semibold">Memory usage</h2>
-                            <DonutChart percentage={Math.round(node.memory.usage_bytes * 100 / node.memory.capacity_bytes)} dangerThreshold={60} />
-                            <p className="text-center font-bold text-sm mt-2">
-                              {Number((node.memory.usage_bytes / node.memory.capacity_bytes * 100).toFixed(1))}% Used
-                            </p>
+                            <div className="flex flex-col h-full justify-center">
+                              <DonutChart percentage={Math.round(node.memory.usage_bytes * 100 / node.memory.capacity_bytes)} dangerThreshold={60} />
+                              <p className="text-center font-bold text-sm mt-2">
+                                {Number((node.memory.usage_bytes / node.memory.capacity_bytes * 100).toFixed(1))}% Used
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
