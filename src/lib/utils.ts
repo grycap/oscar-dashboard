@@ -85,11 +85,12 @@ export function getUserVOs(authData: AuthData): string[] {
   }
   if (authData.egiSession?.group_membership) {
     authData.egiSession.group_membership.forEach((group) => {
-      // "/employees/vo.example.eu"
-      const match = group.match(/^\/.*\/(vo\..+)$/);
-      if (match && match[1]) {
-        vos.push(match[1]);
-      }
+      // Split by '/' and ignore 'employees'
+      group.split('/').forEach((subgroup) => {
+        if (subgroup && "employees" !== subgroup) {
+          vos.push(subgroup);
+        }
+      });
     });
   }
   return vos;
@@ -104,7 +105,7 @@ export function getAllowedVOs(systemConfig: {config: SystemConfig} | null, authD
   // If user has no VOs, return all allowed VOs from system config
   if (userVOs.length === 0) return systemConfig.config.oidc_groups;
   // Filter allowed VOs based on user's VOs
-  const filteredVOs = systemConfig.config.oidc_groups.filter((vo) => userVOs.includes(vo));
+  const filteredVOs = systemConfig.config.oidc_groups.filter((vo) => userVOs.includes(vo.replace('/', '')));
   return filteredVOs;
 }
 
