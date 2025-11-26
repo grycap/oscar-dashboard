@@ -36,6 +36,18 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
     fetchData();
   }, []);
 
+	function getTypeTagColor(type: string) {
+		switch (type.toLowerCase()) {
+			case "asynchronous":
+				return "bg-green-100 text-green-700";
+			case "synchronous":
+				return "bg-blue-100 text-blue-700";
+			case "exposed":
+				return "bg-yellow-100 text-yellow-700";
+			default:
+				return "bg-red-100 text-red-700";
+		}
+	}
 
 	return (
 		<>
@@ -84,7 +96,7 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 											</h4>
 											<div>
 												{roCrateServiceDef.type.map((type, index) => (
-													<span key={index} className={`text-sm ${type !== "" ? (type === "asynchronous" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700") : "bg-red-100 text-red-700"} rounded-xl py-1 px-2`}>
+													<span key={index} className={`text-sm ${getTypeTagColor(type)} rounded-xl py-1 px-2`}>
 														{type !== "" ? type : 'Not specified'}
 													</span>
 												))}
