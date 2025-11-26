@@ -5,13 +5,14 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
 import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
-import { RefreshCcwIcon } from "lucide-react";
+import { AlertTriangle, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RoCrateServiceDefinition } from "@/lib/roCrate";
 
@@ -31,9 +32,18 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
 	const asyncService = roCrateServiceDef.type.some(t => t.toLowerCase() === "asynchronous");
+	const mountBucket = service?.mount;
 
   function nameService() {
     return `hub-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
+  }
+
+  function gpuWarning(): boolean {
+    return (
+      roCrateServiceDef.gpuRequirements !== "" && 
+      parseInt(roCrateServiceDef.gpuRequirements) > 0 && 
+      systemConfig?.config.gpu_available === false
+    ) 
   }
 
   const [formData, setFormData] = useState({
@@ -44,7 +54,20 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
     bucket: "",
     vo: "",
     token: "",
+    enviromentVars: {} as Record<string, string>,
+    enviromentSecrets: {} as Record<string, string>,
   });
+
+  function ifEndpointService(key: string, value: string, serviceName: string): string {
+    const newValue = value.replace(/\/services\/([^\/]+)\/exposed/, `/services/${serviceName}/exposed`);
+    if (newValue.includes(`/services/${serviceName}/exposed`)) {
+      formData.enviromentVars = {
+        ...formData.enviromentVars,
+        [key]: newValue,
+      };
+    }
+    return newValue;
+  }
 
   const [errors, setErrors] = useState({
     name: false,
@@ -72,6 +95,8 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       memoryUnit: roCrateServiceDef.memoryUnits,
       bucket: "",
       token: genRandomString(128),
+      enviromentVars: service.environment?.variables || {},
+      enviromentSecrets: service.environment?.secrets || {},
     }));
     setErrors({
       name: false,
@@ -127,6 +152,19 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
 						suffix: [],
 						prefix: []
 					}] : [],
+        mount: mountBucket ? {
+          storage_provider: "minio.default",
+          path: formData.bucket,
+        } : undefined,
+        environment: {
+          ...service.environment,
+          variables: {
+            ...formData.enviromentVars,
+          },
+          secrets: {
+            ...formData.enviromentSecrets,
+          },
+        },
         labels: {
           ...service.labels,
           oscar_hub: "true",
@@ -164,9 +202,21 @@ return (
       <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
         <DialogHeader>
         <DialogTitle>
-            <span style={{ color: OscarColors.DarkGrayText }}>
-            {`${roCrateServiceDef.name}`}
-            </span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex flex-row items-center gap-2" style={{ color: gpuWarning() ? "red" : OscarColors.DarkGrayText }} >
+                    {gpuWarning() && <AlertTriangle color="red" />}
+                    {`${roCrateServiceDef.name}`}
+                  </span>
+                </TooltipTrigger>
+                {gpuWarning() && (
+                  <TooltipContent>
+                    <p>Warning: This service requires GPU but GPU is not available on this cluster</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
         </DialogTitle>
         </DialogHeader>
           <hr></hr>
@@ -265,7 +315,7 @@ return (
                   </SelectContent>
                 </Select>
             </div>
-						{asyncService && 
+						{(asyncService || mountBucket) && 
             <div>
               <Label>New Bucket</Label>
               <Input
@@ -283,6 +333,50 @@ return (
                 />
             </div>
 						}
+            {formData?.enviromentVars && Object.entries(formData.enviromentVars).map(([key, value]) => (
+            <div key={`var-${key}`}>
+              <Label>{key}</Label>
+              <Input
+                type="input"
+                value={ifEndpointService(key, value, formData.name)}
+                style={{ width: "100%",
+                  fontWeight: "normal",
+                }}
+                onChange={(e) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    enviromentVars: {
+                      ...prev.enviromentVars,
+                      [key]: e.target.value,
+                    },
+                  }));
+                }}
+                placeholder={`Enter ${key}`}
+              />
+            </div>
+            ))}
+            {formData?.enviromentSecrets && Object.entries(formData.enviromentSecrets).map(([key, value]) => (
+            <div key={`secret-${key}`}>
+              <Label>{key}</Label>
+              <Input
+                type="password"
+                value={value}
+                style={{ width: "100%",
+                  fontWeight: "normal",
+                  }}
+                onChange={(e) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    enviromentSecrets: {
+                      ...prev.enviromentSecrets,
+                      [key]: e.target.value,
+                    },
+                  }));
+                }}
+                placeholder={`Enter ${key}`}
+              />
+            </div>
+            ))}
           </div>
         <DialogFooter>
           <RequestButton className="grid grid-cols-[auto] sm:grid-cols-1 gap-2" variant={"mainGreen"} request={handleDeploy}>
