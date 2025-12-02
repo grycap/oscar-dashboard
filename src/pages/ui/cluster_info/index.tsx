@@ -7,14 +7,18 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import axios from "axios";
 import {
   CheckCircle,
   XCircle,
   Cpu,
+  Gpu,
   MemoryStick,
   ChevronDown, ChevronRight,
   LoaderPinwheel,
+  Database,
+  Files,
+  Box,
+  ClipboardList,
 } from "lucide-react";
 import {
   PieChart,
@@ -25,80 +29,9 @@ import {
 import GenericTopbar from "@/components/Topbar";
 import OscarColors from "@/styles";
 import { useLocation } from "react-router-dom";
-
-type Condition = {
-  type: string;
-  status: string;
-};
-
-type NodeDetail = {
-  nodeName: string;
-  cpuCapacity: string;
-  cpuUsage: string;
-  cpuPercentage: string;
-  memoryCapacity: string;
-  memoryUsage: string;
-  memoryPercentage: string;
-  conditions: Condition[];
-};
-
-type PodSummary = {
-  name: string;
-  state: string;
-};
-type PodInfo = {
-  pods: PodSummary[];
-  total: number;
-  states: Record<string, number>;
-};
-
-type StatusData = {
-  numberNodes: number;
-  cpuFreeTotal: number;
-  cpuMaxFree: number;
-  memoryFreeTotal: number;
-  memoryMaxFree: number;
-  hasGPU: boolean;
-  gpusTotal: number;
-  detail: NodeDetail[] | undefined;
-  OSCAR: {
-    deploymentName: string;
-    deploymentReady: boolean;
-    deploymentInfo: {
-      availableReplicas: number;
-      creationTimestamp: string;
-      labels: Record<string, string>;
-      readyReplicas: number;
-      replicas: number;
-      strategy: string;
-      unavailableReplicas: number;
-      };
-    jobsCount: {
-      active: number;
-      failed: number;
-      succeeded: number;
-    };
-    podsInfo: PodInfo;
-    OIDC: {
-      enabled: boolean;
-      issuers: string[];
-      groups: string[];
-    };
-  };
-  MinIO: {
-  buckets: {
-    name: string;
-    policy_type?: string;
-    policy_json?: string;
-    owner?: string;
-    members?: string[];
-    creation_date: string;
-    size: number;
-    num_objects: number;
-  }[];
-};
-};
-
+import getStatusApi from "@/api/status/getStatusApi";
+import { ClusterStatus } from "@/models/clusterStatus";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 function DonutChart({ percentage, dangerThreshold }: { percentage: number; dangerThreshold: number }) {
@@ -111,12 +44,12 @@ function DonutChart({ percentage, dangerThreshold }: { percentage: number; dange
   ];
 
   return (
-    <ResponsiveContainer width="100%" height={150}>
+    <ResponsiveContainer width="100%" height={180}>
       <PieChart>
         <Pie
           data={data}
-          innerRadius={40}
-          outerRadius={60}
+          innerRadius={50}
+          outerRadius={80}
           dataKey="value"
           startAngle={90}
           endAngle={-270}
@@ -129,7 +62,6 @@ function DonutChart({ percentage, dangerThreshold }: { percentage: number; dange
     </ResponsiveContainer>
   );
 }
-
 
 // function to color in red if the free percentage is low
 const getColorByPercentage = (free: number, total: number, thresholdPercent: number) =>
@@ -144,10 +76,11 @@ const formatCores = (millicores: number) =>
   `${(millicores / 1000).toFixed(2)} Cores`;
 
 // convert to kilobytes
-const formatKilobytes = (bytes: number) =>
-  `${(bytes / 1024).toFixed(1)} KB`;
+/*const formatKilobytes = (bytes: number) =>
+  `${(bytes / 1024).toFixed(1)} KB`;*/
 
 const Cluster = () => {
+  const { authData } = useAuth();
   const location = useLocation();
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -173,16 +106,8 @@ const Cluster = () => {
     }));
   };
 
-  const [expandedBuckets, setExpandedBuckets] = useState<Record<string, boolean>>({});
-  const toggleBucket = (bucketName: string) => {
-    setExpandedBuckets(prev => ({
-      ...prev,
-      [bucketName]: !prev[bucketName],
-    }));
-  };
-
   // access the authentication context
-  const [data, setData] = useState<StatusData | null>(null);
+  const [data, setData] = useState<ClusterStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -190,21 +115,20 @@ const Cluster = () => {
   }, []);
 
   async function fetchData() {
+    try {
     setLoading(true);
-    await axios.get("/system/status")
-    .then((res) => {
-      setData(res.data);
-      setLoading(false);
-    })
-    .catch((err) => {
+    setData(await getStatusApi());
+    setLoading(false);
+    } catch(err) {
       console.error("Error fetching status:", err);
       setLoading(false);
-    });
+    }
   }
 
+  const hasNodes = data && data.cluster.nodes_count > 0;
   // calculate real total by summing capacities per node
-  const cpuTotal = data && data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.cpuCapacity), 0) : 0;
-  const memTotal = data && data.detail ? data.detail.reduce((acc, node) => acc + parseInt(node.memoryCapacity), 0) : 0;
+  const cpuTotal = hasNodes ? data.cluster.nodes.reduce((acc, node) => acc + node.cpu.capacity_cores, 0) : 0;
+  const memTotal = hasNodes ? data.cluster.nodes.reduce((acc, node) => acc + node.memory.capacity_bytes, 0) : 0;
 
   return (
     <div className="w-full h-full"> 
@@ -231,7 +155,7 @@ const Cluster = () => {
                     <div className="flex items-center gap-2 mt-2">
                       <p className="text-lg font-semibold">
                         Number of nodes:{" "}
-                        <span className="text-xl font-bold">{data.numberNodes}</span>
+                        <span className="text-xl font-bold">{data.cluster.nodes_count}</span>
                       </p>
                     </div>
                   </CardContent>
@@ -241,11 +165,11 @@ const Cluster = () => {
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mt-2">
-                      <Cpu className={getColorByPercentage(data.cpuFreeTotal, cpuTotal, 30)} />
+                      <Cpu className={getColorByPercentage(data.cluster.metrics.cpu.total_free_cores, cpuTotal, 30)} />
                       <p className="text-lg font-semibold">
                         Total free CPU:{" "}
-                        <span className={`text-xl font-bold ${getColorByPercentage(data.cpuFreeTotal, cpuTotal, 30)}`}>
-                            {formatCores(data.cpuFreeTotal)}
+                        <span className={`text-xl font-bold ${getColorByPercentage(data.cluster.metrics.cpu.total_free_cores, cpuTotal, 30)}`}>
+                            {formatCores(data.cluster.metrics.cpu.total_free_cores)}
                         </span>
                       </p>
                     </div>
@@ -256,11 +180,11 @@ const Cluster = () => {
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mt-2">
-                      <Cpu className={getColorByPercentage(data.cpuMaxFree, cpuTotal, 30)} />
+                      <Cpu className={getColorByPercentage(data.cluster.metrics.cpu.max_free_on_node_cores, cpuTotal, 30)} />
                       <p className="text-lg font-semibold">
-                        Maximum free CPU:{" "}
-                        <span className={`text-xl font-bold ${getColorByPercentage(data.cpuMaxFree, cpuTotal, 30)}`}>
-                          {formatCores(data.cpuMaxFree)}
+                        Node maximum free CPU:{" "}
+                        <span className={`text-xl font-bold ${getColorByPercentage(data.cluster.metrics.cpu.max_free_on_node_cores, cpuTotal, 30)}`}>
+                          {formatCores(data.cluster.metrics.cpu.max_free_on_node_cores)}
                         </span>
                       </p>
                     </div>
@@ -273,9 +197,9 @@ const Cluster = () => {
                     <div className="flex items-center gap-2 mt-2">
                       <p className="text-lg font-semibold">
                         Total GPUs:{" "}
-                        <span className="text-xl font-bold">{data.gpusTotal}</span>
+                        <span className="text-xl font-bold">{data.cluster.metrics.gpu.total_gpu}</span>
                       </p>
-                      {data.gpusTotal === 0 ? (
+                      {data.cluster.metrics.gpu.total_gpu === 0 ? (
                         <XCircle className="text-red-500" size={28} />
                       ) : (
                         <CheckCircle className="text-green-500" size={28} />
@@ -288,11 +212,11 @@ const Cluster = () => {
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mt-2">
-                      <MemoryStick className={getColorByPercentage(data.memoryFreeTotal, memTotal, 40)} />
+                      <MemoryStick className={getColorByPercentage(data.cluster.metrics.memory.total_free_bytes, memTotal, 40)} />
                       <p className="text-lg font-semibold">
                         Total free memory:{" "}
-                        <span className={`text-xl font-bold ${getColorByPercentage(data.memoryFreeTotal, memTotal, 40)}`}>
-                          {formatBytes(data.memoryFreeTotal)}
+                        <span className={`text-xl font-bold ${getColorByPercentage(data.cluster.metrics.memory.total_free_bytes, memTotal, 40)}`}>
+                          {formatBytes(data.cluster.metrics.memory.total_free_bytes)}
                         </span>
                       </p>
                     </div>
@@ -303,11 +227,11 @@ const Cluster = () => {
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mt-2">
-                      <MemoryStick className={getColorByPercentage(data.memoryMaxFree, memTotal, 40)} />
+                      <MemoryStick className={getColorByPercentage(data.cluster.metrics.memory.max_free_on_node_bytes, memTotal, 40)} />
                       <p className="text-lg font-semibold">
-                        Maximum free memory:{" "}
-                        <span className={`text-xl font-bold ${getColorByPercentage(data.memoryMaxFree, memTotal, 40)}`}>
-                          {formatBytes(data.memoryMaxFree)}
+                        Node maximum free memory:{" "}
+                        <span className={`text-xl font-bold ${getColorByPercentage(data.cluster.metrics.memory.max_free_on_node_bytes, memTotal, 40)}`}>
+                          {formatBytes(data.cluster.metrics.memory.max_free_on_node_bytes)}
                         </span>
                       </p>
                     </div>
@@ -326,11 +250,11 @@ const Cluster = () => {
               </div>
 
               {expandedSections.deployment && (
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-base font-medium text-gray-800 flex gap-1">
-                        Deployment name: <span>{data.OSCAR.deploymentName}</span>
+                        Deployment name: <span>{data.oscar.deployment_name}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -340,7 +264,7 @@ const Cluster = () => {
                       <div className="text-base font-medium text-gray-800 flex gap-1">
                         Created on:{" "}
                         <span>
-                          {new Date(data.OSCAR.deploymentInfo.creationTimestamp).toLocaleString()}
+                          {new Date(data.oscar.deployment.creation_timestamp).toLocaleString()}
                         </span>
                       </div>
                     </CardContent>
@@ -349,7 +273,7 @@ const Cluster = () => {
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-base font-medium text-gray-800 flex gap-1">
-                        Strategy: <span>{data.OSCAR.deploymentInfo.strategy}</span>
+                        Strategy: <span>{data.oscar.deployment.strategy}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -358,14 +282,14 @@ const Cluster = () => {
                     <CardContent className="p-4">
                       <div
                         className={`text-base font-medium flex gap-1 ${
-                          data.OSCAR.deploymentInfo.readyReplicas === data.OSCAR.deploymentInfo.replicas
+                          data.oscar.deployment.ready_replicas === data.oscar.deployment.replicas
                             ? "text-green-600"
                             : "text-red-600"
                         }`}
                       >
                         Available replicas:{" "}
                         <span>
-                          {data.OSCAR.deploymentInfo.readyReplicas} / {data.OSCAR.deploymentInfo.replicas}
+                          {data.oscar.deployment.ready_replicas} / {data.oscar.deployment.replicas}
                         </span>
                       </div>
                     </CardContent>
@@ -375,13 +299,13 @@ const Cluster = () => {
                     <CardContent className="p-4">
                       <div
                         className={`text-base font-medium flex gap-1 ${
-                          data.OSCAR.deploymentInfo.unavailableReplicas === 0
+                          data.oscar.deployment.replicas - data.oscar.deployment.available_replicas === 0
                             ? "text-green-600"
                             : "text-red-600"
                         }`}
                       >
                         Not available:{" "}
-                        <span>{data.OSCAR.deploymentInfo.unavailableReplicas}</span>
+                        <span>{data.oscar.deployment.replicas - data.oscar.deployment.available_replicas}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -389,26 +313,64 @@ const Cluster = () => {
               )}
             </Card>
 
+            {/* Pods and Jobs collapsible */}
+            {authData.user && authData.user === "oscar" && (
+            <Card className="w-full mt-6">
+              <div
+                onClick={() => toggleSection("pods")}
+                className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
+              >
+                <CardTitle className="text-lg font-semibold">Pods and Jobs</CardTitle>
+                {expandedSections.pods ? <ChevronDown /> : <ChevronRight />}
+              </div>
+              
+              {expandedSections.pods && (
+                <CardContent className="grid grid-rows-[auto_1fr] gap-4 mt-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Total pods */}
+                    <Card>
+                      <CardContent className="p-4 h-full">
+                        <div className="flex flex-row justify-center items-center gap-2 h-full">
+                          <Box className="text-blue-600" size={24} />
+                          <p className="text-lg font-semibold text-center">
+                            Total Pods:{" "}
+                            <span className="text-xl font-bold">{data.oscar.pods.total}</span>
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-            {/* Jobs collapsible */}
-            {data.OSCAR?.jobsCount ?
-              <Card className="w-full mt-6">
-                <div
-                  onClick={() => toggleSection("jobs")}
-                  className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
-                >
-                  <CardTitle className="text-lg font-semibold">Jobs</CardTitle>
-                  {expandedSections.jobs ? <ChevronDown /> : <ChevronRight />}
-                </div>
+                    {/* Total jobs */}
+                    <Card>
+                      <CardContent className="p-4 h-full">
+                        <div className="flex flex-row justify-center items-center gap-2 h-full">
+                          <ClipboardList className="text-purple-600" size={24} />
+                          <p className="text-lg font-semibold text-center">
+                            Total Jobs:{" "}
+                            <span className="text-xl font-bold ">{data.oscar.jobs_count}</span>
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
 
-                {expandedSections.jobs && (
-                  <CardContent className="flex flex-wrap md:flex-nowrap gap-4">
+                  <div className="flex flex-wrap md:flex-nowrap gap-4">
                     {/* Active - Blue */}
                     <Card className="flex-1 bg-blue-50 border border-blue-200">
                       <CardContent className="p-4 text-center text-blue-800 font-semibold text-lg">
-                        Active{" "}
+                        Pending{" "}
                         <span className="font-bold ml-1">
-                          {data.OSCAR.jobsCount.active}
+                          {data.oscar.pods.states.Pending}
+                        </span>
+                      </CardContent>
+                    </Card>
+
+                    {/* Running - Orange */}
+                    <Card className="flex-1 bg-orange-50 border border-orange-200">
+                      <CardContent className="p-4 text-center text-orange-800 font-semibold text-lg">
+                        Running{" "}
+                        <span className="font-bold ml-1">
+                          {data.oscar.pods.states.Running}
                         </span>
                       </CardContent>
                     </Card>
@@ -418,7 +380,7 @@ const Cluster = () => {
                       <CardContent className="p-4 text-center text-rose-800 font-semibold text-lg">
                         Failed{" "}
                         <span className="font-bold ml-1">
-                          {data.OSCAR.jobsCount.failed}
+                          {data.oscar.pods.states.Failed}
                         </span>
                       </CardContent>
                     </Card>
@@ -428,91 +390,16 @@ const Cluster = () => {
                       <CardContent className="p-4 text-center text-emerald-800 font-semibold text-lg">
                         Succeeded{" "}
                         <span className="font-bold ml-1">
-                          {data.OSCAR.jobsCount.succeeded}
+                          {data.oscar.pods.states.Succeeded}
                         </span>
                       </CardContent>
                     </Card>
-                  </CardContent>
-                )}
-              </Card>
-            : <></>}
-
-
-
-            {/* Pods collapsible */}
-            {data.OSCAR?.podsInfo?.pods ?
-              <Card className="w-full mt-6">
-                <div
-                  onClick={() => toggleSection("pods")}
-                  className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
-                >
-                  <CardTitle className="text-lg font-semibold">Pods</CardTitle>
-                  {expandedSections.pods ? <ChevronDown /> : <ChevronRight />}
-                </div>
-
-                {expandedSections.pods && (
-                  <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Pod list section */}
-                    <Card>
-                      <CardContent className="p-4 space-y-2">
-                        <h2 className="text-sm font-semibold text-gray-700">Total Pods</h2>
-                        <p className="text-xl font-bold mb-2">{data.OSCAR.podsInfo.total}</p>
-                        
-                        {/* Pod list with bold title */}
-                        <h2 className="text-sm font-semibold text-gray-700">List of Pods</h2>
-
-                        <ul className="text-sm text-gray-800 space-y-1">
-                          {data.OSCAR.podsInfo.pods.map((pod, i) => (
-                            <li key={i} className="flex justify-between border-b pb-1">
-                              <span className="truncate">{pod.name}</span>
-                              <span
-                                className={`ml-2 font-semibold ${
-                                  pod.state === "Running"
-                                    ? "text-green-600"
-                                    : pod.state === "Failed"
-                                    ? "text-red-600"
-                                    : pod.state === "Succeeded"
-                                    ? "text-green-600"
-                                    : "text-gray-600"
-                                }`}
-                              >
-                                {pod.state}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-
-                    {/* Count by state */}
-                    <Card>
-                      <CardContent className="p-4 space-y-2">
-                        <h2 className="text-sm font-semibold text-gray-700">Summary by state</h2>
-                        <ul className="text-sm text-gray-800 space-y-1">
-                          {Object.entries(data.OSCAR.podsInfo.states).map(([state, count], i) => {
-                            let countColor = "text-gray-800";
-                            if (state === "Succeeded" && count > 0) {
-                              countColor = "text-green-600";
-                            } else if (state === "Failed" && count > 0) {
-                              countColor = "text-red-600";
-                            }
-
-                            return (
-                              <li key={i} className="flex justify-between">
-                                <span>{state}</span>
-                                <span className={`font-semibold ${countColor}`}>{count}</span>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  </CardContent>
-                )}
-              </Card>
-            :<></>}
-
-          
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+            )}
+            
           {/* OIDC collapsible block */}
           <Card className="w-full mt-6">
             <div
@@ -526,14 +413,14 @@ const Cluster = () => {
             {expandedSections.oidc && (
               <CardContent className="flex flex-col gap-4">
                 {/* First row: OIDC Enabled */}
-                <div className="flex">
+                <div className="flex mt-5">
                   <Card className="w-full">
                     <CardContent className="p-4">
                       <div className={`text-base font-medium flex gap-1 ${
-                        data.OSCAR.OIDC.enabled ? "text-green-600" : "text-red-600"
+                        data.oscar.oidc.enabled ? "text-green-600" : "text-red-600"
                       }`}>
                         OIDC enabled:{" "}
-                        <span>{data.OSCAR.OIDC.enabled ? "true" : "false"}</span>
+                        <span>{data.oscar.oidc.enabled ? "true" : "false"}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -547,8 +434,8 @@ const Cluster = () => {
                       <div className="text-base font-medium text-gray-800">
                         Issuer:
                         <ul className="list-disc list-inside mt-1 text-sm font-normal">
-                          {data.OSCAR.OIDC.issuers.length > 0
-                            ? data.OSCAR.OIDC.issuers.map((issuer, idx) => (
+                          {data.oscar.oidc.issuers.length > 0
+                            ? data.oscar.oidc.issuers.map((issuer, idx) => (
                                 <li key={idx}>{issuer}</li>
                               ))
                             : <li>N/A</li>}
@@ -563,8 +450,8 @@ const Cluster = () => {
                       <div className="text-base font-medium text-gray-800">
                         Authorized groups:
                         <ul className="list-disc list-inside mt-1 text-sm font-normal">
-                          {data.OSCAR.OIDC.groups.length > 0
-                            ? data.OSCAR.OIDC.groups.map((group, idx) => (
+                          {data.oscar.oidc.groups.length > 0
+                            ? data.oscar.oidc.groups.map((group, idx) => (
                                 <li key={idx}>{group}</li>
                               ))
                             : <li>N/A</li>}
@@ -585,32 +472,32 @@ const Cluster = () => {
           <CardHeader>
             <CardTitle>Nodes</CardTitle>
             <CardDescription className="text-sm text-gray-500">
-              Detailed information about the nodes. Currently  {data.detail?.length ?? 0} active node(s).
+              Detailed information about the nodes. Currently  {data.cluster.nodes?.length ?? 0} active node(s).
             </CardDescription>
           </CardHeader>
           
           {/* Info detallada de los nodos*/}
           <CardContent>
             <div className="w-full space-y-4">
-              {data.detail && data.detail.map((node, index) => {
-                const memoryCapacityGB = (parseInt(node.memoryCapacity) / (1024 ** 3)).toFixed(2);
-                const isExpanded = expandedNodes[node.nodeName] || false;
+              {data.cluster.nodes && data.cluster.nodes.map((node, index) => {
+                const memoryCapacityGB = (node.memory.capacity_bytes / (1024 ** 3)).toFixed(2);
+                const isExpanded = expandedNodes[node.name] || false;
 
-                const isConditionError = (condition: { type: string; status: string }) => {
+                const isConditionError = (condition: { type: string; status: boolean }) => {
                   if (condition.type === "Ready") {
-                    return condition.status !== "True";
+                    return !condition.status;
                   } else {
-                    return condition.status === "True";
+                    return condition.status;
                   }
                 };
 
                 return (
                   <Card key={index} className="space-y-2">
                     <div
-                      onClick={() => toggleNode(node.nodeName)}
+                      onClick={() => toggleNode(node.name)}
                       className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
                     >
-                      <CardTitle className="text-lg font-semibold">{node.nodeName}</CardTitle>
+                      <CardTitle className="text-lg font-semibold">{node.name}</CardTitle>
                       {isExpanded ? <ChevronDown /> : <ChevronRight />}
                     </div>
 
@@ -622,7 +509,7 @@ const Cluster = () => {
                               <h2 className="text-lg font-semibold">CPU capacity</h2>
                               <div className="flex items-center gap-2 mt-2">
                                 <Cpu className="text-black" size={24} />
-                                <p className="text-xl font-bold">{node.cpuCapacity}</p>
+                                <p className="text-xl font-bold">{node.cpu.capacity_cores}</p>
                               </div>
                             </div>
                             <div className="border rounded-lg p-4 shadow-sm">
@@ -634,8 +521,28 @@ const Cluster = () => {
                             </div>
                           </div>
 
-                          <div className="border rounded-lg px-3 py-5 shadow-sm">
-                            <h2 className="text-lg font-semibold">Node Conditions</h2>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="border rounded-lg p-4 shadow-sm">
+                              <h2 className="text-lg font-semibold">GPU capacity</h2>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Gpu className="text-black" size={24} />
+                                <p className="text-xl font-bold">{node.gpu}</p>
+                              </div>
+                            </div>
+                            <div className="border rounded-lg p-4 shadow-sm">
+                              <h2 className="text-lg font-semibold">InterLink</h2>
+                              <div className="flex items-center gap-2 mt-2">
+                                {!node.is_interlink ? (
+                                  <XCircle className="text-red-500" size={28} />
+                                ) : (
+                                  <CheckCircle className="text-green-500" size={28} />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="border rounded-lg p-4 shadow-sm">
+                            <h2 className="text-lg font-semibold pb-3">Node Conditions</h2>
                             <div className="flex flex-wrap gap-2">
                               {node.conditions.map((condition, i) => {
                                 const isError = isConditionError(condition);
@@ -659,18 +566,22 @@ const Cluster = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-start">
                             <h2 className="text-lg font-semibold">CPU usage</h2>
-                            <DonutChart percentage={parseFloat(node.cpuPercentage)} dangerThreshold={70} />
-                            <p className="text-center font-bold text-sm mt-2">
-                              {node.cpuPercentage}% Used
-                            </p>
+                            <div className="flex flex-col h-full justify-center">
+                              <DonutChart percentage={Math.round(node.cpu.usage_cores / node.cpu.capacity_cores * 100)} dangerThreshold={70} />
+                              <p className="text-center font-bold text-sm mt-2">
+                                {Number((node.cpu.usage_cores / node.cpu.capacity_cores * 100).toFixed(1))}% Used
+                              </p>
+                            </div>
                           </div>
 
                           <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-start">
                             <h2 className="text-lg font-semibold">Memory usage</h2>
-                            <DonutChart percentage={parseFloat(node.memoryPercentage)} dangerThreshold={60} />
-                            <p className="text-center font-bold text-sm mt-2">
-                              {node.memoryPercentage}% Used
-                            </p>
+                            <div className="flex flex-col h-full justify-center">
+                              <DonutChart percentage={Math.round(node.memory.usage_bytes * 100 / node.memory.capacity_bytes)} dangerThreshold={60} />
+                              <p className="text-center font-bold text-sm mt-2">
+                                {Number((node.memory.usage_bytes / node.memory.capacity_bytes * 100).toFixed(1))}% Used
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
@@ -682,9 +593,9 @@ const Cluster = () => {
           </CardContent>
         </Card>
       
-      {/* MinIO section */}
-      {data.MinIO?.buckets ? 
-        <Card className="w-full mb-6">
+        {/* MinIO section */}
+        {authData.user && authData.user === "oscar" && (
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>MinIO</CardTitle>
             <CardDescription className="text-sm text-gray-500">
@@ -693,79 +604,36 @@ const Cluster = () => {
           </CardHeader>
 
           <CardContent>
-            <div className="w-full">
-              {/* Approximate max height showing about four cards with scroll */}
-              <div className="overflow-y-auto max-h-[280px] pr-1 space-y-4">
-                {data.MinIO?.buckets?.slice(0, 50).map((bucket, index) => {
-                  const isExpanded = expandedBuckets[bucket.name] || false;
+            <div className="grid grid-cols-2 gap-4">
+              {/* Total buckets */}
+              <Card>
+                <CardContent className="p-4 h-full">
+                  <div className="flex flex-row justify-center items-center h-full gap-2">
+                    <Database className="text-black" size={24} />
+                    <p className="text-lg font-semibold text-center">
+                      Total Buckets:{" "}
+                      <span className="text-xl font-bold">{data.minio.buckets_count}</span>
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
 
-                  return (
-                    <Card key={index} className="overflow-hidden transition-all">
-                      <div
-                        onClick={() => toggleBucket(bucket.name)}
-                        className="cursor-pointer hover:bg-gray-100 px-4 py-3 flex justify-between items-center"
-                      >
-                        <CardTitle className="text-lg font-semibold">{bucket.name}</CardTitle>
-                        {isExpanded ? <ChevronDown /> : <ChevronRight />}
-                      </div>
-
-                      {isExpanded && (
-                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start mt-2">
-                          <div className="space-y-1">
-                            <h2 className="text-base font-semibold text-gray-800">Policy</h2>
-                            <p className="text-sm font-normal text-gray-600">
-                              {bucket.policy_type || "Not defined"}
-                            </p>
-                          </div>
-
-                          <div className="space-y-1">
-                            <h2 className="text-base font-semibold text-gray-800">Owner</h2>
-                            <p className="text-sm font-normal text-gray-600">
-                              {bucket.owner || "Unknown"}
-                            </p>
-                          </div>
-
-                          <div className="space-y-1">
-                            <h2 className="text-base font-semibold text-gray-800">Creation date</h2>
-                            <p className="text-sm font-normal text-gray-600">
-                              {new Date(bucket.creation_date).toLocaleString()}
-                            </p>
-                          </div>
-
-                          <div className="space-y-1">
-                            <h2 className="text-base font-semibold text-gray-800">Space used</h2>
-                            <p className="text-sm font-normal text-gray-600">
-                              {formatKilobytes(bucket.size)} 
-                            </p>
-                          </div>
-
-                          <div className="space-y-1">
-                            <h2 className="text-base font-semibold text-gray-800">Number of items</h2>
-                            <p className="text-sm font-normal text-gray-600">
-                              {bucket.num_objects}
-                            </p>
-                          </div>
-
-                          {bucket.members && (
-                            <div className="md:col-span-2 space-y-1">
-                              <h2 className="text-base font-semibold text-gray-800">Members with access</h2>
-                              <ul className="list-disc ml-4 text-sm font-normal text-gray-600">
-                                {bucket.members.map((member, i) => (
-                                  <li key={i}>{member}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </CardContent>
-                      )}
-                    </Card>
-                  );
-                })}
-              </div>
+              {/* Total objects in minio */}
+              <Card>
+                <CardContent className="p-4 h-full">
+                  <div className="flex flex-row justify-center items-center h-full gap-2">
+                    <Files className="text-black" size={24} />
+                    <p className="text-lg font-semibold text-center">
+                      Total Objects:{" "}
+                      <span className="text-xl font-bold ">{data.minio.total_objects}</span>
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </CardContent>
         </Card>
-      : <></>}
+        )}
       <div className="h-2" />
       </div>
       }

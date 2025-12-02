@@ -1,14 +1,15 @@
 import DeleteDialog from "@/components/DeleteDialog";
+import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import GenericTable from "@/components/Table";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
-import { alert } from "@/lib/alert";
+import { isUserOscar, shortenFullname } from "@/lib/utils";
 import { Bucket_visibility } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Bucket } from "@aws-sdk/client-s3";
-import { Copy, ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-react";
+import { ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -16,6 +17,7 @@ interface BucketList extends Bucket {
   from_service: string;
   owner: string;
   visibility: Bucket_visibility;
+  owner_name?: string;
 }
 
 const visibilityColors = {
@@ -40,10 +42,6 @@ function isBucketVisibility(value: unknown): boolean {
   return (value === Bucket_visibility.private || value === Bucket_visibility.public || value === Bucket_visibility.restricted);
 }
 
-function isUserOscar(authData: any, bucket: any): boolean {
-  return (authData.user === "oscar" && (bucket.owner === authData.user || bucket.owner === ""));
-}
-
 export default function BucketList() {
   const { buckets, bucketsOSCAR, bucketsAreLoading, deleteBucket, bucketsFilter } = useMinio();
   const [itemsToDelete, setItemsToDelete] = useState<Bucket[]>([]);
@@ -59,6 +57,7 @@ export default function BucketList() {
           ...bucket,
           from_service: oscarBucket?.metadata?.from_service ?? "",
           owner: oscarBucket?.owner === "" ? "oscar" : oscarBucket?.owner,
+          owner_name: oscarBucket?.metadata?.owner_name,
           visibility: isBucketVisibility(oscarBucket?.visibility) ? oscarBucket?.visibility : "private",
         } as BucketList;
       });
@@ -120,26 +119,7 @@ export default function BucketList() {
           {
             header: "Owner",
             accessor: (row) => (
-              <div 
-                className="grid grid-cols-[auto_1fr] no-underline hover:underline underline-offset-2 cursor-pointer"
-                onClick={() => {navigator.clipboard.writeText(row.owner ? row.owner : "oscar");alert.success("Owner copied to clipboard");}}
-              >
-                {row.owner !== authData.egiSession?.sub && !isUserOscar(authData, row) ?
-                <>
-                  <span className="truncate min-w-[40px]">
-                    {row.owner}
-                  </span>
-                  <Copy size={12} className="self-center ml-[2px]" />
-                </>
-                :
-                <>
-                  <span className="truncate min-w-[40px]">
-                    {"You"}
-                  </span>
-                  <Copy size={12} className="self-center -ml-[14px]" />
-                  </>
-                }
-              </div>
+              <ResponsiveOwnerField owner={row.owner_name ? shortenFullname(row.owner_name) : row.owner} sub={row.owner} />
             ),
             sortBy: "owner"
           },

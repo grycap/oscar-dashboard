@@ -14,6 +14,7 @@ import updateServiceApi from "@/api/services/updateServiceApi";
 import ServiceRedirectButton from "../ServiceRedirectButton";
 import DeleteDialog from "../DeleteDialog";
 import GenericTopbar from "../Topbar";
+import ResponsiveOwnerField from "../ResponsiveOwnerField";
 
 interface IntegratedAppProps {
     appName: string;
@@ -124,6 +125,7 @@ function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, add
           idKey="name"
           columns={[
           { header: "Name", accessor: "name", sortBy: "name" },
+          { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.owner} />), sortBy: "owner" },
           { header: "Image", accessor: "image", sortBy: "image" },
           { header: "CPU", accessor: "cpu", sortBy: "cpu" },
           { header: "Memory", accessor: "memory", sortBy: "memory" },

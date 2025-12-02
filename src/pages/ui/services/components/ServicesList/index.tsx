@@ -14,6 +14,7 @@ import { InvokePopover } from "../InvokePopover";
 import { handleFilterServices } from "./domain/filterUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import MoreActionsPopover from "./components/MoreActionsPopover";
+import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 
 function ServicesList() {
   const { services, servicesAreLoading, setServices, setFormService, filter } =
@@ -112,6 +113,7 @@ function ServicesList() {
             }}
             columns={[
               { header: "Name", accessor: "name", sortBy: "name" },
+              { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.owner} copy={false} />), sortBy: "owner" },
               { header: "Image", accessor: "image", sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
               { header: "Memory", accessor: "memory", sortBy: "memory" },

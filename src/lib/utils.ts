@@ -1,5 +1,7 @@
+import getBucketItemsApi from "@/api/buckets/getBucketItemsApi";
 import { AuthData } from "@/contexts/AuthContext";
 import { SystemConfig } from "@/models/systemConfig";
+import { _Object, CommonPrefix } from "@aws-sdk/client-s3";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -113,6 +115,11 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export async function delay(ms: number): Promise<boolean> {
+  await new Promise(resolve => setTimeout(resolve, ms));
+  return true;
+}
+
 export const fetchFromGitHubOptions = {
   method: 'GET',
   cache: 'no-cache' as RequestCache,
@@ -126,4 +133,44 @@ export function isSafariBrowser(): boolean {
   const provider = navigator.vendor;
   const isSafari = /^((?!chrome|android).)*safari/i.test(ua) && provider.includes("Apple");
   return isSafari;
+}
+
+export function bytesSizeToHumanReadable(size: number): string {
+  if (size === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const i = Math.floor(Math.log(size) / Math.log(k));
+  const humanReadableSize = parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return humanReadableSize;
+}
+
+export async function getCurrentBucketItems(bucketName: string, prefix: string): Promise<{folders: CommonPrefix[], items: _Object[]}> {
+  const buck = await getBucketItemsApi(bucketName)
+  const obj = buck.objects.filter(o => {
+    if (!o.object_name.startsWith(prefix)) return false;
+  
+    const ch = o.object_name.replace(prefix, '').split('/');
+    return (ch.length === 1 || (ch.length === 2 && ch[1] === '')) && o.object_name !== prefix;
+  })
+  
+  const folders = obj.filter(o => o.object_name.endsWith('/'))
+                      .map(folder => ({ Prefix: folder.object_name }));
+  const items = obj.filter(o => !o.object_name.endsWith('/'))
+                    .map(item => ({ Key: item.object_name, Size: item.size_bytes, LastModified: new Date(item.last_modified) }));
+  return {folders, items};
+}
+
+export function isUserOscar(authData: { user: string }, bucket: { owner: string }): boolean {
+  return (authData.user === "oscar" && (bucket.owner === authData.user || bucket.owner === ""));
+}
+
+export function shortenFullname(fullname: string): string {
+  const parts = fullname.split(' ');
+  parts.forEach((element, index) => {
+    if (index === 0) return;
+    if (element.length === 0) return;
+    parts[index] = element[0] + '.';
+  });
+  
+  return `${parts.join(' ')}`;
 }

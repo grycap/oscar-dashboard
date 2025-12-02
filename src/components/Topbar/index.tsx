@@ -36,7 +36,7 @@ function GenericTopbar({ customHeader, defaultHeader, refresher, children, secon
           >{defaultHeader.title}</Link>
           
           {defaultHeader && location.pathname === defaultHeader.linkTo && refresher && (
-          <Link to=""
+          <Link to="#"
             onClick={() => refresher()}
           >
             <RefreshCcwIcon size={16} 

@@ -8,5 +8,5 @@ export async function getServiceLogsApi(serviceName: string, page?: string) {
     },
   });
 
-  return response.data as Record<string, Record<string, Log>>;
+  return response.data as {jobs: Record<string, Log>, next_page: string | null};
 }
