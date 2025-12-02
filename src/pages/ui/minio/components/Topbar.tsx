@@ -17,6 +17,7 @@ import { SelectIcon } from "@radix-ui/react-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import Divider from "@/components/ui/divider";
 import { useAuth } from "@/contexts/AuthContext";
+import { shortenFullname } from "@/lib/utils";
 
 
 function MinioTopbar() {
@@ -216,8 +217,8 @@ function MinioTopbar() {
                           alert.success("Owner copied to clipboard");
                         }}
               >
-                <span className="truncate min-w-[90px] max-w-[100px]">
-                  {`Owner: ${bucket.owner ? bucket.owner : "oscar"}`}
+                <span className={`truncate min-w-[90px] ${bucket.metadata?.owner_name ? "pr-1" : "max-w-[100px]"}`}>
+                  {`Owner: ${bucket.metadata?.owner_name ? shortenFullname(bucket.metadata.owner_name) : (bucket.owner ? bucket.owner : "oscar")}`}
                 </span>
                 <Copy size={12} className="self-center" />
               </div>

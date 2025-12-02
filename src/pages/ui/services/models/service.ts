@@ -124,6 +124,7 @@ export interface Bucket {
   metadata?: {
     from_service?: string;
     owner?: string;
+    owner_name?: string;
   };
 }
 
