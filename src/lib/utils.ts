@@ -163,3 +163,14 @@ export async function getCurrentBucketItems(bucketName: string, prefix: string):
 export function isUserOscar(authData: { user: string }, bucket: { owner: string }): boolean {
   return (authData.user === "oscar" && (bucket.owner === authData.user || bucket.owner === ""));
 }
+
+export function shortenFullname(fullname: string): string {
+  const parts = fullname.split(' ');
+  parts.forEach((element, index) => {
+    if (index === 0) return;
+    if (element.length === 0) return;
+    parts[index] = element[0] + '.';
+  });
+  
+  return `${parts.join(' ')}`;
+}
