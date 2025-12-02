@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
-import { isUserOscar } from "@/lib/utils";
+import { isUserOscar, shortenFullname } from "@/lib/utils";
 import { Bucket_visibility } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Bucket } from "@aws-sdk/client-s3";
@@ -17,6 +17,7 @@ interface BucketList extends Bucket {
   from_service: string;
   owner: string;
   visibility: Bucket_visibility;
+  owner_name?: string;
 }
 
 const visibilityColors = {
@@ -56,6 +57,7 @@ export default function BucketList() {
           ...bucket,
           from_service: oscarBucket?.metadata?.from_service ?? "",
           owner: oscarBucket?.owner === "" ? "oscar" : oscarBucket?.owner,
+          owner_name: oscarBucket?.metadata?.owner_name,
           visibility: isBucketVisibility(oscarBucket?.visibility) ? oscarBucket?.visibility : "private",
         } as BucketList;
       });
@@ -117,7 +119,7 @@ export default function BucketList() {
           {
             header: "Owner",
             accessor: (row) => (
-              <ResponsiveOwnerField owner={row.owner} />
+              <ResponsiveOwnerField owner={row.owner_name ? shortenFullname(row.owner_name) : row.owner} sub={row.owner} />
             ),
             sortBy: "owner"
           },

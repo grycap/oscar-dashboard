@@ -3,14 +3,14 @@ import { alert } from "@/lib/alert";
 import { isUserOscar } from "@/lib/utils";
 import { Copy } from "lucide-react";
 
-export default function ResponsiveOwnerField({ owner, copy = true }: { owner: string, copy?: boolean }) {
+export default function ResponsiveOwnerField({ owner, sub = owner, copy = true }: { owner: string, sub?: string, copy?: boolean }) {
   const {authData} = useAuth();
   return (
     <div
       className={`grid grid-cols-[auto_1fr] no-underline ${copy && 'hover:underline'} underline-offset-2 cursor-pointer`}
-      onClick={() => { if (copy) { navigator.clipboard.writeText(owner ? owner : "oscar"); alert.success("Owner copied to clipboard"); } }}
+      onClick={() => { if (copy) { navigator.clipboard.writeText(sub ? sub : "oscar"); alert.success("Owner copied to clipboard"); } }}
     >
-    {owner !== authData.egiSession?.sub && !isUserOscar(authData, {owner: owner}) ?
+    {sub !== authData.egiSession?.sub && !isUserOscar(authData, {owner: sub}) ?
     <>
       <span className="truncate min-w-[40px]">
         {owner}
