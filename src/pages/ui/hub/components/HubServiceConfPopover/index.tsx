@@ -337,6 +337,7 @@ return (
             <div key={`var-${key}`}>
               <Label>{key}</Label>
               <Input
+                disabled={ifEndpointService(key, value, formData.name) !== value}
                 type="input"
                 value={ifEndpointService(key, value, formData.name)}
                 style={{ width: "100%",
