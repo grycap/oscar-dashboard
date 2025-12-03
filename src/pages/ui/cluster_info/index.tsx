@@ -125,7 +125,11 @@ const Cluster = () => {
     }
   }
 
-  const hasNodes = data && data.cluster.nodes_count > 0;
+  let nodeCount = 0;
+  try {nodeCount = data?.cluster.nodes_count ?? 0;}
+  catch {nodeCount = -1;}
+
+  const hasNodes = data && nodeCount > 0;
   // calculate real total by summing capacities per node
   const cpuTotal = hasNodes ? data.cluster.nodes.reduce((acc, node) => acc + node.cpu.capacity_cores, 0) : 0;
   const memTotal = hasNodes ? data.cluster.nodes.reduce((acc, node) => acc + node.memory.capacity_bytes, 0) : 0;
@@ -133,9 +137,26 @@ const Cluster = () => {
   return (
     <div className="w-full h-full"> 
       <GenericTopbar defaultHeader={{title: "Status", linkTo: location.pathname}} refresher={fetchData} />
-      {loading || !data ?
+      {loading || !data || nodeCount < 0 ?
       <div className="flex items-center justify-center h-[80vh]">
+        {nodeCount < 0 ? 
+          <div className="max-w-md w-full p-8 text-center">
+            <div className="flex justify-center mb-4">
+              <XCircle className="text-yellow-600" size={64} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">
+              Version Not Supported
+            </h2>
+            <p className="text-gray-700 mb-4">
+              The current OSCAR cluster version is not compatible with this dashboard.
+            </p>
+            <p className="text-sm text-gray-600">
+              Please upgrade your OSCAR cluster to the latest version or contact your administrator for assistance.
+            </p>
+          </div>
+        :
         <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+        }
       </div>
       :
       <div className="w-full max-w-full mx-auto px-4 pt-6 pb-6 space-y-6">
