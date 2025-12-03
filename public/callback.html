@@ -45,7 +45,7 @@
         const token_endpoint = localStorage.getItem('token_endpoint');;
         const userinfo_endpoint = localStorage.getItem('url_user_info');;
         if(baseUrl.includes('egi.eu')){
-          scope = 'openid profile email entitlements';
+          scope = 'openid profile email entitlements eduperson_entitlement';
         }else{
           scope = 'openid profile email';
         }
