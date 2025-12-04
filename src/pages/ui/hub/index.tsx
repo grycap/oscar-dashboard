@@ -92,6 +92,23 @@ function HubView() {
                   style={{ fontSize: 14}}
                 >Synchronous services</label>
               </div>
+              <div className="flex flex-row gap-2 items-center p-2">
+                <Checkbox
+                  id="exposedServices"
+                  checked={filter.serviceType === "exposed"}
+                  onCheckedChange={(checked) => {
+                    setFilter((prev) => ({
+                      ...prev,
+                      serviceType: checked ? "exposed" : "",
+                    }));
+                  }}
+                  style={{ fontSize: 16 }}
+                />
+                <label
+                  htmlFor="syncServices"
+                  style={{ fontSize: 14}}
+                >Esposed services</label>
+              </div>
             </SelectContent>
           </Select>
           <Input
