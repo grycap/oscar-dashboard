@@ -26,7 +26,16 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 			const response = await fetch(roCrateServiceDef.fdlUrl);
 			if (response.ok) {
 				const service = yamlToServices(await response.text(), "")![0];
-				setService(service);
+				const normalizedService: Service = {
+					...service,
+					environment: {
+						...service.environment,
+						secrets: Object.fromEntries(Object.entries(service.environment?.secrets || {}).map(([key, _]) => {
+							return [key, ''];
+						})),
+					},
+				};
+				setService(normalizedService);
 			} else {
 				setError(true);
 			}
