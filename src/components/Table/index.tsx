@@ -72,14 +72,10 @@ function GenericTable<T extends object>({
   }, [data, sortConfig]);
 
   const handleHeaderClick = (column: ColumnDef<T>) => {
-    if (sortConfig?.key === column.accessor) {
-      setSortConfig({
-        key: column.sortBy as keyof T,
-        direction: sortConfig.direction === "asc" ? "desc" : "asc",
-      });
-    } else {
-      setSortConfig({ key: column.accessor as keyof T, direction: "asc" });
-    }
+    setSortConfig({
+      key: column.sortBy,
+      direction: sortConfig?.direction === "asc" ? "desc" : "asc",
+    });
   };
 
   const toggleAll = () => {
@@ -129,7 +125,7 @@ function GenericTable<T extends object>({
               >
                 <div className="flex items-center gap-1 cursor-pointer">
                   {column.header}
-                  {sortConfig?.key === column.accessor &&
+                  {sortConfig && sortConfig.key === column.sortBy &&
                     (sortConfig.direction === "asc" ? (
                       <ArrowDownAZ size={20} />
                     ) : (
