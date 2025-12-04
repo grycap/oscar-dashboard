@@ -5,16 +5,15 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
 import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
-import OscarColors from "@/styles";
-import { AlertTriangle, RefreshCcwIcon } from "lucide-react";
+import { RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RoCrateServiceDefinition } from "@/lib/roCrate";
+import HubCardHeader from "../HubCardHeader";
 
 interface HubServiceConfPopoverProps {
     roCrateServiceDef: RoCrateServiceDefinition;
@@ -36,14 +35,6 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
 
   function nameService() {
     return `hub-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
-  }
-
-  function gpuWarning(): boolean {
-    return (
-      roCrateServiceDef.gpuRequirements !== "" && 
-      parseInt(roCrateServiceDef.gpuRequirements) > 0 && 
-      systemConfig?.config.gpu_available === false
-    ) 
   }
 
   const [formData, setFormData] = useState({
@@ -202,21 +193,7 @@ return (
       <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
         <DialogHeader>
         <DialogTitle>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="flex flex-row items-center gap-2" style={{ color: gpuWarning() ? "red" : OscarColors.DarkGrayText }} >
-                    {gpuWarning() && <AlertTriangle color="red" />}
-                    {`${roCrateServiceDef.name}`}
-                  </span>
-                </TooltipTrigger>
-                {gpuWarning() && (
-                  <TooltipContent>
-                    <p>Warning: This service requires GPU but GPU is not available on this cluster</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
+          <HubCardHeader roCrateServiceDef={roCrateServiceDef} card="deploy" />
         </DialogTitle>
         </DialogHeader>
           <hr></hr>

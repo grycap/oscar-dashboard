@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { RoCrateServiceDefinition } from "@/lib/roCrate";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import HubServiceConfPopover from "../HubServiceConfPopover";
+import HubCardHeader from "../HubCardHeader";
 
 
 interface HubCardProps {
@@ -71,8 +72,7 @@ function HubCard( { roCrateServiceDef }: HubCardProps ) {
 							<DialogContent className="max-w-xl">
 								<DialogHeader>
 									<DialogTitle className="flex items-center gap-2">
-										<Info size={20} />
-										{roCrateServiceDef.name}
+										<HubCardHeader roCrateServiceDef={roCrateServiceDef} card="info" />
 									</DialogTitle>
 								</DialogHeader>
 								<div className="mt-2">
