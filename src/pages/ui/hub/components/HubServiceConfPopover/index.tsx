@@ -67,6 +67,8 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
     bucket: false,
     vo: false,
     token: false,
+    enviromentVars: {} as Record<string, boolean>,
+    enviromentSecrets: {} as Record<string, boolean>,
   });
 
   useEffect(() => {
@@ -96,6 +98,8 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       bucket: false,
       vo: false,
       token: false,
+      enviromentVars: {} as Record<string, boolean>,
+      enviromentSecrets: {} as Record<string, boolean>,
     });
   }, [isOpen]);
 
@@ -107,11 +111,18 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       bucket: !formData.bucket && asyncService,
       vo: !formData.vo,
       token: !formData.token,
+      enviromentVars: Object.fromEntries(Object.entries(formData.enviromentVars).map(([key, value]) => [key, !value || value.length === 0])),
+      enviromentSecrets: Object.fromEntries(Object.entries(formData.enviromentSecrets).map(([key, value]) => [key, !value || value.length === 0])),
     };
 
     setErrors(newErrors);
 
-    if (Object.values(newErrors).some(error => error)) {
+    if (Object.values(newErrors).some(error => {
+      if (error && typeof error === "object") {
+        return Object.values(error).some(value => value);
+      }
+      return error;
+    })) {
       alert.error("Please fill in all fields");
       return;
     }
@@ -328,8 +339,10 @@ return (
                       [key]: e.target.value,
                     },
                   }));
+                  if (errors.enviromentVars && errors.enviromentVars[key]) setErrors({ ...errors, enviromentVars: { ...errors.enviromentVars, [key]: false } });
                 }}
                 placeholder={`Enter ${key}`}
+                className={errors.enviromentVars[key] ? "border-red-500 focus:border-red-500" : ""}
               />
             </div>
             ))}
@@ -350,8 +363,10 @@ return (
                       [key]: e.target.value,
                     },
                   }));
+                  if (errors.enviromentSecrets && errors.enviromentSecrets[key]) setErrors({ ...errors, enviromentSecrets: { ...errors.enviromentSecrets, [key]: false } });
                 }}
                 placeholder={`Enter ${key}`}
+                className={errors.enviromentSecrets[key] ? "border-red-500 focus:border-red-500" : ""}
               />
             </div>
             ))}
