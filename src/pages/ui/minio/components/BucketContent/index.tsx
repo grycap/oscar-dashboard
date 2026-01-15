@@ -24,6 +24,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { bytesSizeToHumanReadable } from "@/lib/utils";
+import UploadFileDialog from "@/components/UploadFileDialog";
 
 export type BucketItem =
   | {
@@ -49,6 +50,8 @@ export default function BucketContent() {
     uploadFile,
     deleteFile,
     getFileUrl,
+    isUploadingFile,
+    setIsUploadingFile,
   } = useMinio();
 
   const [items, setItems] = useState<BucketItem[]>([]);
@@ -357,6 +360,7 @@ export default function BucketContent() {
             },
           ]}
         />
+        <UploadFileDialog isOpen={isUploadingFile} setIsOpen={setIsUploadingFile}/>
       </motion.div>
     </>
   );
