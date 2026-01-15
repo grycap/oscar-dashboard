@@ -49,6 +49,7 @@ export type MinioProviderData = {
   buckets: Bucket[];
   bucketsAreLoading: boolean;
   isUploadingFile: boolean;
+  setIsUploadingFile: (isUploading: boolean) => void;
   setBuckets: (buckets: Bucket[]) => void;
   createBucket: (bucketName: Bucket_oscar) => Promise<void>;
   updateBucketsVisibilityControl: (bucketName: Bucket_oscar) => Promise<void>; 
@@ -421,6 +422,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         buckets,
         bucketsAreLoading,
         isUploadingFile,
+        setIsUploadingFile,
         setBuckets,
         createBucket,
         createFolder,
