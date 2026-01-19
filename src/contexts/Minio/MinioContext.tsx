@@ -48,6 +48,8 @@ export type MinioProviderData = {
   bucketsOSCAR: Bucket_oscar[];
   buckets: Bucket[];
   bucketsAreLoading: boolean;
+  isUploadingFile: boolean;
+  setIsUploadingFile: (isUploading: boolean) => void;
   setBuckets: (buckets: Bucket[]) => void;
   createBucket: (bucketName: Bucket_oscar) => Promise<void>;
   updateBucketsVisibilityControl: (bucketName: Bucket_oscar) => Promise<void>; 
@@ -84,6 +86,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [bucketsOSCAR, setBucketsOSCAR] = useState<Bucket_oscar[]>([]);
   const [bucketsAreLoading, setBucketsAreLoading] = useState<boolean>(false);
+  const [isUploadingFile, setIsUploadingFile] = useState<boolean>(false);
 
   const [bucketsFilter, setBucketsFilter] = useState<BucketsFilterProps>({
     myBuckets: false,
@@ -248,6 +251,8 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     path: string,
     file: File
   ): Promise<void> {
+    setIsUploadingFile(true);
+
     const reader = new FileReader();
     const  fileContent = await new Promise<string | ArrayBuffer | null>((resolve, reject) => {
         reader.onload = () => resolve(reader.result);  // Resolver la promesa cuando se cargue el archivo
@@ -274,6 +279,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     updateBuckets();
+    setIsUploadingFile(false);
   }
 
   async function deleteFile(bucketName: string, path: string) {
@@ -415,6 +421,8 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         bucketsOSCAR,
         buckets,
         bucketsAreLoading,
+        isUploadingFile,
+        setIsUploadingFile,
         setBuckets,
         createBucket,
         createFolder,
