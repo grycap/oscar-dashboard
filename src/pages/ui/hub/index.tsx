@@ -196,7 +196,7 @@ function HubView() {
                         sortBy: "Type",
                       },
                       {
-                        header: "Docker Image",
+                        header: "Image",
                         accessor: "DockerImage",
                         sortBy: "DockerImage",
                       },
