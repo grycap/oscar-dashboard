@@ -13,6 +13,7 @@ import { Service } from "../services/models/service";
 import GenericTable from "@/components/Table";
 import HubTableActions from "./components/HubTableActions";
 import LayoutSelect from "@/components/LayoutSelect";
+import { getHubServiceTypeTagColor } from "@/lib/utils";
 
 function HubView() {
   const [filteredServices, setFilteredServices] = useState<Record<string, [RoCrateServiceDefinition, Service]>>({});
@@ -64,7 +65,7 @@ function HubView() {
     if (!searchQuery.trim() && !filter.serviceType) {
       setFilteredServices(serviceDefinitions);
     } else {
-      const filtered = Object.entries(serviceDefinitions).filter(([key, [roCrateServiceDef, _]]) => {
+      const filtered = Object.entries(serviceDefinitions).filter(([, [roCrateServiceDef, _]]) => {
         const query = searchQuery.toLowerCase();
         return (
           roCrateServiceDef.name.toLowerCase().includes(query) && 
@@ -183,7 +184,15 @@ function HubView() {
                       },
                       {
                         header: "Type",
-                        accessor: "Type",
+                        accessor: (row) => (
+                          <div className="flex flex-wrap font-medium gap-2">
+                            {row.Type.map((type, index) => (
+                              <span key={index} className={`text-sm ${getHubServiceTypeTagColor(type)} rounded-xl py-1 px-2`}>
+                                {type !== "" ? type : 'Not specified'}
+                              </span>
+                            ))}
+                          </div>
+                        ),
                         sortBy: "Type",
                       },
                       {
