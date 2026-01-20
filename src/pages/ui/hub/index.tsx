@@ -21,7 +21,7 @@ function HubView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<{serviceType: string}>({serviceType: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const [isGridView, setIsGridView] = useState(false);
+  const [isGridView, setIsGridView] = useState(true);
 
   async function fetchData() {
     setIsLoading(true);
