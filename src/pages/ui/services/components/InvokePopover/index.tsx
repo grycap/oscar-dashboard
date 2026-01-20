@@ -33,6 +33,7 @@ import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 import RequestButton from "@/components/RequestButton";
 import invokeServiceSync from "@/api/invoke/invokeServiceSync";
+import { isFileBase64 } from "@/lib/utils";
 
 type View = "upload" | "editor" | "response";
 
@@ -126,6 +127,15 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
 
       console.log("Invoke response", response);
       setResponse(response as string);
+      if (response !== "" && response !== null && response !== undefined) {
+        if (response.startsWith("data:image/")) {
+          setResponseType("image");
+        } else if (isFileBase64(response)) {
+          setResponseType("file");
+        } else {
+          setResponseType("text");
+        }
+      }
       setCurrentView("response");
     } catch (error) {
       alert.error("Error invoking service");
