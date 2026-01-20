@@ -187,3 +187,12 @@ export function getHubServiceTypeTagColor(type: string) {
       return "bg-red-100 text-red-700";
   }
 }
+
+export function isFileBase64(content: string): boolean {
+  try {
+    atob(content);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
