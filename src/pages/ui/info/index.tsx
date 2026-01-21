@@ -87,7 +87,7 @@ function InfoView() {
               OSCAR Cluster
             </h1>
           </div>
-          <InfoItem label="Endpoint" value={endpoint} enableCopy isLink />
+          <InfoItem label="Endpoint" value={endpoint} enableCopy link={{url: endpoint, enableRedirectIcon: true}} />
           <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           {systemConfig.config.oidc_groups.length > 1 ? 
             <InfoListItems  label="Supported VOs" placeholder={systemConfig.config.oidc_groups[0] + '... '} values={systemConfig.config.oidc_groups} enableCopy />
@@ -96,6 +96,8 @@ function InfoView() {
           }
           <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           <InfoItem label="Version" value={clusterInfo?.version!} enableCopy />
+          <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
+          <InfoItem label="Git commit" value={clusterInfo?.git_commit! + "..."} link={{url: `https://github.com/grycap/oscar/commit/${clusterInfo?.git_commit!}`, enableRedirectIcon: true}} />
           <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           <div
             style={{
@@ -135,7 +137,7 @@ function InfoView() {
               MinIO
             </h1>
           </div>
-          <InfoItem label="Endpoint" value={providerInfo.endpoint} enableCopy isLink />
+          <InfoItem label="Endpoint" value={providerInfo.endpoint} enableCopy link={{url: providerInfo.endpoint, enableRedirectIcon: true}} />
           <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           <InfoItem
             label="Access key"
