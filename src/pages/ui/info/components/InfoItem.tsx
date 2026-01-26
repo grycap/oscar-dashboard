@@ -1,5 +1,5 @@
 import { alert } from "@/lib/alert";
-import { Copy, Eye } from "lucide-react";
+import { Copy, ExternalLink, Eye } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -9,7 +9,7 @@ interface Props {
   isPassword?: boolean;
   enableCopy?: boolean;
   displayLabel?: boolean;
-  isLink?: boolean;
+  link?: {url?: string, enableRedirectIcon: boolean;};
 }
 
 function InfoItem({
@@ -18,7 +18,7 @@ function InfoItem({
   isPassword = false,
   enableCopy = false,
   displayLabel = true,
-  isLink = false,
+  link = {enableRedirectIcon: false},
 }: Props) {
   const [isRevealed, setIsRevealed] = useState(false);
 
@@ -43,30 +43,27 @@ function InfoItem({
       <h2 style={{ fontSize: "13px", fontWeight: "500" }}>
         {displayLabel ? label : ''}
       </h2>
-      <div className={"grid " + 
-        (isPassword && enableCopy ? "grid-cols-[1fr_auto_auto]" 
-        : isPassword || enableCopy ? "grid-cols-[1fr_auto]" 
-        : "grid-cols-1")
-      + " break-words text-right"}
+      <div className={"flex flex-row break-words text-right"}
         style={{
           alignItems: "center",
           columnGap: "16px",
         }}
       >
-        <div className="min-w-0 "
+        <div className="min-w-0 break-all text-right"
           style={{
             fontSize: "13px",
             fontWeight: "500",
           }}
         >
-          {!isLink ? displayedValue :
-            <Link style={{ textDecoration: 'none' }} to={displayedValue} target="_blank">{displayedValue}</Link>
+          {!link.url ? displayedValue :
+            <Link style={{ textDecoration: 'none' }} to={link.url} target="_blank">{displayedValue}</Link>
           }
         </div>
 
         {isPassword && (
           <Eye
             size={16}
+            className="flex-shrink-0"
             style={{
               cursor: "pointer",
             }}
@@ -77,9 +74,24 @@ function InfoItem({
             }}
           />
         )}
+        {link.url && link.enableRedirectIcon && (
+          <Link
+            to={link.url}
+            target="_blank"
+          >
+            <ExternalLink 
+              size={16}
+              className="flex-shrink-0"
+              style={{
+                cursor: "pointer",
+              }}
+            />
+          </Link>
+        )}
         {enableCopy && (
           <Copy
             size={16}
+            className="flex-shrink-0"
             style={{
               cursor: "pointer",
               marginTop: !isPassword ? "3px" : undefined,

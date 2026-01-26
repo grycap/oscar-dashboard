@@ -33,6 +33,7 @@ import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 import RequestButton from "@/components/RequestButton";
 import invokeServiceSync from "@/api/invoke/invokeServiceSync";
+import { isFileBase64 } from "@/lib/utils";
 
 type View = "upload" | "editor" | "response";
 
@@ -52,7 +53,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   const [fileType, setFileType] = useState<"text" | "image" | null>(null);
   const [currentView, setCurrentView] = useState<View>("upload");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("yaml");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("plaintext");
   const [response, setResponse] = useState<string>("");
 
   const [responseType, setResponseType] = useState<"text" | "image" | "file">(
@@ -115,17 +116,26 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
     const modifiedFile = new File([fileType === "image" ? file! : fileContent], file?.name ?? "file.txt", {
       type: file?.type ?? "text/plain",
     });
+    if (modifiedFile.size === 0) {return;}
     try {
       const token = authData.token ?? currentService?.token;
-      const response = await invokeServiceSync({
+      const responseLocal = await invokeServiceSync({
         file: modifiedFile,
         serviceName: currentService?.name,
         token,
         endpoint: authData.endpoint,
       });
-
-      console.log("Invoke response", response);
-      setResponse(response as string);
+      let responseString = responseLocal as string;
+      setResponse(responseString);
+      if (responseString.trim() !== "") {
+        if (responseString.startsWith("data:image/")) {
+          setResponseType("image");
+        } else if (isFileBase64(responseString)) {
+          setResponseType("file");
+        } else {
+          setResponseType("text");
+        }
+      }
       setCurrentView("response");
     } catch (error) {
       alert.error("Error invoking service");
@@ -256,6 +266,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
             <SelectValue placeholder="Select a language" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="plaintext">Plain Text</SelectItem>
             <SelectItem value="yaml">YAML</SelectItem>
             <SelectItem value="json">JSON</SelectItem>
           </SelectContent>
@@ -333,7 +344,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
     setFileContent("");
     setFileType(null);
     setCurrentView("upload");
-    setSelectedLanguage("yaml");
+    setSelectedLanguage("plaintext");
     setResponse("");
     setResponseType("text");
   };

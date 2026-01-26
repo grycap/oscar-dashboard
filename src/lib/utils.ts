@@ -174,3 +174,25 @@ export function shortenFullname(fullname: string): string {
   
   return `${parts.join(' ')}`;
 }
+
+export function getHubServiceTypeTagColor(type: string) {
+  switch (type.toLowerCase()) {
+    case "asynchronous":
+      return "bg-green-100 text-green-700";
+    case "synchronous":
+      return "bg-blue-100 text-blue-700";
+    case "exposed":
+      return "bg-yellow-100 text-yellow-700";
+    default:
+      return "bg-red-100 text-red-700";
+  }
+}
+
+export function isFileBase64(content: string): boolean {
+  try {
+    atob(content);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
