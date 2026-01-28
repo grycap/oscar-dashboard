@@ -138,7 +138,6 @@ function Login() {
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
           localStorage.setItem("api", endpoint);
           localStorage.setItem("client_id", env.GRYCAP_client_id);
-          localStorage.setItem("client_secret", env.GRYCAP_client_secret);
           localStorage.setItem("provider_url", env.GRYCAP_ISSUER + env.provider_url);
           localStorage.setItem("url_authorize", env.GRYCAP_ISSUER + env.url_authorize);
           localStorage.setItem("url_user_info", env.GRYCAP_ISSUER + env.url_user_info);
