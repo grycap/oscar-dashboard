@@ -128,7 +128,6 @@ function Login() {
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
           localStorage.setItem("api", endpoint);
           localStorage.setItem("client_id", env.AI4EOSC_client_id);
-          localStorage.setItem("client_secret", env.AI4EOSC_client_secret);
           localStorage.setItem("provider_url", env.AI4EOSC_ISSUER + env.provider_url);
           localStorage.setItem("url_authorize", env.AI4EOSC_ISSUER + env.url_authorize);
           localStorage.setItem("url_user_info", env.AI4EOSC_ISSUER + env.url_user_info);
