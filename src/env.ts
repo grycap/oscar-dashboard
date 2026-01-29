@@ -5,7 +5,6 @@ const env = {
     "AI4EOSC_client_secret":"$AI4EOSC_KEYCLOAK_CLIENT_SECRET",
     "GRYCAP_ISSUER":"$GRYCAP_KEYCLOAK_ISSUER",
     "GRYCAP_client_id":"$GRYCAP_KEYCLOAK_CLIENT_ID",
-    "GRYCAP_client_secret":"$GRYCAP_KEYCLOAK_CLIENT_SECRET",
     "provider_url": "/protocol/",
     "client_id": "$EGI_CHECKIN_CLIENT_ID",
     "redirect_uri" : `${location.origin}/callback.html`,
