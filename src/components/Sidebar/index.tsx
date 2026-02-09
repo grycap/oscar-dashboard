@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/sidebar";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
-import env from "@/env";
 
 function AppSidebar() {
   const authContext = useAuth();
@@ -63,43 +62,20 @@ function AppSidebar() {
     },
   ];
 
-  function buildLogoutRedirectUrl(token: string): string {
-    let tokenBody = JSON.parse(atob(token.split('.')[1]));
-      let redurectURL = "/";
-      switch (tokenBody.iss) {
-        case env.EGI_ISSUER:
-          redurectURL = `${env.EGI_ISSUER}${env.url_logout}?client_id=${env.EGI_client_id}&post_logout_redirect_uri=${window.location.origin}`;
-          break;
-        case env.AI4EOSC_ISSUER:
-          redurectURL = `${env.AI4EOSC_ISSUER}${env.url_logout}?client_id=${env.AI4EOSC_client_id}&post_logout_redirect_uri=${window.location.origin}`;
-          break;
-        case env.GRYCAP_ISSUER:
-          redurectURL = `${env.GRYCAP_ISSUER}${env.url_logout}?client_id=${env.GRYCAP_client_id}&post_logout_redirect_uri=${window.location.origin}`;
-          break;
-        default:
-          break;
-      }
-      return redurectURL;
-  }
-
   function handleLogout() {
-    if(authContext.authData.token) {
-      window.location.href = buildLogoutRedirectUrl(authContext.authData.token);
-    }
-    // Clear all local and session storage before redirecting
     localStorage.removeItem("authData");
+    authContext.setAuthData({
+      user: "",
+      password: "",
+      endpoint: "",
+      token: undefined,
+      authenticated: false,
+    });
+    // Clear all local and session storage
     localStorage.clear();
     sessionStorage.clear();
-    // Delay redirect slightly context clean
-    setTimeout(() => {
-      authContext.setAuthData({
-        user: "",
-        password: "",
-        endpoint: "",
-        token: undefined,
-        authenticated: false,
-      });
-    }, 200);
+    // Ensure the page reloads and clears any cached data
+    window.location.href = "/";
   }
 
   return (
