@@ -4,6 +4,7 @@ import BigLogo from "@/assets/oscar-big.png";
 import AI4eoscLogo from "@/assets/ai4eosc-logo.png";
 import AI4eoscButon from "@/assets/ai4eosc-logo.svg";
 import GryCAPButon from "@/assets/grycap-logo.png";
+import EOSCDataCommonsLogo from "@/assets/eosc-data-commons.png";
 import ImagineLogo from "@/assets/imagine-logo.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,11 @@ function Login() {
   }
   function isAI4EOSCServer(){
     if (env.deploy_container ==="true" && env.ai4eosc_servers.includes(location.origin) ){
+      return true
+    }else return false
+  }
+  function isEOSCDataCommonsServer(){
+    if (env.deploy_container ==="true" && env.eosc_dc_servers.includes(location.origin) ){
       return true
     }else return false
   }
@@ -236,7 +242,8 @@ function Login() {
           >
             {isAI4EOSCServer() ?<img src={AI4eoscLogo} alt="AI4eosc logo" width={320} />:<></>}
             {isImagineServer()?<img src={ImagineLogo} alt="imagine logo" width={250} />:<></>}
-            {isImagineServer()||isAI4EOSCServer() ?<Separator />:<></>}
+            {isEOSCDataCommonsServer()?<img src={EOSCDataCommonsLogo} alt="EOSC Data Commons logo" width={320} />:<></>}
+            {isImagineServer()||isAI4EOSCServer() || isEOSCDataCommonsServer() ?<Separator />:<></>}
             
             <img src={BigLogo} alt="Oscar logo" width={320} />
             <form

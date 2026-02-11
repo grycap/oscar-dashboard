@@ -21,6 +21,7 @@ const env = {
     "external_ui_demo": "https://dashboard-demo.oscar.grycap.net",
     "demo_servers": ["https://oscar-ukri.intertwin.fedcloud.eu"],
     "ai4eosc_servers": ["https://inference.cloud.ai4eosc.eu"],
+    "eosc_dc_servers": ["https://oscar.vre.eosc-data-commons.eu"],
     "imagine_servers": ["https://inference.cloud.imagine-ai.eu","https://inference-walton.cloud.imagine-ai.eu"],
     "juno":{
         "repo": "https://raw.githubusercontent.com/grycap/oscar-juno/main/",
