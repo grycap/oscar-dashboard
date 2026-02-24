@@ -144,6 +144,28 @@ export function bytesSizeToHumanReadable(size: number): string {
   return humanReadableSize;
 }
 
+export function humanReadableSizeToBytes(size: string): number {
+  const units: { [key: string]: number } = {
+    'B': 1,
+    'KB': 1024,
+    'MB': 1024 ** 2,
+    'GB': 1024 ** 3,
+    'TB': 1024 ** 4,
+    'PB': 1024 ** 5,
+    'EB': 1024 ** 6,
+    'ZB': 1024 ** 7,
+    'YB': 1024 ** 8,
+  };
+  const regex = /^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB|TB|PB|EB|ZB|YB)$/i;
+  const match = size.trim().match(regex);
+  if (!match) {
+    throw new Error('Invalid size format');
+  }
+  const value = parseFloat(match[1]);
+  const unit = match[2].toUpperCase();
+  return Math.round(value * (units[unit] || 1));
+}
+
 export async function getCurrentBucketItems(bucketName: string, prefix: string): Promise<{folders: CommonPrefix[], items: _Object[]}> {
   const buck = await getBucketItemsApi(bucketName)
   const obj = buck.objects.filter(o => {
@@ -195,4 +217,15 @@ export function isFileBase64(content: string): boolean {
   } catch (e) {
     return false;
   }
+}
+
+export function addItemToPosition(array: any[], item: any, position: number, countFromLast: boolean = false): any[] {
+  if (countFromLast) {
+    position = array.length - position;
+  }
+  if (position < 0) position = 0;
+  if (position > array.length) position = array.length;
+  const newArray = [...array];
+  newArray.splice(position, 0, item);
+  return newArray;
 }
