@@ -16,7 +16,7 @@ import OscarColors from "@/styles";
 import { Plus, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-
+const imageTags = ["full", "minimal"];
 
 function JunoFormPopover() {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,6 +39,7 @@ function JunoFormPopover() {
     bucket: "",
     vo: "",
     token: "",
+    imageTag: imageTags[0],
   });
 
   const [errors, setErrors] = useState({
@@ -66,6 +67,7 @@ function JunoFormPopover() {
       memoryUnit: "Gi",
       bucket: "",
       token: genRandomString(128),
+      imageTag: imageTags[0],
     }));
     setErrors({
       name: false,
@@ -96,10 +98,9 @@ function JunoFormPopover() {
 
     try {
       const fdlUrl =
-        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/juno.yaml";
+        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/feat-notebook-select-image/juno.yaml";
       const fdlResponse = await fetch(fdlUrl, fetchFromGitHubOptions);
       const fdlText = await fdlResponse.text();
-
       const scriptUrl =
         "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/script.sh";
       const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
@@ -114,6 +115,7 @@ function JunoFormPopover() {
 
       const modifiedService: Service = {
         ...service,
+        image: `${service.image.split(':')[0]}:${formData.imageTag}`,
         name: serviceName,
         vo: formData.vo,
         memory: `${formData.memoryRam}${formData.memoryUnit}`,
@@ -252,6 +254,7 @@ return (
                   </Select>
               </div>
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
             <div>
                 <Label htmlFor="vo">VO</Label>
                 <Select
@@ -272,6 +275,27 @@ return (
                     ))}
                 </SelectContent>
                 </Select>
+            </div>
+            <div>
+                <Label htmlFor="image-tag">Notebook Version</Label>
+                <Select
+                value={formData.imageTag}
+                onValueChange={(value) => {
+                    setFormData({ ...formData, imageTag: value });
+                }}
+                >
+                <SelectTrigger id="image-tag">
+                    <SelectValue placeholder="Select an image version" />
+                </SelectTrigger>
+                <SelectContent>
+                    {imageTags.map((tag) => (
+                    <SelectItem key={tag} value={tag}>
+                        {tag}
+                    </SelectItem>
+                    ))}
+                </SelectContent>
+                </Select>
+            </div>
             </div>
             <div>
               <div className="flex flex-row items-center" >
