@@ -36,7 +36,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
   });
 
   const [presignedUrl, setPresignedUrl] = useState<PresignedURIResponse | null>(null);
-  //const [dashboardUploadUrl, setDashboardUploadUrl] = useState<string>("");
+  const [dashboardUploadUrl, setDashboardUploadUrl] = useState<string>("");
 
   useEffect(() => {
     if (!isOpen) {
@@ -81,7 +81,8 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
 
       const response = await createPresignedObjectUrlApi(bucketName, request);
       setPresignedUrl(response);
-      //setDashboardUploadUrl(`${location.origin}/#/upload?presignedUrl=${response.url}&content-type=${response.headers?.["Content-Type"]}&object-key=${response.object_key}`);
+      encodeURIComponent
+      setDashboardUploadUrl(`${location.origin}/#/upload?presignedUrl=${encodeURIComponent(response.url)}&content-type=${response.headers?.["Content-Type"]}&object-key=${response.object_key}`);
       alert.success("Presigned URL generated successfully");
     } catch (error) {
       alert.error("Error generating presigned URL");
@@ -197,14 +198,14 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
                 {/*location.origin + "/#/upload?presignedUrl=" + presignedUrl.url+ "&content-type=application/json&object-key=path/to/file.json"*/}
               </div>
             </div>
-            {/*operation === "upload" && (
+            {operation === "upload" && (
             <div>
               <Label>Dashboard Upload URL</Label>
               <div className="mt-2 p-3 bg-gray-100 rounded border border-gray-300 overflow-x-auto whitespace-nowrap text-sm font-mono">
                 {dashboardUploadUrl}
               </div>
             </div>
-            )*/}
+            )}
 
             {presignedUrl.expires_at && (
               <div>
