@@ -95,6 +95,15 @@ export function getUserVOs(authData: AuthData): string[] {
       });
     });
   }
+  if ((authData.egiSession as any).realm_access?.roles) {
+    (authData.egiSession as any).realm_access.roles.forEach((role: string) => {
+      // "platform-access:vo.example.eu"
+      const match = role.match(/^platform-access:(vo\..+?)$/);
+      if (match && match[1]) {
+        vos.push(match[1]);
+      }
+    });
+  }
   return vos;
 }
 
@@ -108,7 +117,7 @@ export function getAllowedVOs(systemConfig: {config: SystemConfig} | null, authD
   if (userVOs.length === 0) return systemConfig.config.oidc_groups;
   // Filter allowed VOs based on user's VOs
   const filteredVOs = systemConfig.config.oidc_groups.filter((vo) => userVOs.includes(vo.replace('/', '')));
-  return filteredVOs;
+  return filteredVOs.length > 0 ? filteredVOs : systemConfig.config.oidc_groups;
 }
 
 function sleep(ms: number) {
