@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import { bytesSizeToHumanReadable } from "@/lib/utils";
 import UploadFileDialog from "@/components/UploadFileDialog";
+import GenPresignedURLPopover from "../GenPresignedURLPopover";
 
 export type BucketItem =
   | {
@@ -310,6 +311,7 @@ export default function BucketContent() {
                         >
                           <Download />
                         </Button>
+                        <GenPresignedURLPopover bucketName={bucketName!} objectKey={path + item.Name} operation="download"/>
                       </>
                     )}
                     <Button
