@@ -83,7 +83,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
     const newErrors = {
       object_key: !formData.object_key || (formData.operation === "upload" && formData.object_key.endsWith("/")), // Object key is required and cannot end with "/" for upload operation
       operation: !formData.operation,
-      expires_in: !formData.expires_in || EXPIRATION_TIME(parseInt(formData.expires_in), formData.timeUnit) > EXPIRATION_TIME_LIMIT || parseInt(formData.expires_in) <= 0,
+      expires_in: !formData.expires_in || EXPIRATION_TIME(parseInt(formData.expires_in), formData.timeUnit) > EXPIRATION_TIME_LIMIT || parseInt(formData.expires_in) <= 1,
     };
 
     setErrors(newErrors);
