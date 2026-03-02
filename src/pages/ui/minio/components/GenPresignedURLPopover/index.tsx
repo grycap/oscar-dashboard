@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { alert } from "@/lib/alert";
 import { Copy, Share2 } from "lucide-react";
 import RequestButton from "@/components/RequestButton";
@@ -32,7 +31,6 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
     object_key: false,
     operation: false,
     expires_in: false,
-    content_type: false,
   });
 
   const [presignedUrl, setPresignedUrl] = useState<PresignedURIResponse | null>(null);
@@ -50,7 +48,6 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
         object_key: false,
         operation: false,
         expires_in: false,
-        content_type: false,
       });
       setPresignedUrl(null);
     }
@@ -61,7 +58,6 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
       object_key: !formData.object_key || (formData.operation === "upload" && formData.object_key.endsWith("/")), // Object key is required and cannot end with "/" for upload operation
       operation: !formData.operation,
       expires_in: !formData.expires_in || parseInt(formData.expires_in) > 3600 || parseInt(formData.expires_in) <= 0,
-      content_type: formData.operation === "upload" && !formData.content_type,
     };
 
     setErrors(newErrors);
@@ -76,7 +72,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
         object_key: formData.object_key,
         operation: formData.operation,
         expires_in: parseInt(formData.expires_in),
-        content_type: formData.content_type || "application/octet-stream",
+        content_type: formData.operation === "download" ? "application/octet-stream" : undefined,
       };
 
       const response = await createPresignedObjectUrlApi(bucketName, request);
@@ -110,7 +106,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
         <DialogHeader>
           <DialogTitle>
             <span style={{ color: OscarColors.DarkGrayText }}>
-              {presignedUrl ? `Generated ${operation.charAt(0).toUpperCase() + operation.slice(1)} Presigned URL` : `Generate ${operation.charAt(0).toUpperCase() + operation.slice(1)} Presigned URL`}
+              {`${presignedUrl ? "Generated" : "Generate"} ${operation.charAt(0).toUpperCase() + operation.slice(1)} link`}
             </span>
           </DialogTitle>
         </DialogHeader>
@@ -132,42 +128,6 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
                 disabled={operation === "download"} // Disable editing object key for download operation since it's pre-filled
               />
             </div>
-
-            <div>
-              <Label htmlFor="operation">Operation</Label>
-              <Select
-                value={formData.operation}
-                onValueChange={(value) => {
-                  setFormData({ ...formData, operation: value as "download" | "upload" });
-                  if (errors.operation) setErrors({ ...errors, operation: false });
-                }}
-                disabled={!!operation} // Disable changing operation if it's pre-selected via props
-              >
-                <SelectTrigger id="operation" className={errors.operation ? "border-red-500 focus:border-red-500" : ""}>
-                  <SelectValue placeholder="Select operation" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="download">Download</SelectItem>
-                  <SelectItem value="upload">Upload</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {formData.operation === "upload" && (
-              <div>
-                <Label htmlFor="content-type">Content Type</Label>
-                <Input
-                  id="content-type"
-                  placeholder="e.g., application/json, text/plain"
-                  value={formData.content_type}
-                  className={errors.content_type ? "border-red-500 focus:border-red-500" : ""}
-                  onChange={(e) => {
-                    setFormData({ ...formData, content_type: e.target.value });
-                    if (errors.content_type) setErrors({ ...errors, content_type: false });
-                  }}
-                />
-              </div>
-            )}
 
             <div>
               <Label htmlFor="expires-in">Expires In (seconds, max 3600)</Label>
@@ -231,7 +191,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
               </div>
             )}
 
-            {presignedUrl.method && (
+            {presignedUrl.method && operation == "upload" && (
               <div>
                 <Label>HTTP Method</Label>
                 <p className="text-sm font-mono font-bold text-blue-600">{presignedUrl.method}</p>
