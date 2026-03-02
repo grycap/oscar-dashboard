@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { alert } from "@/lib/alert";
-import { Share2 } from "lucide-react";
+import { Copy, Share2 } from "lucide-react";
 import RequestButton from "@/components/RequestButton";
 import { PresignedURIRequest, PresignedURIResponse } from "@/models/presignedURI";
 import createPresignedObjectUrlApi from "@/api/buckets/createPresignedObjectUrlApi";
@@ -89,11 +89,9 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
     }
   };
 
-  const handleCopyUrl = () => {
-    if (presignedUrl?.url) {
-      navigator.clipboard.writeText(presignedUrl.url);
-      alert.success("URL copied to clipboard");
-    }
+  const handleCopyUrl = (url: string, message: string) => {
+    navigator.clipboard.writeText(url);
+    alert.success(message);
   };
 
   return (
@@ -192,7 +190,17 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
         ) : (
           <div className="grid grid-cols-1 gap-y-4 overflow-y-auto">
             <div>
-              <Label>Generated URL</Label>
+              <div className="flex flex-row align-items-center gap-2">
+                <Label>Generated URL</Label>
+                <Copy
+                  size={16}
+                  style={{
+                    cursor: "pointer",
+                  }}
+                  onClick={() => handleCopyUrl(presignedUrl.url, "Generated URL copied to clipboard")}
+                />
+
+              </div>
               <div className="mt-2 p-3 bg-gray-100 rounded border border-gray-300 overflow-x-auto whitespace-nowrap text-sm font-mono">
                 {presignedUrl.url}
                 {/*location.origin + "/#/upload?presignedUrl=" + presignedUrl.url+ "&content-type=application/json&object-key=path/to/file.json"*/}
@@ -200,7 +208,16 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
             </div>
             {operation === "upload" && (
             <div>
-              <Label>Dashboard Upload URL</Label>
+              <div className="flex flex-row align-items-center gap-2">
+                <Label>Dashboard Upload URL</Label> 
+                <Copy
+                  size={16}
+                  style={{
+                    cursor: "pointer",
+                  }}
+                  onClick={() => handleCopyUrl(dashboardUploadUrl, "Dashboard Upload URL copied to clipboard")}
+                />
+              </div>
               <div className="mt-2 p-3 bg-gray-100 rounded border border-gray-300 overflow-x-auto whitespace-nowrap text-sm font-mono">
                 {dashboardUploadUrl}
               </div>
@@ -238,13 +255,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
 
         <DialogFooter>
           {presignedUrl ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
-              <Button
-                variant="mainGreen"
-                onClick={handleCopyUrl}
-              >
-                Copy URL
-              </Button>
+            <div className="grid grid-cols-1 w-full">
               <Button
                 variant="outline"
                 onClick={() => setPresignedUrl(null)}
