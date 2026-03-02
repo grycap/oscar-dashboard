@@ -218,9 +218,12 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
             <div className="grid grid-cols-1 w-full">
               <Button
                 variant="outline"
-                onClick={() => setPresignedUrl(null)}
+                onClick={() => {
+                  setPresignedUrl(null);
+                  isOpen && setIsOpen(false);
+                }}
               >
-                Generate Another
+                Close
               </Button>
             </div>
           ) : (
