@@ -16,7 +16,7 @@ import Cluster from "@/pages/ui/cluster_info"
 import HubView from "@/pages/ui/hub";
 import Quotas from "@/pages/ui/quotas";
 import AdminRoute from "@/components/AdminRoute/AdminRoute";
-import UploadFromPresignedURL from "@/pages/ui/minio/components/UploadFromPresignedURL";
+import UploadFromPresignedURL from "@/pages/UploadFromPresignedURL";
 
 function AppRouter() {
   return (

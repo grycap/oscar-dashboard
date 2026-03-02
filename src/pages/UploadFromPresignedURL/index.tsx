@@ -11,6 +11,7 @@ export default function UploadFromPresignedURL() {
   const [file, setFile] = useState<File | null>(null);
   const [isImage, setIsImage] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // URL parameters
@@ -55,6 +56,7 @@ export default function UploadFromPresignedURL() {
       alert.success("File uploaded successfully");
       setFile(null);
       setIsImage(false);
+      setIsUploaded(true);
     } catch (error) {
       alert.error("Error uploading file");
       console.error(error);
@@ -102,7 +104,12 @@ export default function UploadFromPresignedURL() {
         }
         className={!file || isImage ? "hidden" : ""}
       />
-      {!file ? ( 
+      {isUploaded ? (
+        <div className="bg-green-100 text-green-800 rounded-lg p-4 text-center">
+          File uploaded successfully!
+        </div>
+      ) :
+        !file ? ( 
         <div
           onDragOver={handleDragOver}
           onDrop={handleDrop}
@@ -168,24 +175,38 @@ export default function UploadFromPresignedURL() {
         <div className="grid gap-4">
           {renderUploadView()}  
           <div className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setFile(null);
-                setIsImage(false);
-              }}
-              disabled={isLoading}
-            >
-              Clear
-            </Button>
-            <Button
-              onClick={handleUploadFile}
-              disabled={!file || isLoading}
-              style={{ backgroundColor: OscarColors.Green4 }}
-              className="text-white"
-            >
-              {isLoading ? "Uploading..." : "Upload"}
-            </Button>
+            {isUploaded ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsUploaded(false);
+                }}
+              >
+                Back
+              </Button>
+            ) :
+            (<>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setFile(null);
+                  setIsImage(false);
+                }}
+                disabled={isLoading}
+              >
+                Clear
+              </Button>
+              <Button
+                onClick={handleUploadFile}
+                disabled={!file || isLoading}
+                style={{ backgroundColor: OscarColors.Green4 }}
+                className="text-white"
+              >
+                {isLoading ? "Uploading..." : "Upload"}
+              </Button>
+            </>
+            )}
+            
           </div>
         </div>
         
