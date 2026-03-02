@@ -16,18 +16,14 @@ export default function UploadFromPresignedURL() {
 
   // URL parameters
   const [presignedURL, setPresignedURL] = useState<string>("");
-  const [contentType, setContentType] = useState<string>("");
   const [paramsValid, setParamsValid] = useState(false);
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
     // Get URL parameters
     const url = searchParams.get("presignedUrl") ?? "";
-    const type = searchParams.get("content-type") ?? "";
-    console.log("Received URL parameters:", { url, type });
-    if (url && type ) {
+    if (url ) {
       setPresignedURL(url);
-      setContentType(type);
       setParamsValid(true);
     } else {
       window.location.href = "/"; // Redirect to home if parameters are missing
@@ -40,13 +36,9 @@ export default function UploadFromPresignedURL() {
 
     setIsLoading(true);
     try {
-      console.log("Uploading file to presigned URL:", { presignedURL, contentType });
       const response = await fetch(presignedURL, {
         method: "PUT",
         body: await file.bytes(),
-        headers: {
-          "Content-Type": contentType,
-        },
       });
 
       if (!response.ok) {

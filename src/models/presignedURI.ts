@@ -3,7 +3,7 @@ export interface PresignedURIRequest {
   object_key: string; // example object key test/README.md
   operation: "download" | "upload",
   expires_in: number, // expiration time in seconds max 3600 (1 hour)
-  content_type: string, // required for upload operation, example: "text/plain"
+  content_type?: string, // required for upload operation, example: "text/plain"
 }
 
 export interface PresignedURIResponse {
