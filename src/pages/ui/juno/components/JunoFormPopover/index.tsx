@@ -8,15 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import { alert } from "@/lib/alert";
-import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
+import { convertDockerImageToMap, fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Plus, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-
-const imageTags = ["full", "minimal"];
+import { IMAGE_TAGS } from "./images";
+import InfoPopUp from "@/components/InfoPopUp";
+import InfoItem from "@/pages/ui/info/components/InfoItem";
 
 function JunoFormPopover() {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,6 +27,7 @@ function JunoFormPopover() {
   const buckets = useGetPrivateBuckets();
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
+  const imageTagsMap = convertDockerImageToMap(IMAGE_TAGS);
 
   function nameService() {
     return `juno-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
@@ -39,7 +41,7 @@ function JunoFormPopover() {
     bucket: "",
     vo: "",
     token: "",
-    imageTag: imageTags[0],
+    imageTag: IMAGE_TAGS[0].tag,
   });
 
   const [errors, setErrors] = useState({
@@ -67,7 +69,7 @@ function JunoFormPopover() {
       memoryUnit: "Gi",
       bucket: "",
       token: genRandomString(128),
-      imageTag: imageTags[0],
+      imageTag: IMAGE_TAGS[0].tag,
     }));
     setErrors({
       name: false,
@@ -278,23 +280,43 @@ return (
             </div>
             <div>
                 <Label htmlFor="image-tag">Notebook Version</Label>
-                <Select
-                value={formData.imageTag}
-                onValueChange={(value) => {
-                    setFormData({ ...formData, imageTag: value });
-                }}
-                >
-                <SelectTrigger id="image-tag">
-                    <SelectValue placeholder="Select an image version" />
-                </SelectTrigger>
-                <SelectContent>
-                    {imageTags.map((tag) => (
-                    <SelectItem key={tag} value={tag}>
-                        {tag}
-                    </SelectItem>
-                    ))}
-                </SelectContent>
-                </Select>
+                <div className="flex flex-row items-center gap-1">
+                  <Select
+                  value={formData.imageTag}
+                  onValueChange={(value) => {
+                      setFormData({ ...formData, imageTag: value });
+                  }}
+                  >
+                  <SelectTrigger id="image-tag">
+                      <SelectValue placeholder="Select an image version" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {IMAGE_TAGS.map((image) => (
+                      <SelectItem key={image.tag} value={image.tag}>
+                          {image.tag}
+                      </SelectItem>
+                      ))}
+                  </SelectContent>
+                  </Select>
+
+                  <InfoPopUp
+                    content={
+                      <>
+                        <h4 className="font-semibold leading-none pb-2">
+                          {`Version: ${formData.imageTag}`}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {imageTagsMap.get(formData.imageTag)?.description}
+                        </p>
+                        <InfoItem 
+                            link={{
+                            url: imageTagsMap.get(formData.imageTag)?.url,
+                            enableRedirectIcon: true,
+                          }} value={"More Info"} label={""} displayLabel={false} padding="0px"/>
+                      </>
+                    }
+                  />
+                </div>
             </div>
             </div>
             <div>
