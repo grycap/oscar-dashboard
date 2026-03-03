@@ -9,6 +9,7 @@ import { Copy, Share2 } from "lucide-react";
 import RequestButton from "@/components/RequestButton";
 import { PresignedURIRequest, PresignedURIResponse } from "@/models/presignedURI";
 import createPresignedObjectUrlApi from "@/api/buckets/createPresignedObjectUrlApi";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface GenPresignedURLPopoverProps {
   bucketName: string;
@@ -17,14 +18,38 @@ interface GenPresignedURLPopoverProps {
   owerrideButton?: React.ReactNode; // Optional prop to override the default trigger button
 }
 
+type EXPIRATION_TIME_UNITS = "sec" | "min" | "hour" | "day";
+const EXPIRATION_TIME_UNITS_ARRAY: EXPIRATION_TIME_UNITS[] = ["sec", "min", "hour", "day"];
+const EXPIRATION_TIME_LIMIT = 3600*24*7; // 7 days in seconds
+const EXPIRATION_TIME = (value: number, unit: EXPIRATION_TIME_UNITS) => {
+  switch (unit) {
+    case "sec": return value;
+    case "min": return value * 60;
+    case "hour": return value * 3600;
+    case "day": return value * 3600*24;
+    default: return 1;
+  }
+};
+const MAX_EXPIRATION_TIME = (unit: EXPIRATION_TIME_UNITS) => {
+  switch (unit) {
+    case "sec": return EXPIRATION_TIME_LIMIT;
+    case "min": return EXPIRATION_TIME_LIMIT / 60;
+    case "hour": return EXPIRATION_TIME_LIMIT / 3600;
+    case "day": return EXPIRATION_TIME_LIMIT / (3600*24); // 7 days in days
+    default: return 1;
+  }
+};
+
 function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButton }: GenPresignedURLPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
+
 
   const [formData, setFormData] = useState({
     object_key: operation === "upload" ? `${objectKey}/` : objectKey,
     operation: operation,
     expires_in: "3600",
     content_type: "",
+    timeUnit: EXPIRATION_TIME_UNITS_ARRAY[0],
   });
 
   const [errors, setErrors] = useState({
@@ -43,6 +68,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
         operation: operation,
         expires_in: "3600",
         content_type: "",
+        timeUnit: EXPIRATION_TIME_UNITS_ARRAY[0],
       });
       setErrors({
         object_key: false,
@@ -57,7 +83,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
     const newErrors = {
       object_key: !formData.object_key || (formData.operation === "upload" && formData.object_key.endsWith("/")), // Object key is required and cannot end with "/" for upload operation
       operation: !formData.operation,
-      expires_in: !formData.expires_in || parseInt(formData.expires_in) > 3600 || parseInt(formData.expires_in) <= 0,
+      expires_in: !formData.expires_in || EXPIRATION_TIME(parseInt(formData.expires_in), formData.timeUnit) > EXPIRATION_TIME_LIMIT || parseInt(formData.expires_in) <= 1,
     };
 
     setErrors(newErrors);
@@ -71,7 +97,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
       const request: PresignedURIRequest = {
         object_key: formData.object_key,
         operation: formData.operation,
-        expires_in: parseInt(formData.expires_in),
+        expires_in: EXPIRATION_TIME(parseInt(formData.expires_in), formData.timeUnit),
         content_type: formData.operation === "download" ? "application/octet-stream" : undefined,
       };
 
@@ -130,20 +156,37 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
             </div>
 
             <div>
-              <Label htmlFor="expires-in">Expires In (seconds, max 3600)</Label>
-              <Input
-                id="expires-in"
-                type="number"
-                min="1"
-                max="3600"
-                placeholder="3600"
-                value={formData.expires_in}
-                className={errors.expires_in ? "border-red-500 focus:border-red-500" : ""}
-                onChange={(e) => {
-                  setFormData({ ...formData, expires_in: e.target.value });
-                  if (errors.expires_in) setErrors({ ...errors, expires_in: false });
-                }}
-              />
+              <Label htmlFor="expires-in">Expires In (seconds, max {`${MAX_EXPIRATION_TIME(formData.timeUnit)} ${formData.timeUnit}`})</Label>
+              <div className="grid grid-cols-[1fr_auto] gap-2">
+                <Input
+                  id="expires-in"
+                  type="number"
+                  min="1"
+                  max={MAX_EXPIRATION_TIME(formData.timeUnit)}
+                  placeholder="3600"
+                  value={formData.expires_in}
+                  className={errors.expires_in ? "border-red-500 focus:border-red-500" : ""}
+                  onChange={(e) => {
+                    setFormData({ ...formData, expires_in: e.target.value });
+                    if (errors.expires_in) setErrors({ ...errors, expires_in: false });
+                  }}
+                />
+                <Select
+                  value={formData.timeUnit}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, timeUnit: value as EXPIRATION_TIME_UNITS })
+                  }
+                >
+                  <SelectTrigger className="w-[80px]">
+                    <SelectValue id="time-unit" placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EXPIRATION_TIME_UNITS_ARRAY.map((unit) => (
+                      <SelectItem key={unit} value={unit}>{unit.charAt(0).toUpperCase() + unit.slice(1)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <p className="text-xs text-gray-500 mt-1">Default: 3600 seconds (1 hour)</p>
             </div>
           </div>
