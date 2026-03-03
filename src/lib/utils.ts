@@ -238,3 +238,17 @@ export function addItemToPosition(array: any[], item: any, position: number, cou
   newArray.splice(position, 0, item);
   return newArray;
 }
+
+export interface DockerImage {
+  tag: string;
+  description: string;
+  url: string;
+}
+
+export const convertDockerImageToMap = (images: DockerImage[]): Map<string, DockerImage> => {
+  const map = new Map<string, DockerImage>();
+  images.forEach(image => {
+    map.set(image.tag, image);
+  });
+  return map;
+}
