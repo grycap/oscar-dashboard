@@ -5,14 +5,14 @@ import {
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
-function ExpandCard({ title, className, children }: { title: string; className?: string; children: React.ReactNode }) {
+function ExpandCard({ title, className, children, setExpandedState }: { title: string; className?: string; children: React.ReactNode; setExpandedState?: (expanded: boolean) => void }) {
   const [expandedSections, setExpandedSections] = useState(false);
   
 
   return (
     <Card className={className}>
       <div
-        onClick={() => setExpandedSections(!expandedSections)}
+        onClick={() => {setExpandedSections(!expandedSections); setExpandedState && setExpandedState(!expandedSections);}}
         className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
       >
         <CardTitle className="text-lg font-semibold">{title}</CardTitle>
