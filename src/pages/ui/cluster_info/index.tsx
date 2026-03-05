@@ -34,6 +34,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ClusterUserQuota } from "@/models/clusterUserQuota";
 import getUserQuotaApi from "@/api/quotas/getQuotaApi";
 import ExpandCard from "@/components/ExpandCard";
+import ClusterUseGraph from "./components/ClusterUseGraph";
 
 function DonutChart({ percentage, dangerThreshold }: { percentage: number; dangerThreshold: number }) {
   const isDanger = percentage >= dangerThreshold;
@@ -496,6 +497,8 @@ const Cluster = () => {
                 </div>
               </CardContent>
             </ExpandCard>
+
+            {authData.user && authData.user === "oscar" && <ClusterUseGraph />}
           </CardContent>
         </Card> 
 
