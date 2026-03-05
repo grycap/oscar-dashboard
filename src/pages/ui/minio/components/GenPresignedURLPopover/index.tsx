@@ -104,7 +104,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
       const response = await createPresignedObjectUrlApi(bucketName, request);
       setPresignedUrl(response);
       encodeURIComponent
-      setDashboardUploadUrl(`${location.origin}/#/upload?presignedUrl=${encodeURIComponent(response.url)}&content-type=${response.headers?.["Content-Type"]}&object-key=${response.object_key}`);
+      setDashboardUploadUrl(`${location.origin}/#/upload?presignedUrl=${encodeURIComponent(response.url)}`);
       alert.success("Presigned URL generated successfully");
     } catch (error) {
       alert.error("Error generating presigned URL");

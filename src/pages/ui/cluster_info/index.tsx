@@ -13,7 +13,6 @@ import {
   Cpu,
   Gpu,
   MemoryStick,
-  ChevronDown, ChevronRight,
   LoaderPinwheel,
   Database,
   Files,
@@ -34,7 +33,8 @@ import { ClusterStatus } from "@/models/clusterStatus";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClusterUserQuota } from "@/models/clusterUserQuota";
 import getUserQuotaApi from "@/api/quotas/getQuotaApi";
-
+import ExpandCard from "@/components/ExpandCard";
+import ClusterUseGraph from "./components/ClusterUseGraph";
 
 function DonutChart({ percentage, dangerThreshold }: { percentage: number; dangerThreshold: number }) {
   const isDanger = percentage >= dangerThreshold;
@@ -84,29 +84,6 @@ const formatCores = (millicores: number) =>
 const Cluster = () => {
   const { authData } = useAuth();
   const location = useLocation();
-
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    deployment: false,
-    jobs: false,
-    pods: false,
-    oidc: false,
-    minio: false,
-  });
-
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
-  const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
-  const toggleNode = (nodeName: string) => {
-    setExpandedNodes(prev => ({
-      ...prev,
-      [nodeName]: !prev[nodeName]
-    }));
-  };
 
   // access the authentication context
   const [clusterStatusData, setClusterStatusData] = useState<ClusterStatus | null>(null);
@@ -327,16 +304,7 @@ const Cluster = () => {
             </div>
 
             {/* Deployment collapsible block */}
-            <Card className="w-full mt-6">
-              <div
-                onClick={() => toggleSection("deployment")}
-                className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
-              >
-                <CardTitle className="text-lg font-semibold">Deployment</CardTitle>
-                {expandedSections.deployment ? <ChevronDown /> : <ChevronRight />}
-              </div>
-
-              {expandedSections.deployment && (
+              <ExpandCard title="Deployment" className="w-full mt-6">
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
                   <Card>
                     <CardContent className="p-4">
@@ -397,21 +365,11 @@ const Cluster = () => {
                     </CardContent>
                   </Card>
                 </CardContent>
-              )}
-            </Card>
+              </ExpandCard>
 
             {/* Pods and Jobs collapsible */}
             {authData.user && authData.user === "oscar" && (
-            <Card className="w-full mt-6">
-              <div
-                onClick={() => toggleSection("pods")}
-                className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
-              >
-                <CardTitle className="text-lg font-semibold">Pods and Jobs</CardTitle>
-                {expandedSections.pods ? <ChevronDown /> : <ChevronRight />}
-              </div>
-              
-              {expandedSections.pods && (
+              <ExpandCard title="Pods and Jobs" className="w-full mt-6">
                 <CardContent className="grid grid-rows-[auto_1fr] gap-4 mt-5">
                   <div className="grid grid-cols-2 gap-4">
                     {/* Total pods */}
@@ -483,21 +441,11 @@ const Cluster = () => {
                     </Card>
                   </div>
                 </CardContent>
-              )}
-            </Card>
+              </ExpandCard>
             )}
             
           {/* OIDC collapsible block */}
-          <Card className="w-full mt-6">
-            <div
-              onClick={() => toggleSection("oidc")}
-              className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
-            >
-              <CardTitle className="text-lg font-semibold">OIDC</CardTitle>
-              {expandedSections.oidc ? <ChevronDown /> : <ChevronRight />}
-            </div>
-
-            {expandedSections.oidc && (
+            <ExpandCard title="OIDC" className="w-full mt-6">
               <CardContent className="flex flex-col gap-4">
                 {/* First row: OIDC Enabled */}
                 <div className="flex mt-5">
@@ -548,9 +496,9 @@ const Cluster = () => {
                   </Card>
                 </div>
               </CardContent>
-              
-            )}
-          </Card>
+            </ExpandCard>
+
+            {authData.user && authData.user === "oscar" && <ClusterUseGraph />}
           </CardContent>
         </Card> 
 
@@ -568,7 +516,6 @@ const Cluster = () => {
             <div className="w-full space-y-4">
               {clusterStatusData.cluster.nodes && clusterStatusData.cluster.nodes.map((node, index) => {
                 const memoryCapacityGB = (node.memory.capacity_bytes / (1024 ** 3)).toFixed(2);
-                const isExpanded = expandedNodes[node.name] || false;
 
                 const isConditionError = (condition: { type: string; status: boolean }) => {
                   if (condition.type === "Ready") {
@@ -579,16 +526,7 @@ const Cluster = () => {
                 };
 
                 return (
-                  <Card key={index} className="space-y-2">
-                    <div
-                      onClick={() => toggleNode(node.name)}
-                      className="cursor-pointer hover:bg-gray-100 transition px-4 py-3 rounded-md flex justify-between items-center"
-                    >
-                      <CardTitle className="text-lg font-semibold">{node.name}</CardTitle>
-                      {isExpanded ? <ChevronDown /> : <ChevronRight />}
-                    </div>
-
-                    {isExpanded && (
+                    <ExpandCard title={node.name} className="w-full space-y-2" key={index}>
                       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
                         <div className="flex flex-col gap-4 justify-between h-full">
                           <div className="grid grid-cols-2 gap-4">
@@ -672,8 +610,7 @@ const Cluster = () => {
                           </div>
                         </div>
                       </CardContent>
-                    )}
-                  </Card>
+                    </ExpandCard>
                 );
               })}
             </div>
