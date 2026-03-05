@@ -160,7 +160,7 @@ function ClusterUseGraph() {
               {/* Top toolbar */}
               <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide pr-1">Dataset</span>
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide pr-1">Info</span>
                   <Separator orientation="vertical" className="h-5" />
                   {(Object.keys(DATASET_LABELS) as DatasetType[]).map((d) => (
                     <Button
