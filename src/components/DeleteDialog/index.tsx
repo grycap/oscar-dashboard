@@ -40,12 +40,12 @@ export default function DeleteDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+        <DialogHeader className="min-w-0">
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />
             Confirm Deletion
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="max-h-[150px] overflow-x-auto overflow-y-auto">
             Are you sure you want to delete the following {itemText}?
             <span className="block mt-2 font-medium text-foreground">
               {nameText}
