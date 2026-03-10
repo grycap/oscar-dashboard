@@ -79,7 +79,7 @@ function AppSidebar() {
       let redurectURL = "/";
       switch (tokenBody.iss) {
         /*
-          case env.EGI_ISSUER:
+        case env.EGI_ISSUER:
           redurectURL = `${env.EGI_ISSUER}${env.url_logout}?client_id=${env.EGI_client_id}&post_logout_redirect_uri=${window.location.origin}`;
           break;
         */
