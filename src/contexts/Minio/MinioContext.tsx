@@ -40,6 +40,28 @@ export enum BucketFilterBy {
   SERVICE = "service",
 }
 
+const mimeTypesByExtension: Record<string, string> = {
+  avif: "image/avif",
+  bmp: "image/bmp",
+  gif: "image/gif",
+  heic: "image/heic",
+  heif: "image/heif",
+  jpeg: "image/jpeg",
+  jpg: "image/jpeg",
+  png: "image/png",
+  svg: "image/svg+xml",
+  tif: "image/tiff",
+  tiff: "image/tiff",
+  webp: "image/webp",
+};
+
+function getMimeTypeFromPath(path: string) {
+  const extension = path.split(".").pop()?.toLowerCase();
+  if (!extension) return undefined;
+
+  return mimeTypesByExtension[extension];
+}
+
 export type MinioProviderData = {
   bucketsFilter: BucketsFilterProps;
   setBucketsFilter: (filter: BucketsFilterProps) => void;
@@ -65,7 +87,7 @@ export type MinioProviderData = {
   createFolder: (bucketName: string, folderName: string) => Promise<void>;
   uploadFile: (bucketName: string, path: string, file: File) => Promise<void>;
   deleteFile: (bucketName: string, path: string) => Promise<void>;
-  getFileUrl: (bucketName: string, path: string) => Promise<string | undefined>;
+  getFileBlob: (bucketName: string, path: string) => Promise<Blob | undefined>;
   listObjects: (bucketName: string, path: string) => Promise<_Object[]>;
   downloadAndZipFolders: (
     bucketName: string,
@@ -268,6 +290,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       const command = new PutObjectCommand({
         Bucket: bucketName,
         Key: key,
+        ContentType: file.type || undefined,
         // @ts-ignore
         Body: fileContent,
       });
@@ -300,7 +323,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     updateBuckets();
   }
 
-  async function getFileUrl(bucketName: string, path: string) {
+  async function getFileBlob(bucketName: string, path: string) {
     if (!client) return;
 
     const command = new GetObjectCommand({
@@ -312,10 +335,12 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!byteArray) {
       throw new Error("Failed to transform response body to byte array");
     }
-    const safeArray = new Uint8Array(byteArray); 
-    const url = URL.createObjectURL(new Blob([safeArray]));
-
-    return url;
+    const safeArray = new Uint8Array(byteArray);
+    const contentType =
+      response.ContentType && response.ContentType !== "application/octet-stream"
+        ? response.ContentType
+        : getMimeTypeFromPath(path);
+    return new Blob([safeArray], { type: contentType || "" });
   }
 
   async function listObjects(bucketName: string, path: string = "") {
@@ -432,7 +457,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         deleteBucket,
         uploadFile,
         deleteFile,
-        getFileUrl,
+        getFileBlob,
         listObjects,
         downloadAndZipFolders,
       }}

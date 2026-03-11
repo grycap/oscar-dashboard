@@ -9,10 +9,24 @@ import {
 import { BucketItem } from ".";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import Editor from "@monaco-editor/react";
-import { fileTypeFromBlob } from "file-type";
 import fileExtensionToLanguage from "./fileExtensionToLanguage.json";
 import { Button } from "@/components/ui/button";
 import { DownloadIcon } from "lucide-react";
+
+const imageExtensions = new Set([
+  "avif",
+  "bmp",
+  "gif",
+  "heic",
+  "heif",
+  "jpeg",
+  "jpg",
+  "png",
+  "svg",
+  "tif",
+  "tiff",
+  "webp",
+]);
 
 interface FilePreviewModalProps {
   isOpen: boolean;
@@ -25,13 +39,14 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
   onClose,
   file: bucketItem,
 }) => {
-  const { getFileUrl } = useMinio();
+  const { getFileBlob } = useMinio();
 
   const [url, setUrl] = useState<string>();
   const [fileContent, setFileContent] = useState<string>();
   const [fileType, setFileType] = useState<"image" | "text" | "other">();
   const isText = fileType === "text";
   const isImage = fileType === "image";
+  const fileExtension = bucketItem.Name.split(".").pop()?.toLowerCase();
 
   function handleDownload() {
     if (!url) return;
@@ -42,34 +57,46 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
   }
 
   useEffect(() => {
-    if (bucketItem.Type === "file") {
-      getFileUrl(bucketItem.BucketName, bucketItem.Key.Key!).then((url) => {
-        setUrl(url);
-      });
+    let isMounted = true;
+    let objectUrl: string | undefined;
+
+    async function loadPreview() {
+      if (bucketItem.Type !== "file") return;
+
+      const blob = await getFileBlob(bucketItem.BucketName, bucketItem.Key.Key!);
+      if (!blob) return;
+
+      const nextFileType =
+        blob.type.startsWith("image/") || (fileExtension && imageExtensions.has(fileExtension))
+          ? "image"
+          : "text";
+      const nextUrl = URL.createObjectURL(blob);
+
+      if (!isMounted) {
+        URL.revokeObjectURL(nextUrl);
+        return;
+      }
+
+      objectUrl = nextUrl;
+      setUrl(nextUrl);
+      setFileType(nextFileType);
+
+      if (nextFileType === "text") {
+        setFileContent(await blob.text());
+      } else {
+        setFileContent(undefined);
+      }
     }
-  }, [bucketItem.Name]);
 
-  async function getFileType() {
-    if (!url) return;
+    loadPreview();
 
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const fileType = await fileTypeFromBlob(blob);
-    console.log(fileType);
-    setFileType(fileType?.mime?.startsWith("image/") ? "image" : "text");
-  }
-
-  useEffect(() => {
-    async function fetchFileData() {
-      if (!url) return;
-
-      await getFileType();
-      const response = await fetch(url);
-      const text = await response.text();
-      setFileContent(text);
-    }
-    fetchFileData();
-  }, [url]);
+    return () => {
+      isMounted = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [bucketItem.BucketName, bucketItem.Key, bucketItem.Type, fileExtension, getFileBlob]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

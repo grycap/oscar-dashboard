@@ -49,7 +49,7 @@ export default function BucketContent() {
     buckets,
     uploadFile,
     deleteFile,
-    getFileUrl,
+    getFileBlob,
     isUploadingFile,
     setIsUploadingFile,
   } = useMinio();
@@ -113,14 +113,16 @@ export default function BucketContent() {
   const handleDownloadFile = async (item: BucketItem) => {
     if (item.Type === "file") {
       try {
-        const url = await getFileUrl(item.BucketName, item.Key.Key!);
-        if (url) {
+        const blob = await getFileBlob(item.BucketName, item.Key.Key!);
+        if (blob) {
+          const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
           a.download = item.Name;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
+          URL.revokeObjectURL(url);
         }
       } catch (error) {
         console.error("Error downloading file:", error);
