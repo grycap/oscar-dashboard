@@ -3,7 +3,6 @@ const env = {
     "EGI_client_id": "$EGI_CHECKIN_CLIENT_ID",
     "AI4EOSC_ISSUER":"$AI4EOSC_KEYCLOAK_ISSUER",
     "AI4EOSC_client_id":"$AI4EOSC_KEYCLOAK_CLIENT_ID",
-    "AI4EOSC_client_secret":"$AI4EOSC_KEYCLOAK_CLIENT_SECRET",
     "GRYCAP_ISSUER":"$GRYCAP_KEYCLOAK_ISSUER",
     "GRYCAP_client_id":"$GRYCAP_KEYCLOAK_CLIENT_ID",
     "provider_url": "/protocol/", 
@@ -22,6 +21,7 @@ const env = {
     "external_ui_demo": "https://dashboard-demo.oscar.grycap.net",
     "demo_servers": ["https://oscar-ukri.intertwin.fedcloud.eu"],
     "ai4eosc_servers": ["https://inference.cloud.ai4eosc.eu"],
+    "eosc_dc_servers": ["https://oscar.vre.eosc-data-commons.eu"],
     "imagine_servers": ["https://inference.cloud.imagine-ai.eu","https://inference-walton.cloud.imagine-ai.eu"],
     "juno":{
         "repo": "https://raw.githubusercontent.com/grycap/oscar-juno/main/",
