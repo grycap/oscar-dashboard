@@ -27,6 +27,13 @@ const imageExtensions = new Set([
   "tiff",
   "webp",
 ]);
+const textExtensions = new Set(Object.keys(fileExtensionToLanguage));
+const textMimeTypes = new Set([
+  "application/json",
+  "application/xml",
+  "application/yaml",
+  "application/javascript",
+]);
 
 interface FilePreviewModalProps {
   isOpen: boolean;
@@ -43,9 +50,10 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
 
   const [url, setUrl] = useState<string>();
   const [fileContent, setFileContent] = useState<string>();
-  const [fileType, setFileType] = useState<"image" | "text" | "other">();
+  const [fileType, setFileType] = useState<"image" | "pdf" | "text" | "other">();
   const isText = fileType === "text";
   const isImage = fileType === "image";
+  const isPdf = fileType === "pdf";
   const fileExtension = bucketItem.Name.split(".").pop()?.toLowerCase();
 
   function handleDownload() {
@@ -66,10 +74,23 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
       const blob = await getFileBlob(bucketItem.BucketName, bucketItem.Key.Key!);
       if (!blob) return;
 
-      const nextFileType =
-        blob.type.startsWith("image/") || (fileExtension && imageExtensions.has(fileExtension))
-          ? "image"
-          : "text";
+      const isImageFile =
+        blob.type.startsWith("image/") ||
+        (!!fileExtension && imageExtensions.has(fileExtension));
+      const isPdfFile =
+        blob.type === "application/pdf" || fileExtension === "pdf";
+      const isTextFile =
+        blob.type.startsWith("text/") ||
+        textMimeTypes.has(blob.type) ||
+        (!!fileExtension && textExtensions.has(fileExtension));
+
+      const nextFileType = isImageFile
+        ? "image"
+        : isPdfFile
+          ? "pdf"
+          : isTextFile
+            ? "text"
+            : "other";
       const nextUrl = URL.createObjectURL(blob);
 
       if (!isMounted) {
@@ -140,6 +161,27 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                 alt={bucketItem.Name}
                 style={{ height: "100%", width: "auto" }}
               />
+            </div>
+          )}
+          {isPdf && url && (
+            <iframe
+              src={url}
+              title={bucketItem.Name}
+              style={{ width: "100%", height: "100%", border: 0 }}
+            />
+          )}
+          {fileType === "other" && (
+            <div
+              style={{
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+                padding: "0 24px",
+              }}
+            >
+              Preview is not available for this file type.
             </div>
           )}
         </div>
