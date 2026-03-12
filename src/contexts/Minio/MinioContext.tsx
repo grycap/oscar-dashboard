@@ -48,6 +48,7 @@ const mimeTypesByExtension: Record<string, string> = {
   heif: "image/heif",
   jpeg: "image/jpeg",
   jpg: "image/jpeg",
+  pdf: "application/pdf",
   png: "image/png",
   svg: "image/svg+xml",
   tif: "image/tiff",
