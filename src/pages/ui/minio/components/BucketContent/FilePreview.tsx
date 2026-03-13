@@ -12,28 +12,7 @@ import Editor from "@monaco-editor/react";
 import fileExtensionToLanguage from "./fileExtensionToLanguage.json";
 import { Button } from "@/components/ui/button";
 import { DownloadIcon } from "lucide-react";
-
-const imageExtensions = new Set([
-  "avif",
-  "bmp",
-  "gif",
-  "heic",
-  "heif",
-  "jpeg",
-  "jpg",
-  "png",
-  "svg",
-  "tif",
-  "tiff",
-  "webp",
-]);
-const textExtensions = new Set(Object.keys(fileExtensionToLanguage));
-const textMimeTypes = new Set([
-  "application/json",
-  "application/xml",
-  "application/yaml",
-  "application/javascript",
-]);
+import { getMimeTypeFromPath } from "@/lib/mimeType";
 
 interface FilePreviewModalProps {
   isOpen: boolean;
@@ -54,7 +33,6 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
   const isText = fileType === "text";
   const isImage = fileType === "image";
   const isPdf = fileType === "pdf";
-  const fileExtension = bucketItem.Name.split(".").pop()?.toLowerCase();
 
   function handleDownload() {
     if (!url) return;
@@ -71,19 +49,11 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
     async function loadPreview() {
       if (bucketItem.Type !== "file") return;
 
-      const blob = await getFileBlob(bucketItem.BucketName, bucketItem.Key.Key!);
-      if (!blob) return;
-
-      const isImageFile =
-        blob.type.startsWith("image/") ||
-        (!!fileExtension && imageExtensions.has(fileExtension));
-      const isPdfFile =
-        blob.type === "application/pdf" || fileExtension === "pdf";
-      const isTextFile =
-        blob.type.startsWith("text/") ||
-        textMimeTypes.has(blob.type) ||
-        (!!fileExtension && textExtensions.has(fileExtension));
-
+      const mimeByExtension = getMimeTypeFromPath(bucketItem.Name);
+      const isImageFile = mimeByExtension?.startsWith("image/");
+      const isPdfFile = mimeByExtension === "application/pdf";
+      const isTextFile = mimeByExtension?.startsWith("text/") || !!fileExtensionToLanguage[bucketItem.Name.split(".").pop()! as keyof typeof fileExtensionToLanguage];
+      console.log("Determined file type:", { mimeByExtension, isImageFile, isPdfFile, isTextFile });
       const nextFileType = isImageFile
         ? "image"
         : isPdfFile
@@ -91,6 +61,12 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
           : isTextFile
             ? "text"
             : "other";
+
+      setFileType(nextFileType);
+      if (nextFileType === "other") return;
+      const blob = await getFileBlob(bucketItem.BucketName, bucketItem.Key.Key!);
+      if (!blob) return;
+      
       const nextUrl = URL.createObjectURL(blob);
 
       if (!isMounted) {
@@ -100,7 +76,6 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
 
       objectUrl = nextUrl;
       setUrl(nextUrl);
-      setFileType(nextFileType);
 
       if (nextFileType === "text") {
         setFileContent(await blob.text());
@@ -117,20 +92,17 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
         URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [bucketItem.BucketName, bucketItem.Key, bucketItem.Type, fileExtension, getFileBlob]);
+  }, [bucketItem.BucketName, bucketItem.Key, bucketItem.Type, getFileBlob]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        style={{
-          maxWidth: "80vw",
-          width: "80vw",
-        }}
+      <DialogContent className="h-[80%] sm:w-[80%] w-full max-w-[1600px] max-h-[1000px] flex flex-col "
       >
         <DialogHeader>
           <DialogTitle>{bucketItem.Name}</DialogTitle>
         </DialogHeader>
-        <div style={{ height: "70vh", overflow: "hidden" }}>
+        <div 
+         className="flex-1 min-h-0 overflow-hidden">
           {isText && (
             <Editor
               width="100%"
@@ -140,26 +112,18 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                   bucketItem.Name.split(
                     "."
                   ).pop()! as keyof typeof fileExtensionToLanguage
-                ]
+                ] ?? "plaintext"
               }
               value={fileContent}
               options={{ readOnly: true }}
             />
           )}
           {isImage && url && (
-            <div
-              style={{
-                height: "100%",
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+            <div className="h-full w-full flex justify-center items-center">
               <img
                 src={url}
                 alt={bucketItem.Name}
-                style={{ height: "100%", width: "auto" }}
+                className="h-full w-auto"
               />
             </div>
           )}
@@ -167,20 +131,11 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
             <iframe
               src={url}
               title={bucketItem.Name}
-              style={{ width: "100%", height: "100%", border: 0 }}
+              className="w-full h-full border-0"
             />
           )}
           {fileType === "other" && (
-            <div
-              style={{
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                textAlign: "center",
-                padding: "0 24px",
-              }}
-            >
+            <div className="h-full flex items-center justify-center text-center px-6">
               Preview is not available for this file type.
             </div>
           )}
