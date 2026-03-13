@@ -27,6 +27,7 @@ import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
 import updateBucketsApi from "@/api/buckets/updateBucketsApi";
 import { Bucket as Bucket_oscar } from "@/pages/ui/services/models/service"
 import getBucketsApi from "@/api/buckets/getBucketsApi";
+import { getMimeTypeFromPath } from "@/lib/mimeType";
 
 interface BucketsFilterProps {
   myBuckets: boolean;
@@ -38,29 +39,6 @@ export enum BucketFilterBy {
   NAME = "name",
   OWNER = "owner",
   SERVICE = "service",
-}
-
-const mimeTypesByExtension: Record<string, string> = {
-  avif: "image/avif",
-  bmp: "image/bmp",
-  gif: "image/gif",
-  heic: "image/heic",
-  heif: "image/heif",
-  jpeg: "image/jpeg",
-  jpg: "image/jpeg",
-  pdf: "application/pdf",
-  png: "image/png",
-  svg: "image/svg+xml",
-  tif: "image/tiff",
-  tiff: "image/tiff",
-  webp: "image/webp",
-};
-
-function getMimeTypeFromPath(path: string) {
-  const extension = path.split(".").pop()?.toLowerCase();
-  if (!extension) return undefined;
-
-  return mimeTypesByExtension[extension];
 }
 
 export type MinioProviderData = {
@@ -337,11 +315,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       throw new Error("Failed to transform response body to byte array");
     }
     const safeArray = new Uint8Array(byteArray);
-    const contentType =
-      response.ContentType && response.ContentType !== "application/octet-stream"
-        ? response.ContentType
-        : getMimeTypeFromPath(path);
-    return new Blob([safeArray], { type: contentType || "" });
+    return new Blob([safeArray], { type: getMimeTypeFromPath(path) });
   }
 
   async function listObjects(bucketName: string, path: string = "") {
