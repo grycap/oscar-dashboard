@@ -10,6 +10,7 @@ import RequestButton from "@/components/RequestButton";
 import { PresignedURIRequest, PresignedURIResponse } from "@/models/presignedURI";
 import createPresignedObjectUrlApi from "@/api/buckets/createPresignedObjectUrlApi";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { errorMessage } from "@/lib/error";
 
 interface GenPresignedURLPopoverProps {
   bucketName: string;
@@ -107,7 +108,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
       setDashboardUploadUrl(`${location.origin}/#/upload?presignedUrl=${encodeURIComponent(response.url)}`);
       alert.success("Presigned URL generated successfully");
     } catch (error) {
-      alert.error("Error generating presigned URL");
+      alert.error(`Error generating presigned URL: ${errorMessage(error)}`);
     }
   };
 

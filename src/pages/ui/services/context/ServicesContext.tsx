@@ -23,6 +23,8 @@ import { z } from "zod";
 import Log from "../models/log";
 import { getServiceLogsApi } from "@/api/logs/getServiceLogs";
 import { delay } from "@/lib/utils";
+import { alert } from "@/lib/alert";
+import { errorMessage } from "@/lib/error";
 
 interface ServiceContextType {
   filter: ServiceFilter;
@@ -166,6 +168,7 @@ export const ServicesProvider = ({
       setServiceLogs(response);
     } catch (error) {
       console.error("Failed to fetch service logs:", error);
+      alert.error(`Failed to fetch service logs: ${errorMessage(error)}`);
       setServiceLogs({jobs: {}, next_page: null});
     } finally {
       setLogsAreLoading(false);

@@ -27,6 +27,7 @@ import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
 import updateBucketsApi from "@/api/buckets/updateBucketsApi";
 import { Bucket as Bucket_oscar } from "@/pages/ui/services/models/service"
 import getBucketsApi from "@/api/buckets/getBucketsApi";
+import { errorMessage } from "@/lib/error";
 
 interface BucketsFilterProps {
   myBuckets: boolean;
@@ -163,7 +164,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("Bucket updated successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error creating bucket");
+      alert.error(`Error updating bucket: ${errorMessage(error)}`);
     }
     updateBuckets();
   
@@ -185,6 +186,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       setBuckets(buckets);
     } catch (error) {
       console.error("Error fetching buckets:", error);
+      alert.error(`Error fetching buckets: ${errorMessage(error)}`);
     } finally {
       setBucketsAreLoading(false);
     }
@@ -202,7 +204,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("Bucket created successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error creating bucket");
+      alert.error(`Error creating bucket: ${errorMessage(error)}`);
     }
 
     updateBuckets();
@@ -219,7 +221,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("Bucket deleted successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error deleting bucket");
+      alert.error(`Error deleting bucket: ${errorMessage(error)}`);
     }
 
     updateBuckets();
@@ -240,7 +242,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("Folder created successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error creating folder");
+      alert.error(`Error creating folder: ${errorMessage(error)}`);
     }
 
     updateBuckets();
@@ -275,7 +277,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("File uploaded successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error uploading file");
+      alert.error(`Error uploading file: ${errorMessage(error)}`);
     }
 
     updateBuckets();
@@ -294,7 +296,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("File deleted successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error deleting file");
+      alert.error(`Error deleting file: ${errorMessage(error)}`);
     }
 
     updateBuckets();

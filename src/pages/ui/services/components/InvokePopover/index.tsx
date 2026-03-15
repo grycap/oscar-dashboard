@@ -34,6 +34,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import RequestButton from "@/components/RequestButton";
 import invokeServiceSync from "@/api/invoke/invokeServiceSync";
 import { isFileBase64 } from "@/lib/utils";
+import { errorMessage } from "@/lib/error";
 
 type View = "upload" | "editor" | "response";
 
@@ -138,7 +139,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
       }
       setCurrentView("response");
     } catch (error) {
-      alert.error("Error invoking service");
+      alert.error(`Error invoking service: ${errorMessage(error)}`);
     }
   };
 

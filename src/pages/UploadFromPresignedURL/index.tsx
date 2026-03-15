@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { alert } from "@/lib/alert";
 import OscarColors, { ColorWithOpacity } from "@/styles";
 import { Link, useSearchParams } from "react-router-dom";
+import { errorMessage } from "@/lib/error";
 
 export default function UploadFromPresignedURL() {
   const [file, setFile] = useState<File | null>(null);
@@ -50,7 +51,7 @@ export default function UploadFromPresignedURL() {
       setIsImage(false);
       setIsUploaded(true);
     } catch (error) {
-      alert.error("Error uploading file");
+      alert.error(`Error uploading file: ${errorMessage(error)}`);
       console.error(error);
     } finally {
       setIsLoading(false);
