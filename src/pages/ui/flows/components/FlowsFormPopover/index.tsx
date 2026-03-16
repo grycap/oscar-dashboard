@@ -15,6 +15,7 @@ import { Plus, RefreshCcwIcon } from "lucide-react";
 import RequestButton from "@/components/RequestButton";
 import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
+import { errorMessage } from "@/lib/error";
 
 
 
@@ -148,7 +149,7 @@ function FlowsFormPopover() {
       alert.success("Node-RED instance deployed");
       setIsOpen(false);
     } catch (error) {
-      alert.error("Error deploying Node-RED instance");
+      alert.error(`Error deploying Node-RED instance: ${errorMessage(error)}`);
     }
   };
 

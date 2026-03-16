@@ -26,6 +26,7 @@ import {
 import { bytesSizeToHumanReadable } from "@/lib/utils";
 import UploadFileDialog from "@/components/UploadFileDialog";
 import GenPresignedURLPopover from "../GenPresignedURLPopover";
+import { errorMessage } from "@/lib/error";
 
 export type BucketItem =
   | {
@@ -124,7 +125,7 @@ export default function BucketContent() {
           document.body.removeChild(a);
         }
       } catch (error) {
-        console.error("Error downloading file:", error);
+        console.error(`Error downloading file: ${errorMessage(error)}`);
       }
     }
   };

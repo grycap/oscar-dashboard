@@ -9,7 +9,7 @@ import { isUserOscar, shortenFullname } from "@/lib/utils";
 import { Bucket_visibility } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Bucket } from "@aws-sdk/client-s3";
-import { ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-react";
+import { AlertCircle, ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -43,7 +43,7 @@ function isBucketVisibility(value: unknown): boolean {
 }
 
 export default function BucketList() {
-  const { buckets, bucketsOSCAR, bucketsAreLoading, deleteBucket, bucketsFilter } = useMinio();
+  const { buckets, bucketsOSCAR, bucketsAreLoading, bucketsLoadingError, deleteBucket, bucketsFilter } = useMinio();
   const [itemsToDelete, setItemsToDelete] = useState<Bucket[]>([]);
   const [bucketsList, setBucketsList] = useState<BucketList[]>([]);
   const [filteredBucketsList, setFilteredBucketsList] = useState<BucketList[]>([]);
@@ -90,6 +90,15 @@ export default function BucketList() {
     setFilteredBucketsList(filteredBuckets);
   }, [bucketsFilter, bucketsList]);
 
+  function loadingErrorView() {
+    return (
+      <div className="flex flex-col h-full w-[99%] self-center items-center justify-center gap-2 rounded-lg border border-red-100 bg-red-50 text-red-600">
+        <AlertCircle size={28} className="text-red-400" />
+        <p className="text-sm font-medium">Failed to load buckets: connection error</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <DeleteDialog
@@ -104,13 +113,15 @@ export default function BucketList() {
       <div className="flex items-center justify-center h-screen">
         <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
       </div>
-      : 
-      <GenericTable<BucketList>
-        idKey="Name"
-        data={filteredBucketsList}
-        columns={[
-          {
-            header: "Name",
+      : bucketsLoadingError ? (
+        loadingErrorView()
+      ) : (
+        <GenericTable<BucketList>
+          idKey="Name"
+          data={filteredBucketsList}
+          columns={[
+            {
+              header: "Name",
             accessor: (row) => (
               <Link to={`/ui/minio/${row.Name}`}>{row.Name}</Link>
             ),
@@ -196,7 +207,8 @@ export default function BucketList() {
             },
           },
         ]}
-      />
+        />
+        )
       }
     </>
   );

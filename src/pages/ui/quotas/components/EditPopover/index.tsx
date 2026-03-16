@@ -8,6 +8,7 @@ import { alert } from "@/lib/alert";
 import putUserQuotaApi from "@/api/quotas/putQuotaApi";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { bytesSizeToHumanReadable } from "@/lib/utils";
+import { errorMessage } from "@/lib/error";
 
 interface EditPopoverProps {
   isOpen: boolean;
@@ -75,7 +76,7 @@ function EditPopover({ isOpen, setIsOpen, user }: EditPopoverProps) {
       setIsOpen(false);
     } catch (error) {
       console.log(error)
-      alert.error(`Error updating quota for user ${user.user_id}`);
+      alert.error(`Error updating quota for user ${user.user_id}: ${errorMessage(error)}`);
     }
   };
 
