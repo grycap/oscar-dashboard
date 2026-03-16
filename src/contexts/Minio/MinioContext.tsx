@@ -49,6 +49,7 @@ export type MinioProviderData = {
   bucketsOSCAR: Bucket_oscar[];
   buckets: Bucket[];
   bucketsAreLoading: boolean;
+  bucketsLoadingError: boolean;
   isUploadingFile: boolean;
   setIsUploadingFile: (isUploading: boolean) => void;
   setBuckets: (buckets: Bucket[]) => void;
@@ -87,6 +88,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [bucketsOSCAR, setBucketsOSCAR] = useState<Bucket_oscar[]>([]);
   const [bucketsAreLoading, setBucketsAreLoading] = useState<boolean>(false);
+  const [bucketsLoadingError, setBucketsLoadingError] = useState<boolean>(false);
   const [isUploadingFile, setIsUploadingFile] = useState<boolean>(false);
 
   const [bucketsFilter, setBucketsFilter] = useState<BucketsFilterProps>({
@@ -175,6 +177,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!client) return;
     try {
       setBucketsAreLoading(true);
+      setBucketsLoadingError(false);
       const res = await client.send(new ListBucketsCommand({}));
       const buckets = res?.Buckets;
       if (!buckets) return;
@@ -187,6 +190,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error("Error fetching buckets:", error);
       alert.error(`Error fetching buckets: ${errorMessage(error)}`);
+      setBucketsLoadingError(true);
     } finally {
       setBucketsAreLoading(false);
     }
@@ -423,6 +427,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         bucketsOSCAR,
         buckets,
         bucketsAreLoading,
+        bucketsLoadingError,
         isUploadingFile,
         setIsUploadingFile,
         setBuckets,
