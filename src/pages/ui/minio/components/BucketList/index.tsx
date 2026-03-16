@@ -1,6 +1,7 @@
 import DeleteDialog from "@/components/DeleteDialog";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import GenericTable from "@/components/Table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -92,9 +93,16 @@ export default function BucketList() {
 
   function loadingErrorView() {
     return (
-      <div className="flex flex-col h-full w-[99%] self-center items-center justify-center gap-2 rounded-lg border border-red-100 bg-red-50 text-red-600">
-        <AlertCircle size={28} className="text-red-400" />
-        <p className="text-sm font-medium">Failed to load buckets: connection error</p>
+      <div className="flex items-center justify-center h-full w-full">
+        <Alert variant="destructive" className="max-w-md bg-red-50 text-red-400">
+          <div className="flex flex-col items-center text-center">
+          <AlertCircle className="h-6 w-6 mb-2" />
+          <AlertTitle>Failed to load buckets</AlertTitle>
+          <AlertDescription className="mt-1 text-sm">
+            Could not retrieve bucket data due to a connection error. Check your network or MinIO endpoint configuration and try again.
+          </AlertDescription>
+          </div>
+        </Alert>
       </div>
     );
   }
