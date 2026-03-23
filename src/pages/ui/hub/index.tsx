@@ -137,9 +137,9 @@ function HubView() {
                   style={{ fontSize: 16 }}
                 />
                 <label
-                  htmlFor="syncServices"
+                  htmlFor="exposedServices"
                   style={{ fontSize: 14}}
-                >Esposed services</label>
+                >Exposed services</label>
               </div>
             </SelectContent>
           </Select>
