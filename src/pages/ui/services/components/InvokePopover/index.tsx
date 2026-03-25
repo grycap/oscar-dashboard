@@ -84,7 +84,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
     } else if (uploadedFile.type.startsWith("image/")) {
       setFileType("image");
     } else {
-      alert.error("Type file not supported");
+      alert.error("File type not supported");
       return;
     }
 
@@ -187,7 +187,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
                   setFileType(null);
                 }}
               >
-                Or use code editor
+                Or use the code editor
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
