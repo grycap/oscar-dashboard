@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { UploadBatchProgress } from "@/contexts/Minio/MinioContext";
 import OscarColors from "@/styles";
-import { useEffect } from "react";
 
 export default function UploadFileDialog({
   progress,
@@ -18,38 +17,23 @@ export default function UploadFileDialog({
   progress: UploadBatchProgress | null;
   onClose: () => void;
 }) {
-  const isOpen = !!progress;
-  const isUploading = !!progress && progress.completed < progress.total;
+  const isOpen = progress !== null;
+  const isUploading = !!progress && progress.completed < progress.results.length;
   const progressPercent = progress
-    ? progress.total === 0
+    ? progress.results.length === 0
       ? 0
-      : Math.round((progress.completed / progress.total) * 100)
+      : Math.round((progress.completed / progress.results.length) * 100)
     : 0;
 
-  useEffect(() => {
-    if (!progress || isUploading || progress.failed > 0) {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      onClose();
-    }, 900);
-
-    return () => window.clearTimeout(timeout);
-  }, [isUploading, onClose, progress]);
-
   const failedResults = progress?.results.filter((result) => !result.success) ?? [];
+
 
   return (
     <Dialog
       open={isOpen}
-      onOpenChange={(open) => {
-        if (!open && !isUploading) {
-          onClose();
-        }
-      }}
+      onOpenChange={onClose}
     >
-      <DialogContent className="sm:max-w-[425px] data">
+      <DialogContent className="sm:max-w-[425px]" >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isUploading ? "Uploading Files" : "Upload Summary"}
@@ -58,7 +42,7 @@ export default function UploadFileDialog({
             <span className="block mt-2 font-medium text-foreground">
               {isUploading
                 ? "Please wait while your files are being uploaded."
-                : `Completed ${progress?.completed ?? 0} of ${progress?.total ?? 0} uploads.`}
+                : `Completed ${progress?.completed ?? 0} of ${progress?.results.length ?? 0} uploads.`}
             </span>
           </DialogDescription>
         </DialogHeader>
@@ -74,7 +58,7 @@ export default function UploadFileDialog({
             />
           </div>
           <p className="text-sm text-gray-600 mt-2 text-center">
-            {progressPercent}% ({progress?.completed ?? 0}/{progress?.total ?? 0})
+            {progressPercent}% ({progress?.completed ?? 0}/{progress?.results.length ?? 0})
           </p>
         </div>
 
@@ -84,8 +68,8 @@ export default function UploadFileDialog({
           </div>
         )}
 
-        {!isUploading && (
-          <div className="grid gap-2">
+        {!isUploading && !progress?.currentFileName && (
+          <div className="grid gap-2 text-center">
             <div className="text-sm text-gray-700">
               Successful: {((progress?.completed ?? 0) - (progress?.failed ?? 0))} | Failed: {progress?.failed ?? 0}
             </div>
@@ -102,11 +86,9 @@ export default function UploadFileDialog({
         )}
 
         <DialogFooter className="sm:justify-start">
-          {!isUploading && (
-            <Button variant="outline" onClick={onClose}>
-              Close
-            </Button>
-          )}
+          <Button className="w-full" variant="outline" onClick={onClose}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
