@@ -36,6 +36,21 @@ interface BucketsFilterProps {
   by: BucketFilterBy;
 }
 
+export interface UploadFileResult {
+  fileName: string;
+  key: string;
+  success: boolean;
+  error?: string;
+}
+
+export interface UploadBatchProgress {
+  total: number;
+  completed: number;
+  failed: number;
+  currentFileName?: string;
+  results: UploadFileResult[];
+}
+
 export enum BucketFilterBy {
   NAME = "name",
   OWNER = "owner",
@@ -50,9 +65,9 @@ export type MinioProviderData = {
   bucketsOSCAR: Bucket_oscar[];
   buckets: Bucket[];
   bucketsAreLoading: boolean;
+  uploadProgress: UploadBatchProgress | null;
+  clearUploadProgress: () => void;
   bucketsLoadingError: boolean;
-  isUploadingFile: boolean;
-  setIsUploadingFile: (isUploading: boolean) => void;
   setBuckets: (buckets: Bucket[]) => void;
   createBucket: (bucketName: Bucket_oscar) => Promise<void>;
   updateBucketsVisibilityControl: (bucketName: Bucket_oscar) => Promise<void>; 
@@ -66,7 +81,11 @@ export type MinioProviderData = {
   }>;
   deleteBucket: (bucketName: string) => Promise<void>;
   createFolder: (bucketName: string, folderName: string) => Promise<void>;
-  uploadFile: (bucketName: string, path: string, file: File) => Promise<void>;
+  uploadFiles: (
+    bucketName: string,
+    path: string,
+    files: File[]
+  ) => Promise<UploadFileResult[]>;
   deleteFile: (bucketName: string, path: string) => Promise<void>;
   getFileBlob: (bucketName: string, path: string) => Promise<Blob | undefined>;
   listObjects: (bucketName: string, path: string) => Promise<_Object[]>;
@@ -89,8 +108,8 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [bucketsOSCAR, setBucketsOSCAR] = useState<Bucket_oscar[]>([]);
   const [bucketsAreLoading, setBucketsAreLoading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<UploadBatchProgress | null>(null);
   const [bucketsLoadingError, setBucketsLoadingError] = useState<boolean>(false);
-  const [isUploadingFile, setIsUploadingFile] = useState<boolean>(false);
 
   const [bucketsFilter, setBucketsFilter] = useState<BucketsFilterProps>({
     myBuckets: false,
@@ -253,41 +272,114 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     updateBuckets();
   }
 
-  async function uploadFile(
+  function clearUploadProgress() {
+    setUploadProgress(null);
+  }
+
+  async function uploadFiles(
     bucketName: string,
     path: string,
-    file: File
-  ): Promise<void> {
-    setIsUploadingFile(true);
+    files: File[]
+  ): Promise<UploadFileResult[]> {
+    if (!client || files.length === 0) return [];
 
-    const reader = new FileReader();
-    const  fileContent = await new Promise<string | ArrayBuffer | null>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result);  // Resolver la promesa cuando se cargue el archivo
-        reader.onerror = (error) => reject(error);     // Rechazar la promesa si ocurre un error
-        reader.readAsArrayBuffer(file);  // Si el archivo es de texto, usa readAsText. Para binarios usa readAsArrayBuffer o readAsDataURL
-      });
-   
-    if (!client) return;
+    const results: UploadFileResult[] = [];
 
-    const key = path ? `${path}${file.name}` : file.name;
-  
-    try {
-      const command = new PutObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-        ContentType: file.type || undefined,
-        // @ts-ignore
-        Body: fileContent,
-      });
-      await client.send(command);
-      alert.success("File uploaded successfully");
-    } catch (error) {
-      console.error(error);
-      alert.error(`Error uploading file: ${errorMessage(error)}`);
+    setUploadProgress({
+      total: files.length,
+      completed: 0,
+      failed: 0,
+      currentFileName: files[0]?.name,
+      results: [],
+    });
+
+    for (const file of files) {
+      const key = path ? `${path}${file.name}` : file.name;
+
+      setUploadProgress((current) =>
+        current
+          ? {
+              ...current,
+              currentFileName: file.name,
+            }
+          : current
+      );
+
+      try {
+        const fileContent = new Uint8Array(await file.arrayBuffer());
+        const command = new PutObjectCommand({
+          Bucket: bucketName,
+          Key: key,
+          ContentType: file.type || undefined,
+          Body: fileContent,
+        });
+        await client.send(command);
+
+        const result: UploadFileResult = {
+          fileName: file.name,
+          key,
+          success: true,
+        };
+        results.push(result);
+        setUploadProgress((current) =>
+          current
+            ? {
+                ...current,
+                completed: current.completed + 1,
+                results: [...current.results, result],
+              }
+            : current
+        );
+      } catch (error) {
+        console.error(error);
+        const message =
+          error instanceof Error ? error.message : "Error uploading file";
+        const result: UploadFileResult = {
+          fileName: file.name,
+          key,
+          success: false,
+          error: message,
+        };
+        results.push(result);
+        setUploadProgress((current) =>
+          current
+            ? {
+                ...current,
+                completed: current.completed + 1,
+                failed: current.failed + 1,
+                results: [...current.results, result],
+              }
+            : current
+        );
+      }
     }
 
-    updateBuckets();
-    setIsUploadingFile(false);
+    await updateBuckets();
+
+    setUploadProgress((current) =>
+      current
+        ? {
+            ...current,
+            currentFileName: undefined,
+          }
+        : current
+    );
+
+    const successfulUploads = results.filter((result) => result.success).length;
+    const failedUploads = results.length - successfulUploads;
+    const fileLabel = files.length === 1 ? "file" : "files";
+
+    if (failedUploads === 0) {
+      alert.success(`Uploaded ${successfulUploads} ${fileLabel} successfully`);
+    } else if (successfulUploads === 0) {
+      alert.error(`Failed to upload ${failedUploads} ${fileLabel}`);
+    } else {
+      alert.warning(
+        `Uploaded ${successfulUploads} ${fileLabel}. ${failedUploads} failed.`
+      );
+    }
+
+    return results;
   }
 
   async function deleteFile(bucketName: string, path: string) {
@@ -427,9 +519,9 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         bucketsOSCAR,
         buckets,
         bucketsAreLoading,
+        uploadProgress,
+        clearUploadProgress,
         bucketsLoadingError,
-        isUploadingFile,
-        setIsUploadingFile,
         setBuckets,
         createBucket,
         createFolder,
@@ -437,7 +529,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         updateBucketsVisibilityControl,
         getBucketItems,
         deleteBucket,
-        uploadFile,
+        uploadFiles,
         deleteFile,
         getFileBlob,
         listObjects,

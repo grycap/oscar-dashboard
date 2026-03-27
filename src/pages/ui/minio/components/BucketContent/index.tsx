@@ -49,11 +49,11 @@ export default function BucketContent() {
     getBucketItems,
     downloadAndZipFolders,
     buckets,
-    uploadFile,
+    uploadFiles,
     deleteFile,
     getFileBlob,
-    isUploadingFile,
-    setIsUploadingFile,
+    uploadProgress,
+    clearUploadProgress,
   } = useMinio();
 
   const [items, setItems] = useState<BucketItem[]>([]);
@@ -97,7 +97,7 @@ export default function BucketContent() {
     setIsDroppingFile(false); // Reset drop state when the file is released
     const files = event.dataTransfer.files;
     if (files.length > 0) {
-      uploadFile(bucketName!, path, files[0]);
+      uploadFiles(bucketName!, path, Array.from(files));
     }
   };
 
@@ -365,7 +365,10 @@ export default function BucketContent() {
             },
           ]}
         />
-        <UploadFileDialog isOpen={isUploadingFile} setIsOpen={setIsUploadingFile}/>
+        <UploadFileDialog
+          progress={uploadProgress}
+          onClose={clearUploadProgress}
+        />
       </motion.div>
     </>
   );
