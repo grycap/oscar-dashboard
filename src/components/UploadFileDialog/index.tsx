@@ -73,11 +73,11 @@ export default function UploadFileDialog({
             <div className="text-sm text-gray-700">
               Successful: {((progress?.completed ?? 0) - (progress?.failed ?? 0))} | Failed: {progress?.failed ?? 0}
             </div>
-            {failedResults.length > 0 && (
-              <div className="max-h-40 overflow-y-auto rounded border bg-gray-50 p-3">
+            {true && (
+              <div className="max-h-40 overflow-y-auto rounded border bg-gray-50 p-3 text-left">
                 {failedResults.map((result) => (
-                  <div key={result.key} className="text-sm text-gray-700">
-                    <span className="font-medium">{result.fileName}</span>: {result.error ?? "Upload failed"}
+                  <div key={result.key} className="text-sm text-red-700">
+                    <span className="font-medium text-sm text-gray-700">{result.fileName}</span>: {result.error ?? "Upload failed"}
                   </div>
                 ))}
               </div>
