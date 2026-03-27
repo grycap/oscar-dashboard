@@ -23,7 +23,7 @@ function ServicesList() {
   const { authData } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const navigate = useNavigate();
-  const buttonRef = useRef<Map<String, HTMLButtonElement>>(new Map())
+  const buttonRef = useRef<Map<string, HTMLButtonElement>>(new Map())
 
   async function handleGetServices() {
     try {

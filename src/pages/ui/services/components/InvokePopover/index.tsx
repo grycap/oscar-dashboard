@@ -126,7 +126,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
         token,
         endpoint: authData.endpoint,
       });
-      let responseString = responseLocal as string;
+      const responseString = responseLocal as string;
       setResponse(responseString);
       if (responseString.trim() !== "") {
         if (responseString.startsWith("data:image/")) {
