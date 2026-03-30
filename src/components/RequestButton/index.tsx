@@ -40,7 +40,7 @@ function RequestButton({
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           style={{ overflow: "hidden", display: "flex", alignItems: "center" }}
         >
-          {isLoading && <Loader2 className="animate-spin" />}
+          {isLoading && icon}
         </motion.div>
         <div>
           {children}

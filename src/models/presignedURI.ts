@@ -15,4 +15,4 @@ export interface PresignedURIResponse {
   headers?: {
     "Content-Type": string;
   };
-};
+}

@@ -27,7 +27,7 @@ function MinioTopbar() {
   const { name, path } = useSelectedBucket();
   const { updateBuckets, bucketsOSCAR, bucketsFilter, setBucketsFilter } = useMinio();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
-  const [serviceAssociate, setServiceAssociate] = useState<Boolean>(true)
+  const [serviceAssociate, setServiceAssociate] = useState<boolean>(true)
   const {authData} = useAuth();
 
   const emptyBucket: Bucket = {

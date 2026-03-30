@@ -114,7 +114,7 @@ function FlowsFormPopover() {
 
       const serviceName = formData.name || nameService();
 
-      let modifiedService: Service = {
+      const modifiedService: Service = {
         ...service,
         name: serviceName,
         vo: formData.vo,

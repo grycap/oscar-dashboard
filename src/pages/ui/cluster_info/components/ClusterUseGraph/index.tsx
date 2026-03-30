@@ -81,11 +81,10 @@ function ClusterUseGraph() {
   const chartRef = useRef<any>(null);
 
   const chartData = useMemo<LineProps>(() => {
-    let labels: string[];
     let data: number[];
 
     const grouped = groupLogsByLabel(logs, scale);
-    labels = Array.from(grouped.keys());
+    const labels = Array.from(grouped.keys());
     if (datasetType === 'avgLatency') {
       data = Array.from(grouped.values()).map(group => {
         const sum = group.reduce((acc, l) => acc + (parseFloat(l.latency) || 0), 0);
