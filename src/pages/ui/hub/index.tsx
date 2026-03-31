@@ -27,7 +27,7 @@ function HubView() {
     setIsLoading(true);
     const roCrateServices = await parseROCrateDataJS("grycap", "oscar-hub", "main");
     let i = 0;
-    let services: Record<string, [RoCrateServiceDefinition, Service]> = {};
+    const services: Record<string, [RoCrateServiceDefinition, Service]> = {};
     for (const roCrateServiceDef of roCrateServices) {
       const service = await fetchService(roCrateServiceDef);
       service && (services[i.toString()] = [roCrateServiceDef, service]);

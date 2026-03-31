@@ -21,12 +21,11 @@ function ServicesTopbar() {
         return { title: "Services", linkTo: "/ui/services" };
       case ServiceViewMode.Update:
         const location = window.location.hash.split("/");
-        let header = location[location.length - 1];
-        let linkTo = window.location.hash.replace('#', '');
+        const header = location[location.length - 1];
+        const linkTo = window.location.hash.replace('#', '');
 
         if (header === "logs") {
-          header = "Logs";
-          return { title: header, linkTo: linkTo };
+          return { title: "Logs", linkTo: linkTo };
         }
         return { title: "Services", linkTo: "/ui/services" };
       default:

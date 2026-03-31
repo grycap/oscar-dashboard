@@ -15,6 +15,7 @@ import { handleFilterServices } from "./domain/filterUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import MoreActionsPopover from "./components/MoreActionsPopover";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
+import { errorMessage } from "@/lib/error";
 
 function ServicesList() {
   const { services, servicesAreLoading, setServices, setFormService, filter } =
@@ -22,14 +23,14 @@ function ServicesList() {
   const { authData } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const navigate = useNavigate();
-  const buttonRef = useRef<Map<String, HTMLButtonElement>>(new Map())
+  const buttonRef = useRef<Map<string, HTMLButtonElement>>(new Map())
 
   async function handleGetServices() {
     try {
       const response = await getServicesApi();
       setServices(response);
     } catch (error) {
-      alert.error("Error getting services");
+      alert.error(`Error getting services: ${errorMessage(error)}`);
       console.error(error);
     }
   }

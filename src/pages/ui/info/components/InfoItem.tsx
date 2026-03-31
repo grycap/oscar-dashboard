@@ -10,6 +10,7 @@ interface Props {
   enableCopy?: boolean;
   displayLabel?: boolean;
   link?: {url?: string, enableRedirectIcon: boolean;};
+  padding?: string;
 }
 
 function InfoItem({
@@ -19,6 +20,7 @@ function InfoItem({
   enableCopy = false,
   displayLabel = true,
   link = {enableRedirectIcon: false},
+  padding = "16px",
 }: Props) {
   const [isRevealed, setIsRevealed] = useState(false);
 
@@ -37,7 +39,7 @@ function InfoItem({
       style={{
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "16px",
+        padding: padding,
       }}
     >
       <h2 style={{ fontSize: "13px", fontWeight: "500" }}>
