@@ -137,6 +137,36 @@ export const fetchFromGitHubOptions = {
   }
 };
 
+function isLoopbackHostname(hostname: string): boolean {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1';
+}
+
+// Safari blocks mixed-content XHR/fetch to loopback more aggressively than Chrome.
+// When the dashboard itself is already running on https://localhost, reuse that origin.
+export function normalizeLoopbackAPIEndpoint(endpoint: string, currentOrigin = window.location.origin): string {
+  try {
+    const endpointURL = new URL(endpoint);
+    const originURL = new URL(currentOrigin);
+
+    const isLoopbackUpgrade =
+      endpointURL.protocol === 'http:' &&
+      originURL.protocol === 'https:' &&
+      isLoopbackHostname(endpointURL.hostname) &&
+      isLoopbackHostname(originURL.hostname) &&
+      endpointURL.hostname === originURL.hostname &&
+      (endpointURL.port === '' || endpointURL.port === '80') &&
+      (originURL.port === '' || originURL.port === '443');
+
+    if (isLoopbackUpgrade) {
+      return originURL.origin;
+    }
+  } catch {
+    return endpoint;
+  }
+
+  return endpoint;
+}
+
 export function isSafariBrowser(): boolean {
   const ua = navigator.userAgent;
   const provider = navigator.vendor;
