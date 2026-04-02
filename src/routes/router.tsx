@@ -15,6 +15,9 @@ import TerminalView from "@/pages/ui/terminals";
 // Add the dashboard route
 import Cluster from "@/pages/ui/cluster_info"
 import HubView from "@/pages/ui/hub";
+import Quotas from "@/pages/ui/quotas";
+import AdminRoute from "@/components/AdminRoute/AdminRoute";
+import UploadFromPresignedURL from "@/pages/UploadFromPresignedURL";
 
 function AppRouter() {
   return (
@@ -40,7 +43,16 @@ function AppRouter() {
           <Route path="terminals" element={<TerminalView />} />
           <Route path="status" element={<Cluster />} />
           <Route path="hub" element={<HubView />} />
+          <Route path="quotas" element={
+            <AdminRoute>
+              <Quotas />
+            </AdminRoute>
+            }
+          />
+          
+          
         </Route>
+        <Route path="/upload/*" element={<UploadFromPresignedURL />} />
         <Route path="/login" element={<Login />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />

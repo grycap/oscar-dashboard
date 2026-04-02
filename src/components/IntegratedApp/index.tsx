@@ -15,6 +15,7 @@ import ServiceRedirectButton from "../ServiceRedirectButton";
 import DeleteDialog from "../DeleteDialog";
 import GenericTopbar from "../Topbar";
 import ResponsiveOwnerField from "../ResponsiveOwnerField";
+import { errorMessage } from "@/lib/error";
 
 interface IntegratedAppProps {
     appName: string;
@@ -46,7 +47,7 @@ function IntegratedApp({
       await updateServiceApi(service);
       alert.success("Service restarted successfully");
     } catch (error) {
-      alert.error("Error restarting service");
+      alert.error(`Error restarting service: ${errorMessage(error)}`);
       console.error(error);
     }
   }
@@ -57,7 +58,7 @@ function IntegratedApp({
       const response = await getServicesApi();
       setServices(response);
     } catch (error) {
-      alert.error("Error getting services");
+      alert.error(`Error getting services: ${errorMessage(error)}`);
       console.error(error);
     } finally {
       setIsLoading(false);

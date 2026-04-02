@@ -1,6 +1,7 @@
 import YAML from "yaml";
 import { Service } from "../../../models/service";
 import { alert } from "@/lib/alert";
+import { errorMessage } from "@/lib/error";
 
 const yamlToServices = (fdlString: string, scriptString: string) => {
   try {
@@ -20,8 +21,8 @@ const yamlToServices = (fdlString: string, scriptString: string) => {
 
   return services;
   } catch (error) {
-    alert.error(`Error creating service ${error}`);
-    return 
+    alert.error(`Error creating service: ${errorMessage(error)}`);
+    return [];
   }
 
 };

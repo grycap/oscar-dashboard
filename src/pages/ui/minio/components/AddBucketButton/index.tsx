@@ -23,7 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
   bucket:Bucket;
-  create: Boolean;
+  create: boolean;
   disabled?: boolean;
 }
 
