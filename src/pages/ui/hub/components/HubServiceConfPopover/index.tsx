@@ -14,6 +14,7 @@ import { RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RoCrateServiceDefinition } from "@/lib/roCrate";
 import HubCardHeader from "../HubCardHeader";
+import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 
 interface HubServiceConfPopoverProps {
     roCrateServiceDef: RoCrateServiceDefinition;
@@ -28,6 +29,8 @@ interface HubServiceConfPopoverProps {
 function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, setIsOpen, className = "", variant = "default", title = "Deploy Service" }: HubServiceConfPopoverProps) {
   const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
+  const [newBucket, setNewBucket] = useState(false);
+  const buckets = useGetPrivateBuckets();
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
 	const asyncService = roCrateServiceDef.type.some(t => t.toLowerCase() === "asynchronous");
@@ -305,8 +308,13 @@ return (
             </div>
 						{(asyncService || mountBucket) && 
             <div>
-              <Label>New Bucket</Label>
-              <Input
+              <Label className="inline-flex items-center cursor-pointer">
+                <input type="checkbox" value="" checked={newBucket || asyncService} disabled={asyncService} className="sr-only peer" onClick={() => { setNewBucket(!newBucket); setFormData({ ...formData, bucket: "" }); }} />
+                <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600 peer-disabled:opacity-60 peer-disabled:cursor-not-allowed"></div>
+                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300 peer-disabled:cursor-default">New Bucket</span>
+              </Label>
+              {newBucket || !mountBucket ? 
+                <Input
                   type="input"
                   onFocus={(e) => (e.target.type = "text")}
                   style={{ width: "100%",
@@ -319,6 +327,28 @@ return (
                   }}
                   placeholder="Enter new bucket name"
                 />
+              :
+                <Select
+                  value={formData.bucket}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, bucket: value });
+                    if (errors.bucket) setErrors({ ...errors, bucket: false });
+                  }}
+                >
+                  <SelectTrigger className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}>
+                    <SelectValue
+                      placeholder="Select a bucket"
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {buckets.map((bucket) => (
+                      <SelectItem key={bucket.bucket_name} value={bucket.bucket_name}>
+                        {bucket.bucket_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              }
             </div>
 						}
             {formData?.enviromentVars && Object.entries(formData.enviromentVars).map(([key, value]) => (
