@@ -1,5 +1,5 @@
 import OscarLogo from "@/assets/oscar-big.png";
-import { Boxes, Codesandbox, Database, Info, LogOut, Notebook, Route, BarChart2, ChartPie } from "lucide-react";
+import { Boxes, Codesandbox, Database, Info, LogOut, Notebook, Route, BarChart2, ChartPie, Terminal } from "lucide-react";
 import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -46,6 +46,11 @@ function AppSidebar() {
       title: "Flows",
       icon: <Route size={20} />,
       path: "/flows",
+    },
+    {
+      title: "Terminals",
+      icon: <Terminal size={20} />,
+      path: "/terminals",
     },
     {
       title: "Hub",

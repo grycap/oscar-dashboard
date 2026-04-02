@@ -23,9 +23,17 @@ interface IntegratedAppProps {
     filteredServices: Service[];
     DeployInstancePopover: React.ComponentType;
     additionalExposedPathArgs?: string;
+    healthcheckPath?: string;
 }
 
-function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, additionalExposedPathArgs, DeployInstancePopover}: IntegratedAppProps) {
+function IntegratedApp({
+  appName,
+  deployedServiceEndpoint,
+  filteredServices,
+  additionalExposedPathArgs,
+  healthcheckPath,
+  DeployInstancePopover,
+}: IntegratedAppProps) {
   const { setFormService } = useServicesContext();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const { setServices } = useServicesContext();
@@ -175,6 +183,7 @@ function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, add
                   service={service}
                   endpoint={deployedServiceEndpoint}
                   additionalExposedPathArgs={additionalExposedPathArgs}
+                  healthcheckPath={healthcheckPath}
                 />
               </div>
             ),
