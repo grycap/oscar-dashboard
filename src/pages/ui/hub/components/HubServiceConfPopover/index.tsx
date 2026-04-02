@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { RoCrateServiceDefinition } from "@/lib/roCrate";
 import HubCardHeader from "../HubCardHeader";
 import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
+import { errorMessage } from "@/lib/error";
 
 interface HubServiceConfPopoverProps {
     roCrateServiceDef: RoCrateServiceDefinition;
@@ -182,7 +183,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       setIsOpen(false);
     } catch (error) {
       console.log(error)
-      alert.error(`Error deploying ${roCrateServiceDef.name} instance`);
+      alert.error(`Error deploying ${roCrateServiceDef.name} instance: ${errorMessage(error)}`);
     }
   };
 
