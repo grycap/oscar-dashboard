@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import HubCard from "./components/HubCard/index";
 import parseROCrateDataJS, { RoCrateServiceDefinition } from "@/lib/roCrate";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import GenericTable from "@/components/Table";
 import HubTableActions from "./components/HubTableActions";
 import LayoutSelect from "@/components/LayoutSelect";
 import { getHubServiceTypeTagColor } from "@/lib/utils";
+import HubSrcPopoverButton, { DEFAULT_SOURCES, GitHubSource } from "./components/HubSrcPopoverButton";
 
 function HubView() {
   const [filteredServices, setFilteredServices] = useState<Record<string, [RoCrateServiceDefinition, Service]>>({});
@@ -22,10 +23,13 @@ function HubView() {
   const [filter, setFilter] = useState<{serviceType: string}>({serviceType: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [isGridView, setIsGridView] = useState(true);
+  const [selectedSource, setSelectedSource] = useState<GitHubSource>(DEFAULT_SOURCES[0]);
 
   async function fetchData() {
     setIsLoading(true);
-    const roCrateServices = await parseROCrateDataJS("grycap", "oscar-hub", "main");
+    const repoOwner = selectedSource.repository.split("/")[0];
+    const repoName = selectedSource.repository.split("/")[1];
+    const roCrateServices = await parseROCrateDataJS(repoOwner, repoName, selectedSource.branch);
     let i = 0;
     const services: Record<string, [RoCrateServiceDefinition, Service]> = {};
     for (const roCrateServiceDef of roCrateServices) {
@@ -59,6 +63,10 @@ function HubView() {
   useEffect(() => {
     document.title ="OSCAR - Hub"
   }, []);
+
+  useMemo(() => {
+    fetchData();
+  }, [selectedSource]);
 
   // Filter services based on search query
   useEffect(() => {
@@ -151,7 +159,11 @@ function HubView() {
           />
         </div>
       }
-      />
+      >
+        <div className="flex flex-row items-center w-full justify-end gap-2">
+          <HubSrcPopoverButton variant="mainGreen" selectedSource={selectedSource} setSelectedSource={setSelectedSource} />
+        </div>
+      </GenericTopbar>
       <div className={`grid grid-cols-1 gap-6 ${isGridView ? `w-[95%] max-w-[1600px]` : 'w-full'} mx-auto mt-4 min-w-[300px] content-start`}>
         {isLoading ? (
         <div className="flex items-center justify-center h-[80vh]">
