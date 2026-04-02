@@ -72,7 +72,7 @@ function ServiceRedirectButton({
     return () => {
       isMounted = false;
     };
-  }, [clusterInfo, endpoint, healthcheckPath, service]);
+  }, [service.name, endpoint, healthcheckPath]);
 
   return isAlive ? (
     <Link
