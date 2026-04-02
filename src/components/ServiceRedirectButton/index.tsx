@@ -7,7 +7,17 @@ import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 
 
-function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }: { service: Service; endpoint: string; additionalExposedPathArgs?: string }) {
+function ServiceRedirectButton({
+  service,
+  endpoint,
+  additionalExposedPathArgs,
+  healthcheckPath,
+}: {
+  service: Service;
+  endpoint: string;
+  additionalExposedPathArgs?: string;
+  healthcheckPath?: string;
+}) {
   const [isAlive, setIsAlive] = useState<boolean | null>(null);
   const { clusterInfo } = useAuth();
 
@@ -20,9 +30,22 @@ function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }:
     if (!additionalExposedPathArgs) return "";
 
     return additionalExposedPathArgs.replace(/{{\s*([^}]+)\s*}}/g, (_, variableName) => {
-      return service.environment.variables[variableName] ?? "";
+      const envValue = service.environment.variables[variableName];
+      if (envValue !== undefined) return envValue;
+
+      const serviceValue = service[variableName as keyof Service];
+      return typeof serviceValue === "string" ? serviceValue : "";
     });
     
+  }
+
+  function buildExposedServiceUrl(service: Service, suffix?: string) {
+    const baseUrl = `${endpoint}/system/services/${service.name}/exposed/`;
+
+    if (!suffix) return baseUrl;
+    if (suffix.startsWith("?")) return `${baseUrl}${suffix}`;
+
+    return `${baseUrl}${suffix.replace(/^\/+/, "")}`;
   }
 
   useEffect(() => {
@@ -33,7 +56,11 @@ function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }:
         return;
       }
       try {
-        const status = await exposedServiceIsAlive(`${endpoint}/system/services/${service.name}/exposed/`, 10000, 20);
+        const healthUrl = buildExposedServiceUrl(
+          service,
+          interpolateVariables(service, healthcheckPath)
+        );
+        const status = await exposedServiceIsAlive(healthUrl, 10000, 20);
         if (isMounted) { 
           setIsAlive(status);
         }
@@ -47,15 +74,14 @@ function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }:
     return () => {
       isMounted = false;
     };
-  }, [service.name, endpoint]);
+  }, [clusterInfo, endpoint, healthcheckPath, service]);
 
   return isAlive ? (
     <Link
-      to={`${
-        endpoint
-      }/system/services/${service.name}/exposed/${
+      to={buildExposedServiceUrl(
+        service,
         interpolateVariables(service, additionalExposedPathArgs)
-      }`}
+      )}
       target="_blank"
     >
       <ExternalLink />
