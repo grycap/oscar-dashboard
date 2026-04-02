@@ -84,7 +84,7 @@ export default function BucketList() {
             ? bucket.owner
             : bucket.from_service;
         const query = bucketsFilter.query.toLowerCase();
-        return query === "" || fieldToFilter.toLowerCase().startsWith(query);
+        return query === "" || fieldToFilter.toLowerCase().includes(query);
       });
     }
 

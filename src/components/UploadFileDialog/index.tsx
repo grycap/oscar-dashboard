@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { UploadBatchProgress } from "@/contexts/Minio/MinioContext";
 import OscarColors from "@/styles";
+import { useEffect } from "react";
 
 export default function UploadFileDialog({
   progress,
@@ -26,6 +27,17 @@ export default function UploadFileDialog({
     : 0;
 
   const failedResults = progress?.results.filter((result) => !result.success) ?? [];
+
+
+  useEffect(() => {
+    if (isOpen && progressPercent >= 100 && failedResults.length === 0) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 900); // Auto-close after 2 seconds
+
+      return () => clearTimeout(timer); // Cleanup timer 
+    }
+  }, [isOpen, progressPercent, failedResults, onClose]);
 
 
   return (
