@@ -23,7 +23,7 @@ function JunoView() {
         deployedServiceEndpoint={authData.endpoint} 
         filteredServices={junoService} 
         DeployInstancePopover={JunoFormPopover}
-        additionalExposedPathArgs="?token={{JUPYTER_TOKEN}}" 
+        additionalExposedPathArgs="?token={{env.JUPYTER_TOKEN}}" 
       />
     </div>
   );

@@ -29,7 +29,7 @@ function TerminalView() {
         deployedServiceEndpoint={authData.endpoint}
         filteredServices={terminalServices}
         DeployInstancePopover={TerminalFormPopover}
-        additionalExposedPathArgs="?token={{token}}"
+        additionalExposedPathArgs="?token={{service.token}}"
         healthcheckPath="/healthz"
       />
     </div>
