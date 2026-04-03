@@ -44,27 +44,6 @@ const TERMINAL_FDL_URL =
 const TERMINAL_SCRIPT_URL =
   "https://raw.githubusercontent.com/grycap/oscar-hub/refs/heads/main/crates/ghostty-web/script.sh";
 
-function parseVolumeSize(size?: string): string {
-  if (!size) {
-    return "1";
-  }
-
-  const parsedSize = size.trim().match(/^(\d+(?:\.\d+)?)(Mi|Gi)$/);
-
-  if (!parsedSize) {
-    return "1";
-  }
-
-  const numericSize = Number(parsedSize[1]);
-  const unit = parsedSize[2];
-
-  if (unit === "Mi") {
-    return String(numericSize / 1024);
-  }
-
-  return parsedSize[1];
-}
-
 function isValidVolumeSize(value: string): boolean {
   const trimmedValue = value.trim();
 
@@ -77,9 +56,7 @@ function isValidVolumeSize(value: string): boolean {
 
 function TerminalFormPopover() {
   const [isOpen, setIsOpen] = useState(false);
-  const [mountBucket, setMountBucket] = useState(false);
   const [newBucket, setNewBucket] = useState(false);
-  const [mountVolume, setMountVolume] = useState(false);
   const [newVolume, setNewVolume] = useState(false);
   const [volumes, setVolumes] = useState<ManagedVolume[]>([]);
   const { systemConfig, authData } = useAuth();
@@ -107,13 +84,15 @@ function TerminalFormPopover() {
     vo: "",
     token: "",
   });
+  const bucketName = formData.bucket.trim();
+  const volumeName = formData.volume.trim();
+  const mountBucket = bucketName.length > 0;
+  const mountVolume = volumeName.length > 0;
 
   const [errors, setErrors] = useState({
     name: false,
     cpuCores: false,
     memoryRam: false,
-    bucket: false,
-    volume: false,
     volumeSize: false,
     vo: false,
   });
@@ -141,17 +120,13 @@ function TerminalFormPopover() {
       refreshToken: "",
       token: genRandomString(128),
     }));
-    setMountBucket(false);
     setNewBucket(false);
-    setMountVolume(false);
     setNewVolume(false);
     setVolumes([]);
     setErrors({
       name: false,
       cpuCores: false,
       memoryRam: false,
-      bucket: false,
-      volume: false,
       volumeSize: false,
       vo: false,
     });
@@ -173,21 +148,6 @@ function TerminalFormPopover() {
         }
 
         setVolumes(nextVolumes);
-
-        if (!mountVolume) {
-          return;
-        }
-
-        setNewVolume(nextVolumes.length === 0);
-        setFormData((prev) => ({
-          ...prev,
-          volume:
-            nextVolumes.length === 0
-              ? prev.volume
-              : nextVolumes.some((volume) => volume.name === prev.volume)
-                ? prev.volume
-                : "",
-        }));
       } catch (error) {
         if (cancelled) {
           return;
@@ -195,10 +155,6 @@ function TerminalFormPopover() {
 
         console.error(error);
         setVolumes([]);
-
-        if (mountVolume) {
-          setNewVolume(true);
-        }
       }
     };
 
@@ -207,15 +163,13 @@ function TerminalFormPopover() {
     return () => {
       cancelled = true;
     };
-  }, [isOpen, mountVolume]);
+  }, [isOpen]);
 
   const handleDeploy = async () => {
     const newErrors = {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
       memoryRam: !formData.memoryRam,
-      bucket: mountBucket && !formData.bucket,
-      volume: mountVolume && !formData.volume,
       volumeSize:
         mountVolume && newVolume && !isValidVolumeSize(formData.volumeSize),
       vo: !formData.vo,
@@ -247,9 +201,9 @@ function TerminalFormPopover() {
       const service = services[0];
       const serviceName = formData.name || nameService();
       const workspaceDir = mountVolume
-        ? `/mnt/volumes/${formData.volume}`
+        ? `/mnt/volumes/${volumeName}`
         : mountBucket
-          ? `/mnt/${formData.bucket}`
+          ? `/mnt/${bucketName}`
           : `/tmp/${serviceName}`;
       const baseSecrets = Object.fromEntries(
         Object.entries(service.environment.secrets || {}).filter(
@@ -258,8 +212,8 @@ function TerminalFormPopover() {
       );
       const volumeConfig = mountVolume
         ? {
-            name: formData.volume,
-            mount_path: `/mnt/volumes/${formData.volume}`,
+            name: volumeName,
+            mount_path: `/mnt/volumes/${volumeName}`,
             ...(newVolume
               ? { size: `${formData.volumeSize.trim()}Gi` }
               : {}),
@@ -276,7 +230,7 @@ function TerminalFormPopover() {
         mount: mountBucket
           ? {
               ...service.mount,
-              path: formData.bucket,
+              path: bucketName,
               storage_provider:
                 service.mount?.storage_provider ?? "minio.default",
             }
@@ -472,249 +426,148 @@ function TerminalFormPopover() {
           <div>
             <Label>Bucket</Label>
             <hr className="mb-2" />
-            <Label className="inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                value=""
-                checked={mountBucket}
-                className="sr-only peer"
-                onChange={() => {
-                  const nextMountBucket = !mountBucket;
-
-                  setMountBucket(nextMountBucket);
-                  setNewBucket(false);
-                  setFormData({
-                    ...formData,
-                    bucket: "",
-                  });
-
-                  if (errors.bucket) {
-                    setErrors({ ...errors, bucket: false });
-                  }
-                }}
-              />
-              <div className="relative w-9 h-5 bg-gray-200 rounded-full peer peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:bg-teal-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:absolute after:start-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-['']"></div>
-              <span className="ms-3 text-sm font-medium text-gray-900">
-                Mount bucket
-              </span>
-            </Label>
-            {mountBucket && (
-              <div className="mt-3">
-                <Label className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    value=""
-                    checked={newBucket}
-                    className="sr-only peer"
-                    onChange={() => {
-                      setNewBucket(!newBucket);
-                      setFormData({ ...formData, bucket: "" });
-
-                      if (errors.bucket) {
-                        setErrors({ ...errors, bucket: false });
-                      }
-                    }}
-                  />
-                  <div className="relative w-9 h-5 bg-gray-200 rounded-full peer peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:bg-teal-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:absolute after:start-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-['']"></div>
-                  <span className="ms-3 text-sm font-medium text-gray-900">
-                    New Bucket
-                  </span>
-                </Label>
-                <div className="mt-2">
-                  {newBucket ? (
-                    <Input
-                      type="input"
-                      onFocus={(e) => (e.target.type = "text")}
-                      style={{ width: "100%", fontWeight: "normal" }}
-                      className={
-                        errors.bucket
-                          ? "border-red-500 focus:border-red-500"
-                          : ""
-                      }
-                      onChange={(e) => {
-                        setFormData({ ...formData, bucket: e.target.value });
-                        if (errors.bucket) {
-                          setErrors({ ...errors, bucket: false });
-                        }
-                      }}
-                      placeholder="Enter new bucket name"
-                    />
-                  ) : (
-                    <Select
-                      value={formData.bucket}
-                      onValueChange={(value) => {
-                        setFormData({ ...formData, bucket: value });
-                        if (errors.bucket) {
-                          setErrors({ ...errors, bucket: false });
-                        }
-                      }}
-                    >
-                      <SelectTrigger
-                        className={
-                          errors.bucket
-                            ? "border-red-500 focus:border-red-500"
-                            : ""
-                        }
+            <div>
+              <Label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  value=""
+                  checked={newBucket}
+                  className="sr-only peer"
+                  onClick={() => {
+                    setNewBucket(!newBucket);
+                    setFormData({ ...formData, bucket: "" });
+                  }}
+                >
+                </input>
+                <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600"></div>
+                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                  New Bucket
+                </span>
+              </Label>
+              {newBucket ? (
+                <Input
+                  type="input"
+                  onFocus={(e) => (e.target.type = "text")}
+                  style={{ width: "100%", fontWeight: "normal" }}
+                  value={formData.bucket}
+                  onChange={(e) => {
+                    setFormData({ ...formData, bucket: e.target.value });
+                  }}
+                  placeholder="Enter new bucket name"
+                />
+              ) : (
+                <Select
+                  value={formData.bucket}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, bucket: value });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a bucket" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {buckets.map((bucket) => (
+                      <SelectItem
+                        key={bucket.bucket_name}
+                        value={bucket.bucket_name}
                       >
-                        <SelectValue placeholder="Select a bucket" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {buckets.map((bucket) => (
-                          <SelectItem
-                            key={bucket.bucket_name}
-                            value={bucket.bucket_name}
-                          >
-                            {bucket.bucket_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-              </div>
-            )}
+                        {bucket.bucket_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
           </div>
           <div>
             <Label>Volume</Label>
             <hr className="mb-2" />
-            <Label className="inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                value=""
-                checked={mountVolume}
-                className="sr-only peer"
-                onChange={() => {
-                  const nextMountVolume = !mountVolume;
-                  const defaultNewVolume = nextMountVolume && volumes.length === 0;
-
-                  setMountVolume(nextMountVolume);
-                  setNewVolume(defaultNewVolume);
-                  setFormData({
-                    ...formData,
-                    volume: "",
-                    volumeSize: parseVolumeSize(),
-                  });
-
-                  if (errors.volume || errors.volumeSize) {
-                    setErrors({
-                      ...errors,
-                      volume: false,
-                      volumeSize: false,
+            <div>
+              <Label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  value=""
+                  checked={newVolume}
+                  className="sr-only peer"
+                  onClick={() => {
+                    setNewVolume(!newVolume);
+                    setFormData({
+                      ...formData,
+                      volume: "",
+                      volumeSize: "1",
                     });
-                  }
-                }}
-              />
-              <div className="relative w-9 h-5 bg-gray-200 rounded-full peer peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:bg-teal-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:absolute after:start-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-['']"></div>
-              <span className="ms-3 text-sm font-medium text-gray-900">
-                Mount volume
-              </span>
-            </Label>
-            {mountVolume && (
-              <div className="mt-3 grid gap-2">
-                <Label className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    value=""
-                    checked={newVolume}
-                    className="sr-only peer"
-                    onChange={() => {
-                      setNewVolume(!newVolume);
+                    if (errors.volumeSize) {
+                      setErrors({
+                        ...errors,
+                        volumeSize: false,
+                      });
+                    }
+                  }}
+                >
+                </input>
+                <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600"></div>
+                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                  New Volume
+                </span>
+              </Label>
+              {newVolume ? (
+                <Input
+                  type="input"
+                  onFocus={(e) => (e.target.type = "text")}
+                  style={{ width: "100%", fontWeight: "normal" }}
+                  value={formData.volume}
+                  onChange={(e) => {
+                    setFormData({ ...formData, volume: e.target.value });
+                  }}
+                  placeholder="Enter new volume name"
+                />
+              ) : (
+                <Select
+                  value={formData.volume}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, volume: value });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a volume" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {volumes.map((volume) => (
+                      <SelectItem key={volume.name} value={volume.name}>
+                        {volume.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {newVolume ? (
+                <div className="grid gap-1">
+                  <Label htmlFor="volumeSize">Volume size (Gi)</Label>
+                  <Input
+                    id="volumeSize"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="1"
+                    value={formData.volumeSize}
+                    className={
+                      errors.volumeSize
+                        ? "max-w-[180px] border-red-500 " +
+                          "focus:border-red-500"
+                        : "max-w-[180px]"
+                    }
+                    onChange={(e) => {
                       setFormData({
                         ...formData,
-                        volume: "",
-                        volumeSize: parseVolumeSize(),
+                        volumeSize: e.target.value,
                       });
-
-                      if (errors.volume || errors.volumeSize) {
-                        setErrors({
-                          ...errors,
-                          volume: false,
-                          volumeSize: false,
-                        });
+                      if (errors.volumeSize) {
+                        setErrors({ ...errors, volumeSize: false });
                       }
                     }}
                   />
-                  <div className="relative w-9 h-5 bg-gray-200 rounded-full peer peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:bg-teal-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:absolute after:start-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-['']"></div>
-                  <span className="ms-3 text-sm font-medium text-gray-900">
-                    New Volume
-                  </span>
-                </Label>
-                {newVolume ? (
-                  <>
-                    <Input
-                      type="input"
-                      onFocus={(e) => (e.target.type = "text")}
-                      style={{ width: "100%", fontWeight: "normal" }}
-                      value={formData.volume}
-                      className={
-                        errors.volume
-                          ? "border-red-500 focus:border-red-500"
-                          : ""
-                      }
-                      onChange={(e) => {
-                        setFormData({ ...formData, volume: e.target.value });
-                        if (errors.volume) {
-                          setErrors({ ...errors, volume: false });
-                        }
-                      }}
-                      placeholder="Enter new volume name"
-                    />
-                    <div className="grid gap-1">
-                      <Label htmlFor="volumeSize">Volume size (Gi)</Label>
-                      <Input
-                        id="volumeSize"
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="1"
-                        value={formData.volumeSize}
-                        className={
-                          errors.volumeSize
-                            ? "max-w-[180px] border-red-500 " +
-                              "focus:border-red-500"
-                            : "max-w-[180px]"
-                        }
-                        onChange={(e) => {
-                          setFormData({
-                            ...formData,
-                            volumeSize: e.target.value,
-                          });
-                          if (errors.volumeSize) {
-                            setErrors({ ...errors, volumeSize: false });
-                          }
-                        }}
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <Select
-                    value={formData.volume}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, volume: value });
-                      if (errors.volume) {
-                        setErrors({ ...errors, volume: false });
-                      }
-                    }}
-                  >
-                    <SelectTrigger
-                      className={
-                        errors.volume
-                          ? "border-red-500 focus:border-red-500"
-                          : ""
-                      }
-                    >
-                      <SelectValue placeholder="Select a volume" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {volumes.map((volume) => (
-                        <SelectItem key={volume.name} value={volume.name}>
-                          {volume.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            )}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
         <DialogFooter>
