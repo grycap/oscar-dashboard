@@ -249,7 +249,7 @@ function TerminalFormPopover() {
       const workspaceDir = mountVolume
         ? `/mnt/volumes/${formData.volume}`
         : mountBucket
-          ? `/mnt/buckets/${formData.bucket}`
+          ? `/mnt/${formData.bucket}`
           : `/tmp/${serviceName}`;
       const baseSecrets = Object.fromEntries(
         Object.entries(service.environment.secrets || {}).filter(
@@ -276,7 +276,7 @@ function TerminalFormPopover() {
         mount: mountBucket
           ? {
               ...service.mount,
-              path: `buckets/${formData.bucket}`,
+              path: formData.bucket,
               storage_provider:
                 service.mount?.storage_provider ?? "minio.default",
             }
