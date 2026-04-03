@@ -1,5 +1,17 @@
 import OscarLogo from "@/assets/oscar-big.png";
-import { Boxes, Codesandbox, Database, Info, LogOut, Notebook, Route, BarChart2, ChartPie, Terminal } from "lucide-react";
+import {
+  BarChart2,
+  Boxes,
+  ChartPie,
+  Codesandbox,
+  Database,
+  HardDrive,
+  Info,
+  LogOut,
+  Notebook,
+  Route,
+  Terminal,
+} from "lucide-react";
 import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -36,6 +48,11 @@ function AppSidebar() {
       title: "Buckets",
       icon: <Database size={20} />,
       path: "/minio",
+    },
+    {
+      title: "Volumes",
+      icon: <HardDrive size={20} />,
+      path: "/volumes",
     },
     {
       title: "Notebooks",
