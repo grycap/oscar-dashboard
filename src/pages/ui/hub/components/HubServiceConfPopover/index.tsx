@@ -11,7 +11,6 @@ import { alert } from "@/lib/alert";
 import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import {
-  Bucket,
   ManagedVolume,
   Service,
 } from "@/pages/ui/services/models/service";

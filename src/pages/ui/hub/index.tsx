@@ -56,7 +56,6 @@ function HubView() {
     setIsLoading(true);
     const repoOwner = selectedSource.repository.split("/")[0];
     const repoName = selectedSource.repository.split("/")[1];
-    const roCrateServices = await parseROCrateDataJS(repoOwner, repoName, selectedSource.branch);
     const roCrateServices = await parseROCrateDataJS(
       repoOwner,
       repoName,
@@ -181,7 +180,6 @@ function HubView() {
       }
       >
         <div className="flex flex-row items-center w-full justify-end gap-2">
-          <HubSrcPopoverButton variant="mainGreen" selectedSource={selectedSource} setSelectedSource={setSelectedSource} />
           <HubSrcPopoverButton
             variant="mainGreen"
             selectedSource={selectedSource}
