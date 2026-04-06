@@ -26,11 +26,48 @@ import createBucketsApi from "@/api/buckets/createBucketsApi";
 import deleteBucketsApi from "@/api/buckets/deleteBucketsApi";
 import updateBucketsApi from "@/api/buckets/updateBucketsApi";
 import { Bucket as Bucket_oscar } from "@/pages/ui/services/models/service"
+import getBucketsApi from "@/api/buckets/getBucketsApi";
+import { getMimeTypeFromPath } from "@/lib/mimeType";
+import { errorMessage } from "@/lib/error";
+
+interface BucketsFilterProps {
+  myBuckets: boolean;
+  query: string;
+  by: BucketFilterBy;
+}
+
+export interface UploadFileResult {
+  fileName: string;
+  key: string;
+  success: boolean;
+  error?: string;
+}
+
+export interface UploadBatchProgress {
+  total: number;
+  completed: number;
+  failed: number;
+  currentFileName?: string;
+  results: UploadFileResult[];
+}
+
+export enum BucketFilterBy {
+  NAME = "name",
+  OWNER = "owner",
+  SERVICE = "service",
+}
 
 export type MinioProviderData = {
+  bucketsFilter: BucketsFilterProps;
+  setBucketsFilter: (filter: BucketsFilterProps) => void;
   providerInfo: MinioStorageProvider;
   setProviderInfo: (providerInfo: MinioStorageProvider) => void;
+  bucketsOSCAR: Bucket_oscar[];
   buckets: Bucket[];
+  bucketsAreLoading: boolean;
+  uploadProgress: UploadBatchProgress | null;
+  clearUploadProgress: () => void;
+  bucketsLoadingError: boolean;
   setBuckets: (buckets: Bucket[]) => void;
   createBucket: (bucketName: Bucket_oscar) => Promise<void>;
   updateBucketsVisibilityControl: (bucketName: Bucket_oscar) => Promise<void>; 
@@ -44,9 +81,13 @@ export type MinioProviderData = {
   }>;
   deleteBucket: (bucketName: string) => Promise<void>;
   createFolder: (bucketName: string, folderName: string) => Promise<void>;
-  uploadFile: (bucketName: string, path: string, file: File) => Promise<void>;
+  uploadFiles: (
+    bucketName: string,
+    path: string,
+    files: File[]
+  ) => Promise<UploadFileResult[]>;
   deleteFile: (bucketName: string, path: string) => Promise<void>;
-  getFileUrl: (bucketName: string, path: string) => Promise<string | undefined>;
+  getFileBlob: (bucketName: string, path: string) => Promise<Blob | undefined>;
   listObjects: (bucketName: string, path: string) => Promise<_Object[]>;
   downloadAndZipFolders: (
     bucketName: string,
@@ -65,6 +106,16 @@ export const MinioContext = createContext({} as MinioProviderData);
 export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [providerInfo, setProviderInfo] = useState({} as MinioStorageProvider);
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [bucketsOSCAR, setBucketsOSCAR] = useState<Bucket_oscar[]>([]);
+  const [bucketsAreLoading, setBucketsAreLoading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<UploadBatchProgress | null>(null);
+  const [bucketsLoadingError, setBucketsLoadingError] = useState<boolean>(false);
+
+  const [bucketsFilter, setBucketsFilter] = useState<BucketsFilterProps>({
+    myBuckets: false,
+    query: "",
+    by: BucketFilterBy.NAME,
+  });
 
   const client = useMemo(() => {
     if (
@@ -87,10 +138,10 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   }, [providerInfo]);
 
   /**
-   * Lista las carpetas e ítems en una ruta específica dentro de un bucket de S3.
-   * @param bucketName Nombre del bucket de S3.
-   * @param path Ruta dentro del bucket. Usa una cadena vacía para la raíz.
-   * @returns Un objeto que contiene arrays de carpetas e ítems.
+   * Lists folders and items within a specific path inside an S3 bucket.
+   * @param bucketName Name of the S3 bucket.
+   * @param path Path within the bucket. Use an empty string for the root.
+   * @returns An object containing arrays of folders and items.
    */
   async function getBucketItems(
     bucketName: string,
@@ -101,29 +152,29 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   }> {
     if (!client) return { folders: [], items: [] };
 
-    // Asegura que el prefijo termine con '/' si no está vacío
+    // Ensure the prefix ends with '/' when the path is not empty
     const prefix = path ? (path.endsWith("/") ? path : `${path}/`) : "";
 
     const params: ListObjectsV2CommandInput = {
       Bucket: bucketName,
       Prefix: prefix,
-      Delimiter: "/", // Usa '/' como delimitador para agrupar carpetas
+      Delimiter: "/", // Use '/' as delimiter to group folders
     };
 
     try {
       const command = new ListObjectsV2Command(params);
       const response = await client.send(command);
 
-      // Extrae las carpetas (CommonPrefixes)
+      // Extract folders (CommonPrefixes)
       const folders = response.CommonPrefixes ?? [];
 
-      // Extrae los ítems (Contents)
+      // Extract items (Contents)
       const items =
         response.Contents?.filter((item) => item.Key !== prefix) ?? [];
 
       return { folders, items };
     } catch (error) {
-      console.error("Error al listar objetos de S3:", error);
+      console.error("Error listing S3 objects:", error);
       throw error;
     }
   }
@@ -135,7 +186,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("Bucket updated successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error creating bucket");
+      alert.error(`Error updating bucket: ${errorMessage(error)}`);
     }
     updateBuckets();
   
@@ -144,12 +195,25 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
 
   async function updateBuckets() {
     if (!client) return;
+    try {
+      setBucketsAreLoading(true);
+      setBucketsLoadingError(false);
+      const res = await client.send(new ListBucketsCommand({}));
+      const buckets = res?.Buckets;
+      if (!buckets) return;
 
-    const res = await client.send(new ListBucketsCommand({}));
-    const buckets = res?.Buckets;
-    if (!buckets) return;
-
-    setBuckets(buckets);
+      const bucketsOSCARResponse = await getBucketsApi();
+      const bucketsOSCAR = bucketsOSCARResponse ?? [];
+      
+      setBucketsOSCAR(bucketsOSCAR);
+      setBuckets(buckets);
+    } catch (error) {
+      console.error("Error fetching buckets:", error);
+      alert.error(`Error fetching buckets: ${errorMessage(error)}`);
+      setBucketsLoadingError(true);
+    } finally {
+      setBucketsAreLoading(false);
+    }
   }
 
   async function createBucket(bucketName: Bucket_oscar) {
@@ -164,7 +228,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("Bucket created successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error creating bucket");
+      alert.error(`Error creating bucket: ${errorMessage(error)}`);
     }
 
     updateBuckets();
@@ -181,7 +245,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("Bucket deleted successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error deleting bucket");
+      alert.error(`Error deleting bucket: ${errorMessage(error)}`);
     }
 
     updateBuckets();
@@ -202,43 +266,120 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("Folder created successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error creating folder");
+      alert.error(`Error creating folder: ${errorMessage(error)}`);
     }
 
     updateBuckets();
   }
 
-  async function uploadFile(
+  function clearUploadProgress() {
+    setUploadProgress(null);
+  }
+
+  async function uploadFiles(
     bucketName: string,
     path: string,
-    file: File
-  ): Promise<void> {
-    const reader = new FileReader();
-    const  fileContent = await new Promise<string | ArrayBuffer | null>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result);  // Resolver la promesa cuando se cargue el archivo
-        reader.onerror = (error) => reject(error);     // Rechazar la promesa si ocurre un error
-        reader.readAsArrayBuffer(file);  // Si el archivo es de texto, usa readAsText. Para binarios usa readAsArrayBuffer o readAsDataURL
-      });
-   
-    if (!client) return;
+    files: File[]
+  ): Promise<UploadFileResult[]> {
+    if (!client || files.length === 0) return [];
 
-    const key = path ? `${path}${file.name}` : file.name;
-  
-    try {
-      const command = new PutObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-        // @ts-ignore
-        Body: fileContent,
-      });
-      await client.send(command);
-      alert.success("File uploaded successfully");
-    } catch (error) {
-      console.error(error);
-      alert.error("Error uploading file");
+    const results: UploadFileResult[] = [];
+
+    setUploadProgress({
+      total: files.length,
+      completed: 0,
+      failed: 0,
+      currentFileName: files[0]?.name,
+      results: [],
+    });
+
+    for (const file of files) {
+      const key = path ? `${path}${file.name}` : file.name;
+
+      setUploadProgress((current) =>
+        current
+          ? {
+              ...current,
+              currentFileName: file.name,
+            }
+          : current
+      );
+
+      try {
+        const fileContent = new Uint8Array(await file.arrayBuffer());
+        const command = new PutObjectCommand({
+          Bucket: bucketName,
+          Key: key,
+          ContentType: file.type || undefined,
+          Body: fileContent,
+        });
+        await client.send(command);
+
+        const result: UploadFileResult = {
+          fileName: file.name,
+          key,
+          success: true,
+        };
+        results.push(result);
+        setUploadProgress((current) =>
+          current
+            ? {
+                ...current,
+                completed: current.completed + 1,
+                results: [...current.results, result],
+              }
+            : current
+        );
+      } catch (error) {
+        console.error(error);
+        const message =
+          error instanceof Error ? error.message : "Error uploading file";
+        const result: UploadFileResult = {
+          fileName: file.name,
+          key,
+          success: false,
+          error: message,
+        };
+        results.push(result);
+        setUploadProgress((current) =>
+          current
+            ? {
+                ...current,
+                completed: current.completed + 1,
+                failed: current.failed + 1,
+                results: [...current.results, result],
+              }
+            : current
+        );
+      }
     }
 
-    updateBuckets();
+    await updateBuckets();
+
+    setUploadProgress((current) =>
+      current
+        ? {
+            ...current,
+            currentFileName: undefined,
+          }
+        : current
+    );
+
+    const successfulUploads = results.filter((result) => result.success).length;
+    const failedUploads = results.length - successfulUploads;
+    const fileLabel = files.length === 1 ? "file" : "files";
+
+    if (failedUploads === 0) {
+      alert.success(`Uploaded ${successfulUploads} ${fileLabel} successfully`);
+    } else if (successfulUploads === 0) {
+      alert.error(`Failed to upload ${failedUploads} ${fileLabel}`);
+    } else {
+      alert.warning(
+        `Uploaded ${successfulUploads} ${fileLabel}. ${failedUploads} failed.`
+      );
+    }
+
+    return results;
   }
 
   async function deleteFile(bucketName: string, path: string) {
@@ -253,13 +394,13 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       alert.success("File deleted successfully");
     } catch (error) {
       console.error(error);
-      alert.error("Error deleting file");
+      alert.error(`Error deleting file: ${errorMessage(error)}`);
     }
 
     updateBuckets();
   }
 
-  async function getFileUrl(bucketName: string, path: string) {
+  async function getFileBlob(bucketName: string, path: string) {
     if (!client) return;
 
     const command = new GetObjectCommand({
@@ -271,9 +412,8 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!byteArray) {
       throw new Error("Failed to transform response body to byte array");
     }
-    const url = URL.createObjectURL(new Blob([byteArray]));
-
-    return url;
+    const safeArray = new Uint8Array(byteArray);
+    return new Blob([safeArray], { type: getMimeTypeFromPath(path) });
   }
 
   async function listObjects(bucketName: string, path: string = "") {
@@ -299,7 +439,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
     return objects;
   }
 
-  // Función para descargar un archivo como ArrayBuffer
+  // Helper to download a file as an ArrayBuffer
   async function downloadFile(bucketName: string, key: string) {
     const params = { Bucket: bucketName, Key: key };
     const data = await client?.send(new GetObjectCommand(params));
@@ -320,15 +460,16 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
 
         for (const object of objects) {
           const relativePath = object.Key!.replace(folder.Prefix!, "");
-          if (!relativePath) continue; // Ignorar carpetas vacías
+          if (!relativePath) continue; // Skip empty folders
 
           const fileData = await downloadFile(bucketName, object.Key!);
 
-          // Añadir archivo al ZIP
+          // Add file to the ZIP archive
           if (fileData) {
-            zip.file(`${folder.Prefix}${relativePath}`, new Blob([fileData]));
+            const safeData = new Uint8Array(fileData); 
+            zip.file(`${folder.Prefix}${relativePath}`, new Blob([safeData]));
           } else {
-            throw new Error(`Error al descargar el archivo: ${object.Key}`);
+            throw new Error(`Error downloading file: ${object.Key}`);
           }
         }
       }
@@ -336,18 +477,19 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       for (const file of singleFiles) {
         const fileData = await downloadFile(bucketName, file.Key!);
         if (fileData) {
-          zip.file(file.Key!, new Blob([fileData]));
+          const safeData = new Uint8Array(fileData);
+          zip.file(file.Key!, new Blob([safeData]));
         } else {
-          throw new Error(`Error al descargar el archivo: ${file.Key}`);
+          throw new Error(`Error downloading file: ${file.Key}`);
         }
       }
 
-      // Generar el ZIP y descargarlo
+      // Generate the ZIP and return it
       const zipBlob = await zip.generateAsync({ type: "blob" });
       return zipBlob;
     } catch (err) {
       alert.error(
-        err instanceof Error ? err.message : "Error durante la descarga"
+        err instanceof Error ? err.message : "Error during download"
       );
     }
   }
@@ -370,9 +512,16 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <MinioContext.Provider
       value={{
+        bucketsFilter,
+        setBucketsFilter,
         providerInfo,
         setProviderInfo,
+        bucketsOSCAR,
         buckets,
+        bucketsAreLoading,
+        uploadProgress,
+        clearUploadProgress,
+        bucketsLoadingError,
         setBuckets,
         createBucket,
         createFolder,
@@ -380,9 +529,9 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         updateBucketsVisibilityControl,
         getBucketItems,
         deleteBucket,
-        uploadFile,
+        uploadFiles,
         deleteFile,
-        getFileUrl,
+        getFileBlob,
         listObjects,
         downloadAndZipFolders,
       }}

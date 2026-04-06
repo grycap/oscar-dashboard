@@ -4,19 +4,25 @@ import Log from "../../models/log";
 import { getServiceLogsApi } from "@/api/logs/getServiceLogs";
 import GenericTable from "@/components/Table";
 import { Badge, BadgeProps } from "@/components/ui/badge";
-import { Eye, Loader,  Trash2 } from "lucide-react";
+import { Eye,  Loader,  Trash2, Plus, LoaderPinwheel } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LogDetailsPopover from "./components/LogDetailsPopover";
 import DeleteDialog from "@/components/DeleteDialog";
 import { deleteLogApi } from "@/api/logs/deleteLog";
 import { alert } from "@/lib/alert";
 import deleteServiceLogsApi from "@/api/logs/deleteServiceLogs";
+import OscarColors from "@/styles";
+import { delay } from "@/lib/utils";
+import { errorMessage } from "@/lib/error";
+
 
 export type LogWithName = Log & { name: string };
 
 export default function ServiceLogs() {
-  const { formService } = useServicesContext();
+  const { formService, serviceLogs, refreshServiceLogs, logsAreLoading } = useServicesContext();
   const [logs, setLogs] = useState<Record<string, Log>>({});
+  const [next, setNext] = useState<string | null>(null);
+  const [nextExecution, setNextExecution] = useState<boolean>(false);
   const logsWithName = useMemo(
     () =>
       Object.entries(logs).map(([name, log]) => ({
@@ -29,14 +35,44 @@ export default function ServiceLogs() {
   const [selectedLog, setSelectedLog] = useState<LogWithName | null>(null);
   const [logsToDelete, setLogsToDelete] = useState<LogWithName[]>([]);
 
-  function fetchServices() {
-    if (!formService?.name) return;
-    getServiceLogsApi(formService.name).then(setLogs);
+  async function fetchMoreLogs() {
+    if (!((next || next === null) && !logsAreLoading && nextExecution === true)) return;
+    try {
+      const data =  await getServiceLogsApi(formService.name, next as string | "");
+      
+      const serviceLogs = data.jobs ;
+      setLogs(prevLogs => ({ ...prevLogs, ...serviceLogs }));
+
+      // Small delay to show loading spinner
+      await delay(200);
+
+      const newNext = data.next_page ? JSON.stringify(data.next_page).replace(/^"|"$/g, "") : "";
+      setNext(newNext);
+    } catch (error) {
+      console.error("Failed to fetch more logs:", error);
+      alert.error(`Failed to fetch more logs: ${errorMessage(error)}`);
+      setLogs({});
+    } finally {
+      setNextExecution(false);
+    }
   }
 
   useEffect(() => {
-    fetchServices();
+    fetchMoreLogs();
+  }, [next, formService?.name, nextExecution]);
+
+  // Fetch logs when the service name is set/changed
+  useEffect(() => {
+    refreshServiceLogs();
   }, [formService?.name]);
+
+  // Update logs state when serviceLogs from context is set/changes
+  useEffect(() => {
+    if (serviceLogs.jobs && Object.keys(serviceLogs.jobs).length > 0) {
+      setLogs(serviceLogs.jobs);
+    }
+    serviceLogs.next_page && setNext(serviceLogs.next_page);
+  }, [serviceLogs]);
 
   function renderStatus(status: Log["status"]) {
     const variant: Record<Log["status"], BadgeProps["variant"]> = {
@@ -106,9 +142,9 @@ export default function ServiceLogs() {
         );
       }
 
-      fetchServices();
+      fetchMoreLogs();
     } catch (error) {
-      alert.error("An unexpected error occurred while deleting logs");
+      alert.error(`An unexpected error occurred while deleting logs: ${(error as Error).message}`);
     } finally {
       setLogsToDelete([]);
     }
@@ -120,7 +156,7 @@ export default function ServiceLogs() {
     deleteServiceLogsApi(formService?.name)
       .then(() => {
         alert.success("Service logs were deleted successfully!");
-        fetchServices();
+        refreshServiceLogs();
       })
       .catch(() => {
         alert.error("Failed to delete service logs.");
@@ -130,13 +166,26 @@ export default function ServiceLogs() {
       });
   }
   return (
-    <div className="flex flex-grow" style={{
+    <div className="flex flex-grow relative" style={{
         display: "flex",
         flexDirection: "column",
         flexGrow: 1,
         flexBasis: 0,
         overflow: "hidden",
       }}>
+
+      {logsAreLoading ?
+        <div className="absolute inset-0 flex items-center justify-center items-center  ">
+          <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+        </div>
+      :
+      <>
+      {nextExecution && (
+        <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex items-center justify-center z-50 backdrop-blur-xs">
+          <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+        </div>
+      )}
+
       <LogDetailsPopover
         log={selectedLog}
         serviceName={formService?.name}
@@ -154,6 +203,8 @@ export default function ServiceLogs() {
         onDelete={handleDeleteLogs}
         itemNames={logsToDelete.map((log) => log.name)}
       />
+      
+        
       <GenericTable<LogWithName>
         data={logsWithName}
         columns={[
@@ -232,8 +283,6 @@ export default function ServiceLogs() {
               </Button>
             ),
           },
-        ]}
-        globalActions={[
           {
             button: () => (
               <Button
@@ -245,7 +294,27 @@ export default function ServiceLogs() {
             ),
           },
         ]}
+        globalActions={[
+        {
+            button: () => (
+              <>
+              {(next != "" && next !== null) ?
+                <Button
+                  variant="mainGreen"
+                  onClick={() => setNextExecution(true)}
+                >
+                  <Plus className="h-5 w-5 mr-2"></Plus> More Logs
+                </Button>
+              :<></>
+              }
+              </>
+            ),
+            
+          }, 
+        ]}
       />
+      </>
+      }
     </div>
   );
 }

@@ -4,6 +4,7 @@ import BigLogo from "@/assets/oscar-big.png";
 import AI4eoscLogo from "@/assets/ai4eosc-logo.png";
 import AI4eoscButon from "@/assets/ai4eosc-logo.svg";
 import GryCAPButon from "@/assets/grycap-logo.png";
+import EOSCDataCommonsLogo from "@/assets/eosc-data-commons.png";
 import ImagineLogo from "@/assets/imagine-logo.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { getInfoApi } from "@/api/info/getInfoApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { alert } from "@/lib/alert";
+import { normalizeLoopbackAPIEndpoint } from "@/lib/utils";
 
 import env from "@/env";
 
@@ -24,6 +26,23 @@ function Login() {
 
   const [searchParams] = useSearchParams();
   const endpoint = searchParams.get("endpoint");
+  const process = searchParams.get("process");
+
+  if (process != null){
+    const fakeEvent = {
+      preventDefault: () => {},
+      stopPropagation: () => {},
+      bubbles: true,
+      cancelable: true,
+      defaultPrevented: false,
+      isDefaultPrevented: () => false,
+      isPropagationStopped: () => false,
+      persist: () => {},
+      timeStamp: Date.now(),
+      type: 'submit',
+    } as unknown as FormEvent<HTMLFormElement>;
+    handleLoginEGI(fakeEvent,process)
+  }
   
   function isDeployContainer(){
     if (env.deploy_container ==="true"){
@@ -32,6 +51,11 @@ function Login() {
   }
   function isAI4EOSCServer(){
     if (env.deploy_container ==="true" && env.ai4eosc_servers.includes(location.origin) ){
+      return true
+    }else return false
+  }
+  function isEOSCDataCommonsServer(){
+    if (env.deploy_container ==="true" && env.eosc_dc_servers.includes(location.origin) ){
       return true
     }else return false
   }
@@ -79,12 +103,19 @@ function Login() {
     event.preventDefault();
     if (isDeployContainer()){
       const oscarEndpoint = window.location.origin
-      const url = isDemoServer()?env.external_ui_demo+"/#/login?endpoint="+oscarEndpoint : env.external_ui+"/#/login?endpoint="+oscarEndpoint;
+      const url = (isDemoServer() && process === "EGI") ?
+            env.external_ui_demo+"/#/login?endpoint="+oscarEndpoint+"&process="+process 
+            :
+            env.external_ui+"/#/login?endpoint="+oscarEndpoint+"&process="+process ;
       window.location.replace(url);
     }else{
       const form = event.target as HTMLFormElement;
       const formData = new FormData(form);
       let endpoint = formData.get("endpoint") as string;
+      if (endpoint == null){
+        const [searchParams] = useSearchParams();
+        endpoint = searchParams.get("endpoint") as string;
+      }
       // Check if the endpoint is a valid URL
       if (!endpoint.match(/^(http|https):\/\/[^ "]+$/)) {
         alert.error("Invalid endpoint");
@@ -93,6 +124,7 @@ function Login() {
       try {
         if(process === "EGI"){
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
+          endpoint = normalizeLoopbackAPIEndpoint(endpoint);
           localStorage.setItem("api", endpoint);
           localStorage.setItem("client_id", env.client_id);
           localStorage.setItem("provider_url", env.EGI_ISSUER + env.provider_url);
@@ -102,9 +134,9 @@ function Login() {
           window.location.replace(env.redirect_uri);
         }else if(process === "Keycloak"){
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
+          endpoint = normalizeLoopbackAPIEndpoint(endpoint);
           localStorage.setItem("api", endpoint);
           localStorage.setItem("client_id", env.AI4EOSC_client_id);
-          localStorage.setItem("client_secret", env.AI4EOSC_client_secret);
           localStorage.setItem("provider_url", env.AI4EOSC_ISSUER + env.provider_url);
           localStorage.setItem("url_authorize", env.AI4EOSC_ISSUER + env.url_authorize);
           localStorage.setItem("url_user_info", env.AI4EOSC_ISSUER + env.url_user_info);
@@ -112,9 +144,9 @@ function Login() {
           window.location.replace(env.redirect_uri);
         }else if(process === "KeycloakGryCAP"){
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
+          endpoint = normalizeLoopbackAPIEndpoint(endpoint);
           localStorage.setItem("api", endpoint);
           localStorage.setItem("client_id", env.GRYCAP_client_id);
-          localStorage.setItem("client_secret", env.GRYCAP_client_secret);
           localStorage.setItem("provider_url", env.GRYCAP_ISSUER + env.provider_url);
           localStorage.setItem("url_authorize", env.GRYCAP_ISSUER + env.url_authorize);
           localStorage.setItem("url_user_info", env.GRYCAP_ISSUER + env.url_user_info);
@@ -214,7 +246,8 @@ function Login() {
           >
             {isAI4EOSCServer() ?<img src={AI4eoscLogo} alt="AI4eosc logo" width={320} />:<></>}
             {isImagineServer()?<img src={ImagineLogo} alt="imagine logo" width={250} />:<></>}
-            {isImagineServer()||isAI4EOSCServer() ?<Separator />:<></>}
+            {isEOSCDataCommonsServer()?<img src={EOSCDataCommonsLogo} alt="EOSC Data Commons logo" width={320} />:<></>}
+            {isImagineServer()||isAI4EOSCServer() || isEOSCDataCommonsServer() ?<Separator />:<></>}
             
             <img src={BigLogo} alt="Oscar logo" width={320} />
             <form
@@ -295,7 +328,7 @@ function Login() {
                     marginRight: "10px",
                   }}
                 />
-                Sign in via Keycloak
+                Sign in via AI4EOSC
               </Button>
               <Button
                 name="KeycloakGryCAP"
@@ -314,7 +347,7 @@ function Login() {
                     marginRight: "10px",
                   }}
                 />
-                Sign in via Keycloak GryCAP
+                Sign in via GRyCAP
               </Button>
             </form>
           </section>

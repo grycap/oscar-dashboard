@@ -19,13 +19,13 @@ function InfoView() {
   const { open } = useSidebar();
   // 1976 is the width when flex wrap is applied with the sidebar open
   // 1824 is the width when flex wrap is applied with the sidebar closed
-  const isBigScreen = useMediaQuery({maxWidth: open ? 1976 : 1824});
+  const isBigScreen = useMediaQuery({maxWidth: open ? 1697 : 1824});
 
   if (!systemConfig) return null;
   if (!authData.authenticated) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-6 w-[95%] sm:w-[90%] lg:w-[80%] mx-auto mt-[40px] min-w-[300px] content-start">
+    <div className="grid grid-cols-1 gap-6 w-[95%] mx-auto mt-[40px] min-w-[300px] content-start">
       <div className={(isBigScreen ? "flex justify-center": "")}>
         <div className="max-w-[700px] w-full text-center sm:text-left">
           <h1 style={{ fontSize: "24px", fontWeight: "500" }}>
@@ -54,7 +54,7 @@ function InfoView() {
           <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           {token ? (
               <>
-                <InfoItem label="EGI UID" value={egiSession?.sub! ?? egiSession?.sub!} enableCopy />
+                <InfoItem label="Subject ID" value={egiSession?.sub! ?? egiSession?.sub!} enableCopy />
                 <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
                 <InfoItem
                   label="Access Token"
@@ -87,7 +87,7 @@ function InfoView() {
               OSCAR Cluster
             </h1>
           </div>
-          <InfoItem label="Endpoint" value={endpoint} enableCopy isLink />
+          <InfoItem label="Endpoint" value={endpoint} enableCopy link={{url: endpoint, enableRedirectIcon: true}} />
           <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           {systemConfig.config.oidc_groups.length > 1 ? 
             <InfoListItems  label="Supported VOs" placeholder={systemConfig.config.oidc_groups[0] + '... '} values={systemConfig.config.oidc_groups} enableCopy />
@@ -96,6 +96,8 @@ function InfoView() {
           }
           <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           <InfoItem label="Version" value={clusterInfo?.version!} enableCopy />
+          <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
+          <InfoItem label="Git commit" value={clusterInfo?.git_commit! + "..."} link={{url: `https://github.com/grycap/oscar/commit/${clusterInfo?.git_commit!}`, enableRedirectIcon: true}} />
           <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           <div
             style={{
@@ -135,7 +137,7 @@ function InfoView() {
               MinIO
             </h1>
           </div>
-          <InfoItem label="Endpoint" value={providerInfo.endpoint} enableCopy isLink />
+          <InfoItem label="Endpoint" value={providerInfo.endpoint} enableCopy link={{url: providerInfo.endpoint, enableRedirectIcon: true}} />
           <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
           <InfoItem
             label="Access key"

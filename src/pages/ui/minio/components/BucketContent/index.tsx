@@ -23,6 +23,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { bytesSizeToHumanReadable } from "@/lib/utils";
+import UploadFileDialog from "@/components/UploadFileDialog";
+import GenPresignedURLPopover from "../GenPresignedURLPopover";
+import { errorMessage } from "@/lib/error";
 
 export type BucketItem =
   | {
@@ -45,9 +49,11 @@ export default function BucketContent() {
     getBucketItems,
     downloadAndZipFolders,
     buckets,
-    uploadFile,
+    uploadFiles,
     deleteFile,
-    getFileUrl,
+    getFileBlob,
+    uploadProgress,
+    clearUploadProgress,
   } = useMinio();
 
   const [items, setItems] = useState<BucketItem[]>([]);
@@ -88,20 +94,20 @@ export default function BucketContent() {
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    setIsDroppingFile(false); // Restablecer el estado al soltar
+    setIsDroppingFile(false); // Reset drop state when the file is released
     const files = event.dataTransfer.files;
     if (files.length > 0) {
-      uploadFile(bucketName!, path, files[0]);
+      uploadFiles(bucketName!, path, Array.from(files));
     }
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    setIsDroppingFile(true); // Cambiar el estado a true cuando se arrastra un archivo
+    setIsDroppingFile(true); // Indicate that a file is being dragged over the drop zone
   };
 
   const handleDragLeave = () => {
-    setIsDroppingFile(false); // Restablecer el estado cuando el archivo ya no está sobre el div
+    setIsDroppingFile(false); // Reset drop state when the file leaves the drop zone
   };
 
   const [itemsToDelete, setItemsToDelete] = useState<BucketItem[]>([]);
@@ -109,17 +115,19 @@ export default function BucketContent() {
   const handleDownloadFile = async (item: BucketItem) => {
     if (item.Type === "file") {
       try {
-        const url = await getFileUrl(item.BucketName, item.Key.Key!);
-        if (url) {
+        const blob = await getFileBlob(item.BucketName, item.Key.Key!);
+        if (blob) {
+          const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
           a.download = item.Name;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
+          URL.revokeObjectURL(url);
         }
       } catch (error) {
-        console.error("Error al descargar el archivo:", error);
+        console.error(`Error downloading file: ${errorMessage(error)}`);
       }
     }
   };
@@ -225,10 +233,18 @@ export default function BucketContent() {
           itemNames={itemsToDelete.map((item) => item.Name)}
         />
         <GenericTable
-          data={items}
+          data={items.map((item) => {
+            return {
+              Name: item.Name,
+              Type: item.Type,
+              Key: item.Key,
+              Size: item.Type === "file" ? bytesSizeToHumanReadable(item.Key.Size ?? 0) : undefined,
+              LastModifTime: item.Type === "file" ? item.Key.LastModified?.toLocaleString() : undefined,
+              BucketName: item.BucketName
+          }})}
           onRowClick={(item) => {
             if (item.Type === "file") {
-              setPreviewFile(item);
+              setPreviewFile(item as BucketItem);
             }
           }}
           columns={[
@@ -257,6 +273,22 @@ export default function BucketContent() {
               },
               sortBy: "Name"
             },
+            {
+              header: "Size",
+              accessor: (item) => {
+                if (item.Type === "folder") { return ''}
+                return item.Size;
+              },
+              sortBy: "Size"
+            },
+            {
+              header: "Last Modified Time",
+              accessor: (item) => {
+                if (item.Type === "folder") { return ''}
+                return item.LastModifTime;
+              },
+              sortBy: "LastModifTime"
+            },
           ]}
           idKey="Name"
           actions={[
@@ -270,7 +302,7 @@ export default function BucketContent() {
                           variant="link"
                           size="icon"
                           onClick={() => {
-                            setPreviewFile(item);
+                            setPreviewFile(item as BucketItem);
                           }}
                         >
                           <Eye color={OscarColors.Blue} />
@@ -278,16 +310,17 @@ export default function BucketContent() {
                         <Button
                           variant="link"
                           size="icon"
-                          onClick={() => handleDownloadFile(item)}
+                          onClick={() => handleDownloadFile(item as BucketItem)}
                         >
                           <Download />
                         </Button>
+                        <GenPresignedURLPopover bucketName={bucketName!} objectKey={path + item.Name} operation="download"/>
                       </>
                     )}
                     <Button
                       variant={"ghost"}
                       size="icon"
-                      onClick={() => setItemsToDelete([...itemsToDelete, item])}
+                      onClick={() => setItemsToDelete([...itemsToDelete, item as BucketItem])}
                     >
                       <Trash color={OscarColors.Red} />
                     </Button>
@@ -305,7 +338,7 @@ export default function BucketContent() {
                       <div>
                         <Button
                           className="mt-[2px]"
-                          onClick={() => handleBulkDownload(items)}
+                          onClick={() => handleBulkDownload(items as BucketItem[])}
                           /*  disabled={items.some(
                             (item) => item.Type === "folder"
                           )} */
@@ -315,7 +348,7 @@ export default function BucketContent() {
                         </Button>
                         <Button
                           className="mt-[2px] ml-[4px]"
-                          onClick={() => setItemsToDelete(items)}
+                          onClick={() => setItemsToDelete(items as BucketItem[])}
                           variant={"destructive"}
                         >
                           <Trash  className="w-4 h-4 mr-2"/>
@@ -331,6 +364,10 @@ export default function BucketContent() {
               },
             },
           ]}
+        />
+        <UploadFileDialog
+          progress={uploadProgress}
+          onClose={clearUploadProgress}
         />
       </motion.div>
     </>

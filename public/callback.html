@@ -36,6 +36,34 @@
   </div>
 
   <script>
+        function normalizeLoopbackAPIEndpoint(endpoint, currentOrigin) {
+          try {
+            const endpointURL = new URL(endpoint);
+            const originURL = new URL(currentOrigin);
+            const isLoopbackHostname = (hostname) =>
+              hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1';
+
+            const isLoopbackUpgrade =
+              endpointURL.protocol === 'http:' &&
+              originURL.protocol === 'https:' &&
+              isLoopbackHostname(endpointURL.hostname) &&
+              isLoopbackHostname(originURL.hostname) &&
+              endpointURL.hostname === originURL.hostname &&
+              (endpointURL.port === '' || endpointURL.port === '80') &&
+              (originURL.port === '' || originURL.port === '443');
+
+            if (isLoopbackUpgrade) {
+              return originURL.origin;
+            }
+          } catch (error) {
+            return endpoint;
+          }
+
+          return endpoint;
+        }
+
+        const apiEndpoint = normalizeLoopbackAPIEndpoint(localStorage.getItem('api'), location.origin);
+        localStorage.setItem('api', apiEndpoint);
         const baseUrl = localStorage.getItem('provider_url');
         const client_id = localStorage.getItem('client_id');
         const client_secret = localStorage.getItem('client_secret');
@@ -45,7 +73,7 @@
         const token_endpoint = localStorage.getItem('token_endpoint');;
         const userinfo_endpoint = localStorage.getItem('url_user_info');;
         if(baseUrl.includes('egi.eu')){
-          scope = 'openid profile email eduperson_entitlement';
+          scope = 'openid profile email entitlements eduperson_entitlement';
         }else{
           scope = 'openid profile email';
         }
@@ -114,7 +142,7 @@
                     "user":users?.name,
                     "password": "tokens['access_token']",
                     "token": tokens['access_token'],
-                    "endpoint": localStorage.getItem('api'),
+                    "endpoint": apiEndpoint,
                     "egiSession": users
                   })                  
                   localStorage.setItem("authData",authData); 

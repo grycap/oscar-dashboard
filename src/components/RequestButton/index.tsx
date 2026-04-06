@@ -25,7 +25,7 @@ function RequestButton({
 
   async function onClick() {
     if (props.disabled) return;
-    if (isLoading) return; // Evita múltiples clics
+    if (isLoading) return; // Prevent multiple clicks while request is running
     setIsLoading(true);
     await request();
     setIsLoading(false);
@@ -40,7 +40,7 @@ function RequestButton({
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           style={{ overflow: "hidden", display: "flex", alignItems: "center" }}
         >
-          {isLoading && <Loader2 className="animate-spin" />}
+          {isLoading && icon}
         </motion.div>
         <div>
           {children}

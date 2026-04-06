@@ -12,7 +12,11 @@ import { Plus } from "lucide-react";
 import useSelectedBucket from "../../hooks/useSelectedBucket";
 import { useMediaQuery } from "react-responsive";
 
-export default function AddFolderButton() {
+interface Props {
+  disabled?: boolean;
+}
+
+export default function AddFolderButton({ disabled = false }: Props) {
   const { name: bucketName, path } = useSelectedBucket();
   const [folderName, setFolderName] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -26,6 +30,7 @@ export default function AddFolderButton() {
   };
 
   useEffect(() => {
+    if (!isOpen) return;
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setIsOpen(false);
@@ -45,7 +50,7 @@ export default function AddFolderButton() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="mainGreen" style={{gap: 8}}>
+        <Button variant="mainGreen" style={{gap: 8}} disabled={disabled}>
           <Plus size={20} className="h-5 w-5" />
           {!isSmallScreen && "Create Folder"}
         </Button>

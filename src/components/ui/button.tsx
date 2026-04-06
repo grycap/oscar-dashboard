@@ -47,7 +47,7 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
-  tooltipLabel?: string; // Añadido prop tooltipLabel
+  tooltipLabel?: string; // Added tooltipLabel prop
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
