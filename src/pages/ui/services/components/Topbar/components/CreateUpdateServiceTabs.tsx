@@ -47,6 +47,10 @@ function CreateUpdateServiceTabs({ mode }: Props) {
               <Button variant={getVariant("settings")}>Settings</Button>
             </Link>
 
+            <Link to={`/ui/services/${serviceId}/deployment`}>
+              <Button variant={getVariant("deployment")}>Deployment</Button>
+            </Link>
+
             <Link to={`/ui/services/${serviceId}/logs`}>
               <Button variant={getVariant("logs")}>Logs</Button>
             </Link>

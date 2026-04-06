@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useServicesContext from "../../context/ServicesContext";
 import getServicesApi from "@/api/services/getServicesApi";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
@@ -16,6 +16,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import MoreActionsPopover from "./components/MoreActionsPopover";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import { errorMessage } from "@/lib/error";
+import DeploymentStatusBadge, {
+  getDeploymentSortValue,
+} from "../DeploymentStatusBadge";
 
 function ServicesList() {
   const { services, servicesAreLoading, setServices, setFormService, filter } =
@@ -27,7 +30,7 @@ function ServicesList() {
 
   async function handleGetServices() {
     try {
-      const response = await getServicesApi();
+      const response = await getServicesApi({ includeDeployment: true });
       setServices(response);
     } catch (error) {
       alert.error(`Error getting services: ${errorMessage(error)}`);
@@ -55,7 +58,7 @@ function ServicesList() {
         .map((result) => (result as {
           status: string;
           service: Service;
-          error: any;
+          error: unknown;
         }).service);
       
       await handleGetServices();
@@ -89,6 +92,12 @@ function ServicesList() {
     return filteredServices;
   }, [services, filter, authData?.user]);
 
+  useEffect(() => {
+    if (services.length === 0 || services.some((service) => !service.deployment)) {
+      handleGetServices();
+    }
+  }, []);
+
   return (
     <div
       style={{
@@ -114,6 +123,26 @@ function ServicesList() {
             }}
             columns={[
               { header: "Name", accessor: "name", sortBy: "name" },
+              {
+                header: "Deployment",
+                accessor: (row) => (
+                  <div
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setFormService(row);
+                      navigate(`/ui/services/${row.name}/deployment`);
+                    }}
+                  >
+                    <DeploymentStatusBadge
+                      deployment={row.deployment}
+                      showTooltip
+                      className="cursor-pointer"
+                    />
+                  </div>
+                ),
+                sortBy: "deployment",
+                sortValue: (row) => getDeploymentSortValue(row.deployment),
+              },
               { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.owner} copy={false} />), sortBy: "owner" },
               { header: "Image", accessor: "image", sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
