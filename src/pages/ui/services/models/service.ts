@@ -1,3 +1,5 @@
+import { DeploymentSummary } from "./deployment";
+
 export type ServiceFilter = {
   value: string;
   type: ServiceFilterBy;
@@ -170,6 +172,7 @@ export interface Service {
     path: string;
     storage_provider: string;
   };
+  deployment?: DeploymentSummary;
   expose: {
     min_scale: string,
     max_scale: string,

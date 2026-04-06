@@ -177,7 +177,9 @@ export const ServicesProvider = ({
 
   async function handleGetServices() {
     setServicesAreLoading(true);
-    const response = await getServicesApi();
+    const response = await getServicesApi({
+      includeDeployment: formMode === ServiceViewMode.List,
+    });
     setServicesAreLoading(false);
 
     setServices(response);
