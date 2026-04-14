@@ -7,6 +7,7 @@ import {
   ManagedVolume,
   ManagedVolumeCreateRequest,
 } from "@/pages/ui/services/models/service";
+import { errorMessage } from "@/lib/error";
 
 interface VolumesFilterProps {
   myVolumes: boolean;
@@ -25,6 +26,7 @@ export type VolumesProviderData = {
   setVolumesFilter: (filter: VolumesFilterProps) => void;
   volumes: ManagedVolume[];
   volumesAreLoading: boolean;
+  volumesLoadingError: boolean;
   setVolumes: (volumes: ManagedVolume[]) => void;
   updateVolumes: () => Promise<void>;
   createVolume: (volume: ManagedVolumeCreateRequest) => Promise<void>;
@@ -40,6 +42,7 @@ export const VolumesProvider = ({
 }) => {
   const [volumes, setVolumes] = useState<ManagedVolume[]>([]);
   const [volumesAreLoading, setVolumesAreLoading] = useState<boolean>(false);
+  const [volumesLoadingError, setVolumesLoadingError] = useState<boolean>(false);
   const [volumesFilter, setVolumesFilter] = useState<VolumesFilterProps>({
     myVolumes: false,
     query: "",
@@ -48,11 +51,14 @@ export const VolumesProvider = ({
 
   async function updateVolumes() {
     try {
+      setVolumesLoadingError(false);
       setVolumesAreLoading(true);
       const nextVolumes = await getVolumesApi();
       setVolumes(nextVolumes ?? []);
     } catch (error) {
       console.error("Error fetching volumes:", error);
+      alert.error(`Error fetching volumes: ${errorMessage(error)}`);
+      setVolumesLoadingError(true);
     } finally {
       setVolumesAreLoading(false);
     }
@@ -89,6 +95,7 @@ export const VolumesProvider = ({
         setVolumesFilter,
         volumes,
         volumesAreLoading,
+        volumesLoadingError,
         setVolumes,
         updateVolumes,
         createVolume,
