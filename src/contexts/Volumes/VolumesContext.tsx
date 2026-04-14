@@ -54,7 +54,7 @@ export const VolumesProvider = ({
       setVolumesLoadingError(false);
       setVolumesAreLoading(true);
       const nextVolumes = await getVolumesApi();
-      setVolumes(nextVolumes ?? []);
+      setVolumes(nextVolumes.managed_volume ?? []);
     } catch (error) {
       console.error("Error fetching volumes:", error);
       alert.error(`Error fetching volumes: ${errorMessage(error)}`);

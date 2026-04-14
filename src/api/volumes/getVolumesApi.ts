@@ -1,9 +1,10 @@
-import { ManagedVolume } from "@/pages/ui/services/models/service";
+import { Volumes } from "@/pages/ui/services/models/service";
 import axios from "axios";
 
 async function getVolumesApi() {
   const response = await axios.get("/system/volumes");
-  return response.data as ManagedVolume[];
+  console.log("getVolumesApi response:", response.data);
+  return response.data as Volumes;
 }
 
 export default getVolumesApi;

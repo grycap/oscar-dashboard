@@ -169,7 +169,19 @@ export default function VolumeList() {
                       ))}
                     </div>
                   ) : (
+                    row.created_by_service ? (
+                      <Link
+                        to={`/ui/services/${row.created_by_service}/settings`}
+                        className="grid grid-cols-[auto_1fr] no-underline hover:underline underline-offset-2 border-gray-400"
+                      >
+                        <span className="truncate min-w-[70px]">
+                          {row.created_by_service}
+                        </span>
+                        <ExternalLinkIcon size={12} className="self-center ml-[2px]" />
+                      </Link>
+                    ) : (
                     <span></span>
+                    )
                   )}
                 </>
               ),

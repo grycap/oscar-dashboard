@@ -147,7 +147,7 @@ function TerminalFormPopover() {
           return;
         }
 
-        setVolumes(nextVolumes);
+        setVolumes(nextVolumes.managed_volume ?? []);
       } catch (error) {
         if (cancelled) {
           return;
@@ -541,7 +541,7 @@ function TerminalFormPopover() {
                 </Select>
               )}
               {newVolume ? (
-                <div className="grid gap-1">
+                <div className="grid gap-1 mt-2">
                   <Label htmlFor="volumeSize">Volume size (Gi)</Label>
                   <Input
                     id="volumeSize"
