@@ -45,6 +45,14 @@ export interface LineProps {
 
 const lineChartOptions: ChartOptions<'line'> = {
   responsive: true,
+  scales: {
+    y: {
+      ticks: {
+        stepSize: 1,
+        callback: (value) => Number.isInteger(value) ? value : null,
+      },
+    },
+  },
   plugins: {
     legend: {
       position: 'top' as const,
@@ -54,6 +62,10 @@ const lineChartOptions: ChartOptions<'line'> = {
       text: 'Cluster Usage Over Time',
     },
     zoom: {
+        pan: {
+          enabled: true,
+          mode: 'x',
+        },
         zoom: {
           wheel: {
             enabled: true,
@@ -61,7 +73,7 @@ const lineChartOptions: ChartOptions<'line'> = {
           pinch: {
             enabled: true
           },
-          mode: 'xy',
+          mode: 'x',
         }
       }
   },
@@ -77,7 +89,7 @@ function ClusterUseGraph() {
   const [loading, setLoading] = useState(false);
   const [loadingError, setLoadingError] = useState(false);
   const [scale, setScale] = useState<Scale>('seconds');
-  const [datasetType, setDatasetType] = useState<DatasetType>('avgLatency');
+  const [datasetType, setDatasetType] = useState<DatasetType>('invocations');
   const chartRef = useRef<any>(null);
 
   const chartData = useMemo<LineProps>(() => {
@@ -151,7 +163,7 @@ function ClusterUseGraph() {
   }
 
   return (
-    <ExpandCard title="Usage Graphic" className="w-full mt-6" setExpandedState={setExpandedSections}>
+    <ExpandCard title="Usage" className="w-full mt-6" setExpandedState={setExpandedSections}>
       <CardContent className="grid grid-cols-1 gap-4 mt-5">
         <Card>
           <CardContent className="p-4 flex flex-col gap-4 overflow-x-auto">
