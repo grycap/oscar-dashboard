@@ -54,6 +54,7 @@ export const defaultService: Service = {
     rewrite_target: false,
     nodePort: "",
     default_command: false,
-    set_auth: false
+    set_auth: false,
+    health_path: "",
   }
 };
