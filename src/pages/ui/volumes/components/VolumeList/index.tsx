@@ -1,6 +1,7 @@
 import DeleteDialog from "@/components/DeleteDialog";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import GenericTable from "@/components/Table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,7 +9,7 @@ import { useVolumes } from "@/contexts/Volumes/VolumesContext";
 import { isUserOscar } from "@/lib/utils";
 import { ManagedVolume } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
-import { ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-react";
+import { AlertCircle, ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -47,6 +48,7 @@ export default function VolumeList() {
     volumesAreLoading,
     deleteVolume,
     volumesFilter,
+    volumesLoadingError,
   } = useVolumes();
   const [itemsToDelete, setItemsToDelete] = useState<ManagedVolume[]>([]);
   const [filteredVolumes, setFilteredVolumes] =
@@ -80,6 +82,22 @@ export default function VolumeList() {
     setFilteredVolumes(nextVolumes);
   }, [authData, volumes, volumesFilter]);
 
+  function loadingErrorView() {
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <Alert variant="destructive" className="max-w-md bg-red-50 text-red-400">
+          <div className="flex flex-col items-center text-center">
+          <AlertCircle className="h-6 w-6 mb-2" />
+          <AlertTitle>Failed to load volumes</AlertTitle>
+          <AlertDescription className="mt-1 text-sm">
+            Could not retrieve volumes data due to an unexpected error. Contact your administrator or try again later.
+          </AlertDescription>
+          </div>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <>
       <DeleteDialog
@@ -100,6 +118,9 @@ export default function VolumeList() {
             color={OscarColors.Green3}
           />
         </div>
+      )
+      : volumesLoadingError ? (
+        loadingErrorView()
       ) : (
         <GenericTable<ManagedVolume>
           idKey="name"
