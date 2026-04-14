@@ -228,6 +228,7 @@ export interface Service {
     nodePort: string,
     default_command: boolean,
     set_auth: boolean
+    health_path: string;
   };
 }
 
