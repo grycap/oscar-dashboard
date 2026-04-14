@@ -9,7 +9,7 @@ export function PrivacyPolicy() {
     {
       category: "Description of the service",
       details:
-        "OSCAR is an open-source platform to support the serverless computing model for file-processing applications. It can be automatically deployed on multi-Clouds in order to create highly-parallel event-driven file-processing serverless applications that execute on customized runtime environments provided by Docker containers than run on an elastic Kubernetes cluster.",
+        "OSCAR is an open-source platform to support the serverless computing model for file-processing applications. It can be automatically deployed on multi-Clouds in order to create highly-parallel event-driven file-processing serverless applications that execute on customized runtime environments provided by Docker containers that run on an elastic Kubernetes cluster.",
     },
     {
       category: "Data controller",

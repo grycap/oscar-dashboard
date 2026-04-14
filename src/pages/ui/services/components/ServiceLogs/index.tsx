@@ -13,6 +13,7 @@ import { alert } from "@/lib/alert";
 import deleteServiceLogsApi from "@/api/logs/deleteServiceLogs";
 import OscarColors from "@/styles";
 import { delay } from "@/lib/utils";
+import { errorMessage } from "@/lib/error";
 
 
 export type LogWithName = Log & { name: string };
@@ -49,6 +50,7 @@ export default function ServiceLogs() {
       setNext(newNext);
     } catch (error) {
       console.error("Failed to fetch more logs:", error);
+      alert.error(`Failed to fetch more logs: ${errorMessage(error)}`);
       setLogs({});
     } finally {
       setNextExecution(false);
@@ -142,7 +144,7 @@ export default function ServiceLogs() {
 
       fetchMoreLogs();
     } catch (error) {
-      alert.error("An unexpected error occurred while deleting logs");
+      alert.error(`An unexpected error occurred while deleting logs: ${(error as Error).message}`);
     } finally {
       setLogsToDelete([]);
     }

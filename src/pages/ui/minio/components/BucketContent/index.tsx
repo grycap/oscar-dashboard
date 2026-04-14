@@ -26,6 +26,7 @@ import {
 import { bytesSizeToHumanReadable } from "@/lib/utils";
 import UploadFileDialog from "@/components/UploadFileDialog";
 import GenPresignedURLPopover from "../GenPresignedURLPopover";
+import { errorMessage } from "@/lib/error";
 
 export type BucketItem =
   | {
@@ -48,11 +49,11 @@ export default function BucketContent() {
     getBucketItems,
     downloadAndZipFolders,
     buckets,
-    uploadFile,
+    uploadFiles,
     deleteFile,
-    getFileUrl,
-    isUploadingFile,
-    setIsUploadingFile,
+    getFileBlob,
+    uploadProgress,
+    clearUploadProgress,
   } = useMinio();
 
   const [items, setItems] = useState<BucketItem[]>([]);
@@ -96,7 +97,7 @@ export default function BucketContent() {
     setIsDroppingFile(false); // Reset drop state when the file is released
     const files = event.dataTransfer.files;
     if (files.length > 0) {
-      uploadFile(bucketName!, path, files[0]);
+      uploadFiles(bucketName!, path, Array.from(files));
     }
   };
 
@@ -114,17 +115,19 @@ export default function BucketContent() {
   const handleDownloadFile = async (item: BucketItem) => {
     if (item.Type === "file") {
       try {
-        const url = await getFileUrl(item.BucketName, item.Key.Key!);
-        if (url) {
+        const blob = await getFileBlob(item.BucketName, item.Key.Key!);
+        if (blob) {
+          const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
           a.download = item.Name;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
+          URL.revokeObjectURL(url);
         }
       } catch (error) {
-        console.error("Error downloading file:", error);
+        console.error(`Error downloading file: ${errorMessage(error)}`);
       }
     }
   };
@@ -362,7 +365,10 @@ export default function BucketContent() {
             },
           ]}
         />
-        <UploadFileDialog isOpen={isUploadingFile} setIsOpen={setIsUploadingFile}/>
+        <UploadFileDialog
+          progress={uploadProgress}
+          onClose={clearUploadProgress}
+        />
       </motion.div>
     </>
   );

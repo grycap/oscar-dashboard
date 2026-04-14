@@ -7,22 +7,47 @@ import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 
 
-function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }: { service: Service; endpoint: string; additionalExposedPathArgs?: string }) {
+function ServiceRedirectButton({
+  service,
+  endpoint,
+  additionalExposedPathArgs,
+  healthcheckPath = "",
+}: {
+  service: Service;
+  endpoint: string;
+  additionalExposedPathArgs?: string;
+  healthcheckPath?: string;
+}) {
   const [isAlive, setIsAlive] = useState<boolean | null>(null);
   const { clusterInfo } = useAuth();
+  const redirectLink = `${endpoint}/system/services/${service.name}/exposed/${interpolateVariables(service, additionalExposedPathArgs)}`
 
+  const safeHealthcheckPath = healthcheckPath.startsWith("/") ? healthcheckPath.slice(1).trim() : healthcheckPath
+  const healthcheckLink = `${endpoint}/system/services/${service.name}/exposed/${safeHealthcheckPath}`;
+      
   /**
    * Interpolate variables in the additionalExposedPathArgs string.
    * This function replaces variables in the format {{ variableName }} with their corresponding values from the
-   * service's environment variables.
+   * service's environment variables or service properties. It supports variables prefixed with "env." for environment variables and "service."
+   * example: evn.MY_VAR or service.token
    */
   function interpolateVariables(service: Service, additionalExposedPathArgs?: string) {
     if (!additionalExposedPathArgs) return "";
 
     return additionalExposedPathArgs.replace(/{{\s*([^}]+)\s*}}/g, (_, variableName) => {
-      return service.environment.variables[variableName] ?? "";
+      const splitVariable = variableName.split(".");
+      const prefix = splitVariable[0];
+      const variableKey = splitVariable[1];
+      switch (prefix) {
+        case "env":
+          return service.environment.variables[variableKey] ?? "";
+        case "service":
+          const serviceValue = (service[variableKey as keyof Service]);
+          return typeof serviceValue === "string" ? serviceValue : "";
+        default:
+          return "";
+      }
     });
-    
   }
 
   useEffect(() => {
@@ -33,7 +58,7 @@ function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }:
         return;
       }
       try {
-        const status = await exposedServiceIsAlive(`${endpoint}/system/services/${service.name}/exposed/`, 10000, 20);
+        const status = await exposedServiceIsAlive(healthcheckLink, 10000, 20);
         if (isMounted) { 
           setIsAlive(status);
         }
@@ -47,15 +72,11 @@ function ServiceRedirectButton({ service, endpoint, additionalExposedPathArgs }:
     return () => {
       isMounted = false;
     };
-  }, [service.name, endpoint]);
+  }, [service.name, endpoint, healthcheckPath]);
 
   return isAlive ? (
     <Link
-      to={`${
-        endpoint
-      }/system/services/${service.name}/exposed/${
-        interpolateVariables(service, additionalExposedPathArgs)
-      }`}
+      to={redirectLink}
       target="_blank"
     >
       <ExternalLink />

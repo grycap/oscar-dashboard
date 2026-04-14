@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { IMAGE_TAGS } from "./images";
 import InfoPopUp from "@/components/InfoPopUp";
 import InfoItem from "@/pages/ui/info/components/InfoItem";
+import { errorMessage } from "@/lib/error";
 
 function JunoFormPopover() {
   const [isOpen, setIsOpen] = useState(false);
@@ -151,7 +152,7 @@ function JunoFormPopover() {
       alert.success("Jupyter Notebook instance deployed");
       setIsOpen(false);
     } catch (error) {
-      alert.error("Error deploying Jupyter Notebook instance");
+      alert.error(`Error deploying Jupyter Notebook instance: ${errorMessage(error)}`);
     }
   };
 

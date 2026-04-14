@@ -15,6 +15,7 @@ import ServiceRedirectButton from "../ServiceRedirectButton";
 import DeleteDialog from "../DeleteDialog";
 import GenericTopbar from "../Topbar";
 import ResponsiveOwnerField from "../ResponsiveOwnerField";
+import { errorMessage } from "@/lib/error";
 
 interface IntegratedAppProps {
     appName: string;
@@ -22,9 +23,17 @@ interface IntegratedAppProps {
     filteredServices: Service[];
     DeployInstancePopover: React.ComponentType;
     additionalExposedPathArgs?: string;
+    healthcheckPath?: string;
 }
 
-function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, additionalExposedPathArgs, DeployInstancePopover}: IntegratedAppProps) {
+function IntegratedApp({
+  appName,
+  deployedServiceEndpoint,
+  filteredServices,
+  additionalExposedPathArgs,
+  healthcheckPath,
+  DeployInstancePopover,
+}: IntegratedAppProps) {
   const { setFormService } = useServicesContext();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const { setServices } = useServicesContext();
@@ -38,7 +47,7 @@ function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, add
       await updateServiceApi(service);
       alert.success("Service restarted successfully");
     } catch (error) {
-      alert.error("Error restarting service");
+      alert.error(`Error restarting service: ${errorMessage(error)}`);
       console.error(error);
     }
   }
@@ -49,7 +58,7 @@ function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, add
       const response = await getServicesApi();
       setServices(response);
     } catch (error) {
-      alert.error("Error getting services");
+      alert.error(`Error getting services: ${errorMessage(error)}`);
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -174,6 +183,7 @@ function IntegratedApp({ appName, deployedServiceEndpoint, filteredServices, add
                   service={service}
                   endpoint={deployedServiceEndpoint}
                   additionalExposedPathArgs={additionalExposedPathArgs}
+                  healthcheckPath={healthcheckPath}
                 />
               </div>
             ),

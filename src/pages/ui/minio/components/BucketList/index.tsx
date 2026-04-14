@@ -1,6 +1,7 @@
 import DeleteDialog from "@/components/DeleteDialog";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import GenericTable from "@/components/Table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,7 +10,7 @@ import { isUserOscar, shortenFullname } from "@/lib/utils";
 import { Bucket_visibility } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Bucket } from "@aws-sdk/client-s3";
-import { ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-react";
+import { AlertCircle, ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -43,7 +44,7 @@ function isBucketVisibility(value: unknown): boolean {
 }
 
 export default function BucketList() {
-  const { buckets, bucketsOSCAR, bucketsAreLoading, deleteBucket, bucketsFilter } = useMinio();
+  const { buckets, bucketsOSCAR, bucketsAreLoading, bucketsLoadingError, deleteBucket, bucketsFilter } = useMinio();
   const [itemsToDelete, setItemsToDelete] = useState<Bucket[]>([]);
   const [bucketsList, setBucketsList] = useState<BucketList[]>([]);
   const [filteredBucketsList, setFilteredBucketsList] = useState<BucketList[]>([]);
@@ -83,12 +84,28 @@ export default function BucketList() {
             ? bucket.owner
             : bucket.from_service;
         const query = bucketsFilter.query.toLowerCase();
-        return query === "" || fieldToFilter.toLowerCase().startsWith(query);
+        return query === "" || fieldToFilter.toLowerCase().includes(query);
       });
     }
 
     setFilteredBucketsList(filteredBuckets);
   }, [bucketsFilter, bucketsList]);
+
+  function loadingErrorView() {
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <Alert variant="destructive" className="max-w-md bg-red-50 text-red-400">
+          <div className="flex flex-col items-center text-center">
+          <AlertCircle className="h-6 w-6 mb-2" />
+          <AlertTitle>Failed to load buckets</AlertTitle>
+          <AlertDescription className="mt-1 text-sm">
+            Could not retrieve bucket data due to a connection error. Check your network or MinIO endpoint configuration and try again.
+          </AlertDescription>
+          </div>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -104,13 +121,15 @@ export default function BucketList() {
       <div className="flex items-center justify-center h-screen">
         <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
       </div>
-      : 
-      <GenericTable<BucketList>
-        idKey="Name"
-        data={filteredBucketsList}
-        columns={[
-          {
-            header: "Name",
+      : bucketsLoadingError ? (
+        loadingErrorView()
+      ) : (
+        <GenericTable<BucketList>
+          idKey="Name"
+          data={filteredBucketsList}
+          columns={[
+            {
+              header: "Name",
             accessor: (row) => (
               <Link to={`/ui/minio/${row.Name}`}>{row.Name}</Link>
             ),
@@ -196,7 +215,8 @@ export default function BucketList() {
             },
           },
         ]}
-      />
+        />
+        )
       }
     </>
   );

@@ -34,6 +34,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import RequestButton from "@/components/RequestButton";
 import invokeServiceSync from "@/api/invoke/invokeServiceSync";
 import { isFileBase64 } from "@/lib/utils";
+import { errorMessage } from "@/lib/error";
 
 type View = "upload" | "editor" | "response";
 
@@ -83,7 +84,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
     } else if (uploadedFile.type.startsWith("image/")) {
       setFileType("image");
     } else {
-      alert.error("Type file not supported");
+      alert.error("File type not supported");
       return;
     }
 
@@ -125,7 +126,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
         token,
         endpoint: authData.endpoint,
       });
-      let responseString = responseLocal as string;
+      const responseString = responseLocal as string;
       setResponse(responseString);
       if (responseString.trim() !== "") {
         if (responseString.startsWith("data:image/")) {
@@ -138,7 +139,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
       }
       setCurrentView("response");
     } catch (error) {
-      alert.error("Error invoking service");
+      alert.error(`Error invoking service: ${errorMessage(error)}`);
     }
   };
 
@@ -186,7 +187,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
                   setFileType(null);
                 }}
               >
-                Or use code editor
+                Or use the code editor
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>

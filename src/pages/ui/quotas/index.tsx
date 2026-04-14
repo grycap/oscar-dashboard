@@ -9,6 +9,7 @@ import { Pencil, Search } from "lucide-react";
 import { useState } from "react";
 import EditPopover from "./components/EditPopover";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
+import { errorMessage } from "@/lib/error";
 
 
 function Quotas() {
@@ -22,7 +23,7 @@ function Quotas() {
       const quota = await getUserQuotaApi(uid);
       setUsers([quota]);
     } catch (error) {
-      console.error("Error fetching user quota:", error);
+      console.error(`Error fetching user quota: ${errorMessage(error)}`);
       setUsers([]);
     }
   }
