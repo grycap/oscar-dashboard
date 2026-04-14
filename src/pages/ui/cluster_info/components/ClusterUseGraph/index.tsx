@@ -62,6 +62,10 @@ const lineChartOptions: ChartOptions<'line'> = {
       text: 'Cluster Usage Over Time',
     },
     zoom: {
+        pan: {
+          enabled: true,
+          mode: 'x',
+        },
         zoom: {
           wheel: {
             enabled: true,
