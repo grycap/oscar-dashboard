@@ -7,6 +7,8 @@ import { PrivacyPolicy } from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
 import { MinioProvider } from "@/contexts/Minio/MinioContext";
 import MinioRouter from "@/pages/ui/minio/router";
+import { VolumesProvider } from "@/contexts/Volumes/VolumesContext";
+import VolumesRouter from "@/pages/ui/volumes/router";
 import InfoView from "@/pages/ui/info";
 import { ServicesProvider } from "@/pages/ui/services/context/ServicesContext";
 import JunoView from "@/pages/ui/juno";
@@ -29,7 +31,9 @@ function AppRouter() {
             <ProtectedRoute>
               <ServicesProvider>
                 <MinioProvider>
-                  <AppLayout />
+                  <VolumesProvider>
+                    <AppLayout />
+                  </VolumesProvider>
                 </MinioProvider>
               </ServicesProvider>
             </ProtectedRoute>
@@ -37,6 +41,7 @@ function AppRouter() {
         >
           <Route path="services/*" element={<ServicesRouter />} />
           <Route path="minio/*" element={<MinioRouter />} />
+          <Route path="volumes/*" element={<VolumesRouter />} />
           <Route path="info" element={<InfoView />} />
           <Route path="notebooks" element={<JunoView />} />
           <Route path="flows" element={<FlowsView />} />

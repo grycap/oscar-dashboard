@@ -134,6 +134,54 @@ export enum Bucket_visibility {
   public = "public",
 }
 
+export interface Volumes {
+  volume_limits: VolumeLimits;
+  managed_volume: ManagedVolume[];
+}
+
+export interface VolumeStatus {
+  phase?: string;
+  message?: string;
+  attachment_count?: number;
+}
+
+export interface VolumeAttachmentReference {
+  service_name: string;
+  mount_path: string;
+}
+
+export interface VolumeLimits {
+  disk_available: number;
+  max_volumes: string;
+  max_disk_per_volume: string;
+  min_disk_per_volume: string;
+}
+
+export interface ManagedVolume {
+  name: string;
+  namespace?: string;
+  pvc_name?: string;
+  size?: string;
+  owner_user?: string;
+  created_by_service?: string;
+  creation_mode?: string;
+  lifecycle_policy?: string;
+  attachments?: VolumeAttachmentReference[];
+  status: VolumeStatus;
+}
+
+export interface ManagedVolumeCreateRequest {
+  name: string;
+  size: string;
+}
+
+export interface ServiceVolumeConfig {
+  name?: string;
+  size?: string;
+  mount_path: string;
+  lifecycle_policy?: string;
+}
+
 export interface Service {
   allowed_users: string[];
   name: string;
@@ -170,6 +218,7 @@ export interface Service {
     path: string;
     storage_provider: string;
   };
+  volume?: ServiceVolumeConfig;
   expose: {
     min_scale: string,
     max_scale: string,
