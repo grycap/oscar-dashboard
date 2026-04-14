@@ -166,7 +166,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       if (!serviceVolume) return;
 
       try {
-        const nextVolumes = await getVolumesApi();
+        const nextVolumes = (await getVolumesApi()).managed_volume;
         if (cancelled) return;
 
         const volumeExists = nextVolumes.some(
