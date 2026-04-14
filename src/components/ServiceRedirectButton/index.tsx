@@ -8,13 +8,11 @@ import { useAuth } from "@/contexts/AuthContext";
 
 
 function ServiceRedirectButton({
-  className,
   service,
   endpoint,
   additionalExposedPathArgs,
   healthcheckPath = "",
 }: {
-  className?: string;
   service: Service;
   endpoint: string;
   additionalExposedPathArgs?: string;
@@ -78,14 +76,13 @@ function ServiceRedirectButton({
 
   return isAlive ? (
     <Link
-      className={`${className ?? ""}`}
       to={redirectLink}
       target="_blank"
     >
       <ExternalLink />
     </Link>
   ) : (
-    <Loader2 className={`animate-spin ${className ?? ""}`} color={OscarColors.DarkGrayText} />
+    <Loader2 className="animate-spin" color={OscarColors.DarkGrayText} />
   );
 }
 

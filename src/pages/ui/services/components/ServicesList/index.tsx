@@ -16,8 +16,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import MoreActionsPopover from "./components/MoreActionsPopover";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import { errorMessage } from "@/lib/error";
-import ServiceRedirectButton from "@/components/ServiceRedirectButton";
-import { shortenFullname } from "@/lib/utils";
 
 function ServicesList() {
   const { services, servicesAreLoading, setServices, setFormService, filter } =
@@ -110,9 +108,13 @@ function ServicesList() {
           <GenericTable<Service>
             data={filteredServices}
             idKey="name"
+            onRowClick={(item) => {
+              setFormService(item);
+              navigate(`/ui/services/${item.name}/settings`);
+            }}
             columns={[
-              { header: "Name", accessor: (row) => (<Link to={`/ui/services/${row.name}/settings`}>{row.name}</Link>), sortBy: "name" },
-              { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.labels["owner_name"] ? shortenFullname(row.labels["owner_name"]) : row.owner} sub={row.owner} />), sortBy: "owner" },
+              { header: "Name", accessor: "name", sortBy: "name" },
+              { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.owner} copy={false} />), sortBy: "owner" },
               { header: "Image", accessor: "image", sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
               { header: "Memory", accessor: "memory", sortBy: "memory" },
@@ -140,25 +142,14 @@ function ServicesList() {
               },
               {
                 button: (item) => (
-                  <>
-                  {item.expose.max_scale != "0" ?
-                    <ServiceRedirectButton 
-                      className="flex items-center justify-center ml-2 mr-2 "
-                      service={item}
-                      endpoint={authData.endpoint}
-                      healthcheckPath={item.expose.health_path}
-                    />
-                    :
-                    <InvokePopover
-                      service={item}
-                      triggerRenderer={
-                        <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Invoke">
-                          <Terminal />
-                        </Button>
-                      }
-                    />
-                  }
-                  </>
+                  <InvokePopover
+                    service={item}
+                    triggerRenderer={
+                      <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Invoke">
+                        <Terminal />
+                      </Button>
+                    }
+                  />
                 ),
               },
               {

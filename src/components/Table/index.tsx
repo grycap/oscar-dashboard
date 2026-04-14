@@ -146,7 +146,7 @@ function GenericTable<T extends object>({
             <TableRow
               key={rowIndex}
               onClick={() => onRowClick?.(item)}
-              className={`${onRowClick ? 'cursor-pointer' : ''}`}
+              className="cursor-pointer"
             >
               <TableCell>
                 <Checkbox
