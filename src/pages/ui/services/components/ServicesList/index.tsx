@@ -5,8 +5,9 @@ import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
 import DeleteDialog from "@/components/DeleteDialog";
 import { Service } from "../../models/service";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { LoaderPinwheel, Pencil, Terminal, Trash2 } from "lucide-react";
+import { LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import { Link, useNavigate } from "react-router-dom";
 import GenericTable from "@/components/Table";
@@ -19,6 +20,58 @@ import { errorMessage } from "@/lib/error";
 import DeploymentStatusBadge, {
   getDeploymentSortValue,
 } from "../DeploymentStatusBadge";
+import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
+import { DeploymentStatus } from "../../models/deployment";
+
+interface DeploymentStatusCellProps {
+  initialDeployment?: DeploymentStatus;
+  serviceName: string;
+  onNavigate: () => void;
+}
+
+function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate }: DeploymentStatusCellProps) {
+  const [deployment, setDeployment] = useState<DeploymentStatus | undefined>(initialDeployment);
+  const [loading, setLoading] = useState(false);
+
+  async function fetchDeployment() {
+    setLoading(true);
+    try {
+      const result = await getDeploymentStatusApi(serviceName);
+      setDeployment(result);
+    } catch {
+      // leave existing state on error
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div
+      className="flex items-center gap-1 cursor-pointer"
+      onClick={(e) => {
+        e.stopPropagation();
+        fetchDeployment();
+      }}
+    >
+      {deployment && !loading ? (
+        <>
+        <div onClick={(e) => {
+          e.stopPropagation();
+          onNavigate();
+        }}>
+          <DeploymentStatusBadge deployment={deployment} showTooltip className="cursor-pointer" />
+        </div>
+          <RefreshCw className="h-3 w-3 opacity-40 hover:opacity-100" />
+        </>
+      ) : (
+        <Badge variant="default" className="cursor-pointer">
+          <RefreshCw className={`${loading ? "animate-spin" : ""} h-3 w-3 mr-1`} />
+          Fetch
+        </Badge>
+      )}
+    </div>
+  );
+}
 
 function ServicesList() {
   const { services, servicesAreLoading, setServices, setFormService, filter } =
@@ -30,7 +83,7 @@ function ServicesList() {
 
   async function handleGetServices() {
     try {
-      const response = await getServicesApi({ includeDeployment: true });
+      const response = await getServicesApi();
       setServices(response);
     } catch (error) {
       alert.error(`Error getting services: ${errorMessage(error)}`);
@@ -117,31 +170,22 @@ function ServicesList() {
           <GenericTable<Service>
             data={filteredServices}
             idKey="name"
-            onRowClick={(item) => {
-              setFormService(item);
-              navigate(`/ui/services/${item.name}/settings`);
-            }}
             columns={[
               { header: "Name", accessor: "name", sortBy: "name" },
               {
                 header: "Deployment",
                 accessor: (row) => (
-                  <div
-                    onClick={(event) => {
-                      event.stopPropagation();
+                  <DeploymentStatusCell
+                    initialDeployment={row.deployment as DeploymentStatus}
+                    serviceName={row.name}
+                    onNavigate={() => {
                       setFormService(row);
                       navigate(`/ui/services/${row.name}/deployment`);
                     }}
-                  >
-                    <DeploymentStatusBadge
-                      deployment={row.deployment}
-                      showTooltip
-                      className="cursor-pointer"
-                    />
-                  </div>
+                  />
                 ),
                 sortBy: "deployment",
-                sortValue: (row) => getDeploymentSortValue(row.deployment),
+                sortValue: (row) => getDeploymentSortValue(row.deployment as DeploymentStatus),
               },
               { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.owner} copy={false} />), sortBy: "owner" },
               { header: "Image", accessor: "image", sortBy: "image" },

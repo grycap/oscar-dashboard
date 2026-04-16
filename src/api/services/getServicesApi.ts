@@ -5,7 +5,7 @@ interface GetServicesApiOptions {
   includeDeployment?: boolean;
 }
 
-async function getServicesApi(options: GetServicesApiOptions = {}) {
+async function getServicesApi(options: GetServicesApiOptions = {}): Promise<Service[]> {
   const response = await axios.get("/system/services", {
     params: options.includeDeployment ? { include: "deployment" } : undefined,
   });
