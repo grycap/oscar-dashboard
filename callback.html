@@ -74,7 +74,7 @@
         history.replaceState({}, null, '/callback.html'); // Remove the auth code from the browser address bar.
         const id_token = JSON.parse(atob(tokens.id_token.split('.')[1]));
         const access_token = JSON.parse(atob(tokens.access_token.split('.')[1]));
-        const refresh_token = JSON.parse(atob(tokens.refresh_token.split('.')[1]));
+        const refresh_token = tokens.refresh_token ? JSON.parse(atob(tokens.refresh_token.split('.')[1])) : undefined;
         const options = {
             headers: {Authorization: `Bearer ${tokens.access_token}` }
         };
