@@ -4,6 +4,7 @@ import ServicesList from "./components/ServicesList";
 import ServiceForm from "./components/ServiceForm";
 import FDLForm from "./components/FDL";
 import ServiceLogs from "./components/ServiceLogs";
+import ServiceDeployment from "./components/ServiceDeployment";
 
 function ServicesRouter() {
   return (
@@ -28,6 +29,7 @@ function ServicesRouter() {
         <Route path="" element={<ServicesList />} />
         <Route path=":serviceId" element={<ServiceForm />} />
         <Route path=":serviceId/settings" element={<ServiceForm />} />
+        <Route path=":serviceId/deployment" element={<ServiceDeployment />} />
         <Route path=":serviceId/logs" element={<ServiceLogs />} />
       </Route>
     </Routes>

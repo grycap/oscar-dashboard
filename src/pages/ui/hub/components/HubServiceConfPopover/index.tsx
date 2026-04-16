@@ -1,4 +1,5 @@
 import createServiceApi from "@/api/services/createServiceApi";
+import getVolumesApi from "@/api/volumes/getVolumesApi";
 import RequestButton from "@/components/RequestButton";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -9,12 +10,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
 import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
-import { Service } from "@/pages/ui/services/models/service";
+import {
+  ManagedVolume,
+  Service,
+} from "@/pages/ui/services/models/service";
 import { RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RoCrateServiceDefinition } from "@/lib/roCrate";
 import HubCardHeader from "../HubCardHeader";
 import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
+import { errorMessage } from "@/lib/error";
 
 interface HubServiceConfPopoverProps {
     roCrateServiceDef: RoCrateServiceDefinition;
@@ -34,7 +39,40 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
 	const asyncService = roCrateServiceDef.type.some(t => t.toLowerCase() === "asynchronous");
-	const mountBucket = service?.mount;
+  const mountBucket = service?.mount;
+  const serviceVolume = service?.volume;
+  const canCreateManagedVolume = !!serviceVolume;
+
+  function parseVolumeSize(size?: string): string {
+    if (!size) {
+      return "1";
+    }
+
+    const parsedSize = size.trim().match(/^(\d+(?:\.\d+)?)(Mi|Gi)$/);
+
+    if (!parsedSize) {
+      return "1";
+    }
+
+    const numericSize = Number(parsedSize[1]);
+    const unit = parsedSize[2];
+
+    if (unit === "Mi") {
+      return String(numericSize / 1024);
+    }
+
+    return parsedSize[1];
+  }
+
+  function isValidVolumeSize(value: string): boolean {
+    const trimmedValue = value.trim();
+
+    if (!/^\d+(\.\d+)?$/.test(trimmedValue)) {
+      return false;
+    }
+
+    return Number(trimmedValue) > 0;
+  }
 
   function nameService() {
     return `hub-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
@@ -46,14 +84,21 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
     memoryRam: "2",
     memoryUnit: "Gi",
     bucket: "",
+    volume: "",
+    volumeSize: "1",
     vo: "",
     token: "",
     enviromentVars: {} as Record<string, string>,
     enviromentSecrets: {} as Record<string, string>,
   });
+  const [newVolume, setNewVolume] = useState(false);
+  const [volumes, setVolumes] = useState<ManagedVolume[]>([]);
 
   function ifEndpointService(key: string, value: string, serviceName: string): string {
-    const newValue = value.replace(/\/services\/([^\/]+)\/exposed/, `/services/${serviceName}/exposed`);
+    const newValue = value.replace(
+      /\/services\/([^/]+)\/exposed/,
+      `/services/${serviceName}/exposed`
+    );
     if (newValue.includes(`/services/${serviceName}/exposed`)) {
       formData.enviromentVars = {
         ...formData.enviromentVars,
@@ -68,6 +113,8 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
     cpuCores: false,
     memoryRam: false,
     bucket: false,
+    volume: false,
+    volumeSize: false,
     vo: false,
     token: false,
     enviromentVars: {} as Record<string, boolean>,
@@ -83,6 +130,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
   useEffect(() => {
     if (!isOpen) return;
 
+    const initialVolume = serviceVolume?.name || "";
     setFormData((prev) => ({
       ...prev, 
       name: nameService(),
@@ -90,28 +138,83 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       memoryRam: roCrateServiceDef.memoryRequirements,
       memoryUnit: roCrateServiceDef.memoryUnits,
       bucket: "",
+      volume: "",
+      volumeSize: parseVolumeSize(serviceVolume?.size),
       token: genRandomString(128),
       enviromentVars: service.environment?.variables || {},
       enviromentSecrets: service.environment?.secrets || {},
     }));
+    setNewBucket(false);
+    setVolumes([]);
+    setNewVolume(false);
     setErrors({
       name: false,
       cpuCores: false,
       memoryRam: false,
       bucket: false,
+      volume: false,
+      volumeSize: false,
       vo: false,
       token: false,
       enviromentVars: {} as Record<string, boolean>,
       enviromentSecrets: {} as Record<string, boolean>,
     });
-  }, [isOpen]);
+
+    let cancelled = false;
+
+    const loadVolumes = async () => {
+      if (!serviceVolume) return;
+
+      try {
+        const nextVolumes = (await getVolumesApi()).managed_volume;
+        if (cancelled) return;
+
+        const volumeExists = nextVolumes.some(
+          (volume) => volume.name === initialVolume
+        );
+
+        setVolumes(nextVolumes);
+        setNewVolume(nextVolumes.length === 0);
+        setFormData((prev) => ({
+          ...prev,
+          volume:
+            nextVolumes.length === 0
+              ? initialVolume
+              : volumeExists
+                ? initialVolume
+                : "",
+        }));
+      } catch (error) {
+        if (cancelled) return;
+        console.log(error);
+        setVolumes([]);
+        setNewVolume(true);
+        setFormData((prev) => ({
+          ...prev,
+          volume: initialVolume,
+        }));
+        alert.error("Error loading volumes");
+      }
+    };
+
+    void loadVolumes();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, roCrateServiceDef, service, serviceVolume]);
 
   const handleDeploy = async () => {
     const newErrors = {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
       memoryRam: !formData.memoryRam,
-      bucket: !formData.bucket && asyncService,
+      bucket: !formData.bucket && (asyncService || !!mountBucket),
+      volume: !formData.volume && !!serviceVolume,
+      volumeSize:
+        !!serviceVolume &&
+        newVolume &&
+        !isValidVolumeSize(formData.volumeSize),
       vo: !formData.vo,
       token: !formData.token,
       enviromentVars: Object.fromEntries(Object.entries(formData.enviromentVars).map(([key, value]) => [key, !value || value.length === 0])),
@@ -137,6 +240,19 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       service.script = scriptText
       const serviceName = formData.name || nameService();
 
+      const serviceVolumeConfig = serviceVolume
+        ? newVolume
+          ? {
+              ...serviceVolume,
+              name: formData.volume,
+              size: `${formData.volumeSize.trim()}Gi`,
+            }
+          : {
+              name: formData.volume,
+              mount_path: serviceVolume.mount_path,
+            }
+        : undefined;
+
       const modifiedService: Service = {
         ...service,
         name: serviceName,
@@ -161,6 +277,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
           storage_provider: "minio.default",
           path: formData.bucket,
         } : undefined,
+        volume: serviceVolumeConfig,
         environment: {
           ...service.environment,
           variables: {
@@ -182,15 +299,9 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       setIsOpen(false);
     } catch (error) {
       console.log(error)
-      alert.error(`Error deploying ${roCrateServiceDef.name} instance`);
+      alert.error(`Error deploying ${roCrateServiceDef.name} instance: ${errorMessage(error)}`);
     }
   };
-
-  useEffect(() => {
-    if (oidcGroups.length) {
-      setFormData({ ...formData, vo: oidcGroups[0] });
-    }
-  }, [oidcGroups.length]);  
 
 return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -308,49 +419,171 @@ return (
             </div>
 						{(asyncService || mountBucket) && 
             <div>
-              <Label className="inline-flex items-center cursor-pointer">
-                <input type="checkbox" value="" checked={newBucket || asyncService} disabled={asyncService} className="sr-only peer" onClick={() => { setNewBucket(!newBucket); setFormData({ ...formData, bucket: "" }); }} />
-                <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600 peer-disabled:opacity-60 peer-disabled:cursor-not-allowed"></div>
-                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300 peer-disabled:cursor-default">New Bucket</span>
-              </Label>
-              {newBucket || !mountBucket ? 
+              <Label>Bucket</Label>
+              <hr className="mb-2"/>
+              <div>
+                <Label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    value=""
+                    className="sr-only peer"
+                    checked={newBucket || asyncService}
+                    disabled={asyncService}
+                    onChange={() => {
+                      setNewBucket((prev) => !prev);
+                      setFormData((prev) => ({
+                        ...prev,
+                        bucket: "",
+                      }));
+                    }}
+                  />
+                  <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600 peer-disabled:opacity-60 peer-disabled:cursor-not-allowed"></div>
+                  <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300 peer-disabled:cursor-default">New Bucket</span>
+                </Label>
+                {newBucket || !mountBucket ? 
                 <Input
                   type="input"
                   onFocus={(e) => (e.target.type = "text")}
                   style={{ width: "100%",
                     fontWeight: "normal",
                     }}
+                  value={formData.bucket}
                   className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}
                   onChange={(e) => {
-                      setFormData({ ...formData, bucket: e.target?.value });
-                      if (errors.bucket) setErrors({ ...errors, bucket: false });
+                    setFormData({ ...formData, bucket: e.target?.value });
+                    if (errors.bucket) {
+                      setErrors({ ...errors, bucket: false });
+                    }
                   }}
                   placeholder="Enter new bucket name"
                 />
-              :
-                <Select
-                  value={formData.bucket}
-                  onValueChange={(value) => {
-                    setFormData({ ...formData, bucket: value });
-                    if (errors.bucket) setErrors({ ...errors, bucket: false });
-                  }}
-                >
-                  <SelectTrigger className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}>
-                    <SelectValue
-                      placeholder="Select a bucket"
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {buckets.map((bucket) => (
-                      <SelectItem key={bucket.bucket_name} value={bucket.bucket_name}>
-                        {bucket.bucket_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              }
+                :
+                  <Select
+                    value={formData.bucket}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, bucket: value });
+                      if (errors.bucket) {
+                        setErrors({ ...errors, bucket: false });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}>
+                      <SelectValue
+                        placeholder="Select a bucket"
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {buckets.map((bucket) => (
+                        <SelectItem
+                          key={bucket.bucket_name}
+                          value={bucket.bucket_name}
+                        >
+                          {bucket.bucket_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                }
+              </div>
             </div>
 						}
+            {serviceVolume &&
+            <div>
+              <Label>Volume</Label>
+              <hr className="mb-2"/>
+              <div>
+                {canCreateManagedVolume && (
+                  <Label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      value=""
+                      className="sr-only peer"
+                      checked={newVolume}
+                      onChange={() => {
+                        setNewVolume((prev) => !prev);
+                        setFormData((prev) => ({
+                          ...prev,
+                          volume: "",
+                          volumeSize: parseVolumeSize(serviceVolume.size),
+                        }));
+                      }}
+                    />
+                    <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600"></div>
+                    <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">New Volume</span>
+                  </Label>
+                )}
+                {newVolume ? 
+                <div className="grid gap-2">
+                  <Input
+                    type="input"
+                    onFocus={(e) => (e.target.type = "text")}
+                    style={{ width: "100%",
+                      fontWeight: "normal",
+                      }}
+                    value={formData.volume}
+                    className={errors.volume ? "border-red-500 focus:border-red-500" : ""}
+                    onChange={(e) => {
+                      setFormData({ ...formData, volume: e.target?.value });
+                      if (errors.volume) {
+                        setErrors({ ...errors, volume: false });
+                      }
+                    }}
+                    placeholder="Enter new volume name"
+                  />
+                  <div className="grid gap-1">
+                    <Label htmlFor="volumeSize">Volume size (Gi)</Label>
+                    <Input
+                      id="volumeSize"
+                      type="number"
+                      min="0.1"
+                      step="any"
+                      inputMode="decimal"
+                      value={formData.volumeSize}
+                      className={`max-w-[180px] ${
+                        errors.volumeSize
+                          ? "border-red-500 focus:border-red-500"
+                          : ""
+                      }`}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          volumeSize: e.target.value,
+                        });
+                        if (errors.volumeSize) {
+                          setErrors({ ...errors, volumeSize: false });
+                        }
+                      }}
+                      placeholder="1"
+                    />
+                  </div>
+                </div>
+                :
+                  <Select
+                    value={formData.volume}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, volume: value });
+                      if (errors.volume) {
+                        setErrors({ ...errors, volume: false });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className={errors.volume ? "border-red-500 focus:border-red-500" : ""}>
+                      <SelectValue
+                        placeholder="Select a volume"
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {volumes.map((volume) => (
+                        <SelectItem key={volume.name} value={volume.name}>
+                          {volume.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                }
+              </div>
+            </div>
+            }
             {formData?.enviromentVars && Object.entries(formData.enviromentVars).map(([key, value]) => (
             <div key={`var-${key}`}>
               <Label>{key}</Label>

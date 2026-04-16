@@ -15,6 +15,7 @@ import { getInfoApi } from "@/api/info/getInfoApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { alert } from "@/lib/alert";
+import { normalizeLoopbackAPIEndpoint } from "@/lib/utils";
 
 import env from "@/env";
 
@@ -123,6 +124,7 @@ function Login() {
       try {
         if(process === "EGI"){
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
+          endpoint = normalizeLoopbackAPIEndpoint(endpoint);
           localStorage.setItem("api", endpoint);
           localStorage.setItem("client_id", env.client_id);
           localStorage.setItem("provider_url", env.EGI_ISSUER + env.provider_url);
@@ -132,6 +134,7 @@ function Login() {
           window.location.replace(env.redirect_uri);
         }else if(process === "Keycloak"){
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
+          endpoint = normalizeLoopbackAPIEndpoint(endpoint);
           localStorage.setItem("api", endpoint);
           localStorage.setItem("client_id", env.AI4EOSC_client_id);
           localStorage.setItem("provider_url", env.AI4EOSC_ISSUER + env.provider_url);
@@ -141,6 +144,7 @@ function Login() {
           window.location.replace(env.redirect_uri);
         }else if(process === "KeycloakGryCAP"){
           endpoint = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
+          endpoint = normalizeLoopbackAPIEndpoint(endpoint);
           localStorage.setItem("api", endpoint);
           localStorage.setItem("client_id", env.GRYCAP_client_id);
           localStorage.setItem("provider_url", env.GRYCAP_ISSUER + env.provider_url);

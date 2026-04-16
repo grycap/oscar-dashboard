@@ -1,5 +1,12 @@
-import { cache } from 'react';
 import { ROCrate, Validator } from 'ro-crate';
+
+function isSupportedIcon(id, type) {
+  return (
+    /^icon\.(png|svg)$/i.test(id) &&
+    type.includes('File') &&
+    type.includes('ImageObject')
+  );
+}
 
 const RoCrateServiceDefinition = {
     name: "",
@@ -111,11 +118,14 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
             else
               service.scriptUrl = `${folderRawFileUrl}/script.sh`;
           }
-          if (element['@id'].includes("icon.png") && type.includes('File') && type.includes('ImageObject')) {
-            if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
+          if (isSupportedIcon(element['@id'], type)) {
+            if (
+              element['@id'].startsWith('http://') ||
+              element['@id'].startsWith('https://')
+            )
               service.iconUrl = element['@id'];
             else
-              service.iconUrl = `${folderRawFileUrl}/icon.png`;
+              service.iconUrl = `${folderRawFileUrl}/${element['@id']}`;
           }
         } catch (error) {
           console.error(`Skip invalid part in service definition file: ${file.path}`);

@@ -1,12 +1,13 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useServicesContext from "../../context/ServicesContext";
 import getServicesApi from "@/api/services/getServicesApi";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
 import DeleteDialog from "@/components/DeleteDialog";
 import { Service } from "../../models/service";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { LoaderPinwheel, Pencil, Terminal, Trash2 } from "lucide-react";
+import { LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import { Link, useNavigate } from "react-router-dom";
 import GenericTable from "@/components/Table";
@@ -15,21 +16,82 @@ import { handleFilterServices } from "./domain/filterUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import MoreActionsPopover from "./components/MoreActionsPopover";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
+import { errorMessage } from "@/lib/error";
+import DeploymentStatusBadge from "../DeploymentStatusBadge";
+import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
+import { DeploymentStatus } from "../../models/deployment";
+import ServiceRedirectButton from "@/components/ServiceRedirectButton";
+import { shortenFullname } from "@/lib/utils";
+
+interface DeploymentStatusCellProps {
+  initialDeployment?: DeploymentStatus;
+  serviceName: string;
+  onNavigate: () => void;
+  eagerLoad?: boolean;
+}
+
+function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eagerLoad }: DeploymentStatusCellProps) {
+  const [deployment, setDeployment] = useState<DeploymentStatus | undefined>(initialDeployment);
+  const [loading, setLoading] = useState(false);
+
+  async function fetchDeployment() {
+    setLoading(true);
+    try {
+      const result = await getDeploymentStatusApi(serviceName);
+      setDeployment(result);
+    } catch {
+      // leave existing state on error
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (eagerLoad && !initialDeployment) {
+      fetchDeployment();
+    }
+  }, [eagerLoad]);
+
+  return (
+    <div
+      className="flex items-center gap-1 cursor-pointer"
+      onClick={() => {
+        fetchDeployment();
+      }}
+    >
+      {deployment && !loading ? (
+        <>
+        <div onClick={() => {
+          onNavigate();
+        }}>
+          <DeploymentStatusBadge deployment={deployment} showTooltip className="cursor-pointer" />
+        </div>
+          <RefreshCw className="h-3 w-3 opacity-40 hover:opacity-100" />
+        </>
+      ) : (
+        <Badge variant="default" className="cursor-pointer">
+          <RefreshCw className={`${loading ? "animate-spin" : ""} h-3 w-3 mr-1`} />
+          Fetch
+        </Badge>
+      )}
+    </div>
+  );
+}
 
 function ServicesList() {
-  const { services, servicesAreLoading, setServices, setFormService, filter } =
+  const { services, servicesAreLoading, setServices, setFormService, filter, eagerLoadDeployment } =
     useServicesContext();
   const { authData } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const navigate = useNavigate();
-  const buttonRef = useRef<Map<String, HTMLButtonElement>>(new Map())
+  const buttonRef = useRef<Map<string, HTMLButtonElement>>(new Map())
 
   async function handleGetServices() {
     try {
       const response = await getServicesApi();
       setServices(response);
     } catch (error) {
-      alert.error("Error getting services");
+      alert.error(`Error getting services: ${errorMessage(error)}`);
       console.error(error);
     }
   }
@@ -54,7 +116,7 @@ function ServicesList() {
         .map((result) => (result as {
           status: string;
           service: Service;
-          error: any;
+          error: unknown;
         }).service);
       
       await handleGetServices();
@@ -88,6 +150,12 @@ function ServicesList() {
     return filteredServices;
   }, [services, filter, authData?.user]);
 
+  useEffect(() => {
+    if (services.length === 0 || services.some((service) => !service.deployment)) {
+      handleGetServices();
+    }
+  }, []);
+
   return (
     <div
       style={{
@@ -107,13 +175,24 @@ function ServicesList() {
           <GenericTable<Service>
             data={filteredServices}
             idKey="name"
-            onRowClick={(item) => {
-              setFormService(item);
-              navigate(`/ui/services/${item.name}/settings`);
-            }}
             columns={[
-              { header: "Name", accessor: "name", sortBy: "name" },
-              { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.owner} copy={false} />), sortBy: "owner" },
+              { header: "Name", accessor: (row) => (<Link to={`/ui/services/${row.name}/settings`}>{row.name}</Link>), sortBy: "name" },
+              {
+                header: "Deployment",
+                accessor: (row) => (
+                  <DeploymentStatusCell
+                    initialDeployment={row.deployment as DeploymentStatus}
+                    serviceName={row.name}
+                    eagerLoad={eagerLoadDeployment}
+                    onNavigate={() => {
+                      setFormService(row);
+                      navigate(`/ui/services/${row.name}/deployment`);
+                    }}
+                  />
+                ),
+                sortBy: "deployment",
+              },
+              { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.labels["owner_name"] ? shortenFullname(row.labels["owner_name"].replace("_", " ")) : row.owner} sub={row.owner} />), sortBy: "owner" },
               { header: "Image", accessor: "image", sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
               { header: "Memory", accessor: "memory", sortBy: "memory" },
@@ -141,14 +220,25 @@ function ServicesList() {
               },
               {
                 button: (item) => (
-                  <InvokePopover
-                    service={item}
-                    triggerRenderer={
-                      <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Invoke">
-                        <Terminal />
-                      </Button>
-                    }
-                  />
+                  <>
+                  {item.expose.max_scale != "0" ?
+                    <ServiceRedirectButton 
+                      className="flex items-center justify-center ml-2 mr-2 "
+                      service={item}
+                      endpoint={authData.endpoint}
+                      healthcheckPath={item.expose.health_path}
+                    />
+                    :
+                    <InvokePopover
+                      service={item}
+                      triggerRenderer={
+                        <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Invoke">
+                          <Terminal />
+                        </Button>
+                      }
+                    />
+                  }
+                  </>
                 ),
               },
               {

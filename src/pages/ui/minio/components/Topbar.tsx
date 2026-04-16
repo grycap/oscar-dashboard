@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Copy, Database, ExternalLinkIcon, Filter, FolderRoot, Search, Slash } from "lucide-react";
+import { Copy, Database, ExternalLinkIcon, Filter, FolderRoot, Search, Slash, UploadCloud, FileSymlink } from "lucide-react";
 import OscarColors from "@/styles";
 import AddBucketButton from "./AddBucketButton";
 import AddFolderButton from "./AddFolderButton";
@@ -16,15 +16,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { SelectIcon } from "@radix-ui/react-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import Divider from "@/components/ui/divider";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { shortenFullname } from "@/lib/utils";
+import GenPresignedURLPopover from "./GenPresignedURLPopover";
 
 
 function MinioTopbar() {
   const { name, path } = useSelectedBucket();
   const { updateBuckets, bucketsOSCAR, bucketsFilter, setBucketsFilter } = useMinio();
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
-  const [serviceAssociate, setServiceAssociate] = useState<Boolean>(true)
+  const [serviceAssociate, setServiceAssociate] = useState<boolean>(true)
   const {authData} = useAuth();
 
   const emptyBucket: Bucket = {
@@ -242,7 +245,29 @@ function MinioTopbar() {
             :
             <></> 
             } 
-            <AddFolderButton disabled={isLoading} /> <AddFileButton disabled={isLoading} />
+            <AddFolderButton disabled={isLoading} />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <UploadCloud size={20} />
+                  <span className="hidden sm:inline">Upload Options</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-auto p-2">
+                <div className="flex flex-col gap-2">
+                  <AddFileButton disabled={isLoading} />
+                  <GenPresignedURLPopover bucketName={name} operation="upload" objectKey={pathSegments.join("/")} 
+                    owerrideButton={
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <FileSymlink size={20} />
+                        <span>External Upload</span>
+                      </Button>
+                    }
+                  />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
           </div>
         </div>
         }
