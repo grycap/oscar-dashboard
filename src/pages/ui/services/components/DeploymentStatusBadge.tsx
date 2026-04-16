@@ -78,11 +78,6 @@ export function formatDeploymentResourceKind(kind?: DeploymentResourceKind) {
   }
 }
 
-export function getDeploymentSortValue(deployment?: DeploymentWithSummary) {
-  const state = deployment?.state ?? "unavailable";
-  return DEPLOYMENT_STATE_ORDER[state];
-}
-
 function getTooltipContent(deployment?: DeploymentWithSummary) {
   if (!deployment) {
     return "Deployment status not available.";

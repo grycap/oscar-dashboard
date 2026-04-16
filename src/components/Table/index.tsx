@@ -15,8 +15,7 @@ import { AnimatePresence, motion } from "framer-motion";
 export type ColumnDef<T> = {
   header: string;
   accessor: keyof T | ((item: T) => React.ReactNode);
-  sortBy: string;
-  sortValue?: keyof T | ((item: T) => string | number | boolean | null | undefined);
+  sortBy: keyof T ;
 };
 
 type ActionButton<T> = {
@@ -51,37 +50,15 @@ function GenericTable<T extends object>({
   }, [data.length]);
 
   const [sortConfig, setSortConfig] = useState<{
-    key: string;
+    key: keyof T;
     direction: "asc" | "desc";
   } | null>(null);
 
-  const getSortValue = (item: T, column: ColumnDef<T>) => {
-    if (column.sortValue) {
-      return typeof column.sortValue === "function"
-        ? column.sortValue(item)
-        : item[column.sortValue];
-    }
-
-    if (typeof column.accessor === "function") {
-      return (item as Record<string, unknown>)[column.sortBy];
-    }
-
-    return item[column.accessor];
-  };
-
   const sortedData = React.useMemo(() => {
     if (sortConfig !== null) {
-      const sortColumn = columns.find((column) => column.sortBy === sortConfig.key);
-      if (!sortColumn) return data;
-
       return [...data].sort((a, b) => {
-        const aValue = getSortValue(a, sortColumn);
-        const bValue = getSortValue(b, sortColumn);
-
-        if (aValue == null && bValue == null) return 0;
-        if (aValue == null) return 1;
-        if (bValue == null) return -1;
-
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
         if (aValue < bValue) {
           return sortConfig.direction === "asc" ? -1 : 1;
         }
@@ -92,15 +69,12 @@ function GenericTable<T extends object>({
       });
     }
     return data;
-  }, [columns, data, sortConfig]);
+  }, [data, sortConfig]);
 
   const handleHeaderClick = (column: ColumnDef<T>) => {
     setSortConfig({
       key: column.sortBy,
-      direction:
-        sortConfig?.key === column.sortBy && sortConfig.direction === "asc"
-          ? "desc"
-          : "asc",
+      direction: sortConfig?.direction === "asc" ? "desc" : "asc",
     });
   };
 

@@ -17,9 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import MoreActionsPopover from "./components/MoreActionsPopover";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import { errorMessage } from "@/lib/error";
-import DeploymentStatusBadge, {
-  getDeploymentSortValue,
-} from "../DeploymentStatusBadge";
+import DeploymentStatusBadge from "../DeploymentStatusBadge";
 import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
 import { DeploymentStatus } from "../../models/deployment";
 import ServiceRedirectButton from "@/components/ServiceRedirectButton";
@@ -185,7 +183,6 @@ function ServicesList() {
                   />
                 ),
                 sortBy: "deployment",
-                sortValue: (row) => getDeploymentSortValue(row.deployment as DeploymentStatus),
               },
               { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.labels["owner_name"] ? shortenFullname(row.labels["owner_name"]) : row.owner} sub={row.owner} />), sortBy: "owner" },
               { header: "Image", accessor: "image", sortBy: "image" },
