@@ -20,14 +20,6 @@ import {
 
 type DeploymentWithSummary = Partial<DeploymentSummary> | null | undefined;
 
-const DEPLOYMENT_STATE_ORDER: Record<DeploymentState, number> = {
-  failed: 0,
-  degraded: 1,
-  pending: 2,
-  unavailable: 3,
-  ready: 4,
-};
-
 export function getDeploymentStatusMeta(
   state: DeploymentState
 ): { label: string; variant: BadgeProps["variant"]; icon: JSX.Element } {
