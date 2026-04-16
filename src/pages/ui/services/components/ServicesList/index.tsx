@@ -1,12 +1,13 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useServicesContext from "../../context/ServicesContext";
 import getServicesApi from "@/api/services/getServicesApi";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
 import DeleteDialog from "@/components/DeleteDialog";
 import { Service } from "../../models/service";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { LoaderPinwheel, Pencil, Terminal, Trash2 } from "lucide-react";
+import { LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import { Link, useNavigate } from "react-router-dom";
 import GenericTable from "@/components/Table";
@@ -16,8 +17,59 @@ import { useAuth } from "@/contexts/AuthContext";
 import MoreActionsPopover from "./components/MoreActionsPopover";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import { errorMessage } from "@/lib/error";
+import DeploymentStatusBadge from "../DeploymentStatusBadge";
+import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
+import { DeploymentStatus } from "../../models/deployment";
 import ServiceRedirectButton from "@/components/ServiceRedirectButton";
 import { shortenFullname } from "@/lib/utils";
+
+interface DeploymentStatusCellProps {
+  initialDeployment?: DeploymentStatus;
+  serviceName: string;
+  onNavigate: () => void;
+}
+
+function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate }: DeploymentStatusCellProps) {
+  const [deployment, setDeployment] = useState<DeploymentStatus | undefined>(initialDeployment);
+  const [loading, setLoading] = useState(false);
+
+  async function fetchDeployment() {
+    setLoading(true);
+    try {
+      const result = await getDeploymentStatusApi(serviceName);
+      setDeployment(result);
+    } catch {
+      // leave existing state on error
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div
+      className="flex items-center gap-1 cursor-pointer"
+      onClick={() => {
+        fetchDeployment();
+      }}
+    >
+      {deployment && !loading ? (
+        <>
+        <div onClick={() => {
+          onNavigate();
+        }}>
+          <DeploymentStatusBadge deployment={deployment} showTooltip className="cursor-pointer" />
+        </div>
+          <RefreshCw className="h-3 w-3 opacity-40 hover:opacity-100" />
+        </>
+      ) : (
+        <Badge variant="default" className="cursor-pointer">
+          <RefreshCw className={`${loading ? "animate-spin" : ""} h-3 w-3 mr-1`} />
+          Fetch
+        </Badge>
+      )}
+    </div>
+  );
+}
 
 function ServicesList() {
   const { services, servicesAreLoading, setServices, setFormService, filter } =
@@ -57,7 +109,7 @@ function ServicesList() {
         .map((result) => (result as {
           status: string;
           service: Service;
-          error: any;
+          error: unknown;
         }).service);
       
       await handleGetServices();
@@ -91,6 +143,12 @@ function ServicesList() {
     return filteredServices;
   }, [services, filter, authData?.user]);
 
+  useEffect(() => {
+    if (services.length === 0 || services.some((service) => !service.deployment)) {
+      handleGetServices();
+    }
+  }, []);
+
   return (
     <div
       style={{
@@ -112,6 +170,20 @@ function ServicesList() {
             idKey="name"
             columns={[
               { header: "Name", accessor: (row) => (<Link to={`/ui/services/${row.name}/settings`}>{row.name}</Link>), sortBy: "name" },
+              {
+                header: "Deployment",
+                accessor: (row) => (
+                  <DeploymentStatusCell
+                    initialDeployment={row.deployment as DeploymentStatus}
+                    serviceName={row.name}
+                    onNavigate={() => {
+                      setFormService(row);
+                      navigate(`/ui/services/${row.name}/deployment`);
+                    }}
+                  />
+                ),
+                sortBy: "deployment",
+              },
               { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.labels["owner_name"] ? shortenFullname(row.labels["owner_name"]) : row.owner} sub={row.owner} />), sortBy: "owner" },
               { header: "Image", accessor: "image", sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },

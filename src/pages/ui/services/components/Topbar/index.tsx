@@ -15,22 +15,46 @@ export enum ServiceViewMode {
 function ServicesTopbar() {
   const { formMode, refreshServices, refreshServiceLogs } = useServicesContext();
 
+  function getCurrentSubview() {
+    const location = window.location.hash.split("/");
+    return location[location.length - 1];
+  }
+
   function getDefaultHeader(formMode: ServiceViewMode) {
     switch (formMode) {
       case ServiceViewMode.List:
         return { title: "Services", linkTo: "/ui/services" };
-      case ServiceViewMode.Update:
-        const location = window.location.hash.split("/");
-        const header = location[location.length - 1];
-        const linkTo = window.location.hash.replace('#', '');
+      case ServiceViewMode.Update: {
+        const header = getCurrentSubview();
+        const linkTo = window.location.hash.replace("#", "");
 
         if (header === "logs") {
           return { title: "Logs", linkTo: linkTo };
         }
+        if (header === "deployment") {
+          return { title: "Deployment", linkTo: linkTo };
+        }
         return { title: "Services", linkTo: "/ui/services" };
+      }
       default:
         return { title: "Services", linkTo: "/ui/services" };
     }
+  }
+
+  function getRefresher() {
+    if (formMode === ServiceViewMode.List) {
+      return refreshServices;
+    }
+
+    const header = getCurrentSubview();
+    if (header === "logs") {
+      return refreshServiceLogs;
+    }
+    if (header === "settings") {
+      return refreshServices;
+    }
+
+    return undefined;
   }
 
   useEffect(() => {
@@ -40,7 +64,7 @@ function ServicesTopbar() {
   return (
     <GenericTopbar
       defaultHeader={getDefaultHeader(formMode)}
-      refresher={formMode === ServiceViewMode.List ? refreshServices : refreshServiceLogs}
+      refresher={getRefresher()}
       secondaryRow={
         formMode === ServiceViewMode.List ? 
         <div className="w-full p-2 pt-1">
