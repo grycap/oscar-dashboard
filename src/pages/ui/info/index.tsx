@@ -7,6 +7,7 @@ import InfoListItems from "./components/InfoListItems";
 import { useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
 import { useSidebar } from "@/components/ui/sidebar";
+import env from "@/env";
 
 function InfoView() {
   
@@ -14,7 +15,7 @@ function InfoView() {
     document.title ="OSCAR - Info"
   });
   const { authData, systemConfig, clusterInfo } = useAuth();
-  const { endpoint, user, password, egiSession, token } = authData;
+  const { endpoint, user, password, egiSession, token, refreshToken } = authData;
   const { providerInfo } = useMinio();
   const { open } = useSidebar();
   // 1976 is the width when flex wrap is applied with the sidebar open
@@ -62,6 +63,23 @@ function InfoView() {
                   isPassword
                   enableCopy
                 />
+              {refreshToken && (
+                <>
+                <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
+                <InfoItem
+                  label="Refresh Token"
+                  value={refreshToken}
+                  isPassword
+                  enableCopy
+                />
+                </>
+              )}
+              {!refreshToken && egiSession?.sub.endsWith("@egi.eu") && (
+                <>
+                  <div style={{ borderTop: OscarStyles.border, margin: "0px 16px" }} />
+                  <InfoItem label="Refresh Token" value={"Get EGI Refresh Token"} link={{ url: env.EGI_ISSUER.replace(/\.eu.*$/, '.eu')+"/token", enableRedirectIcon: true }} />
+                </>
+              )}
               </>
             )
             :
