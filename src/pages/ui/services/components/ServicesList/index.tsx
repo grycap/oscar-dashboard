@@ -192,7 +192,7 @@ function ServicesList() {
                 ),
                 sortBy: "deployment",
               },
-              { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.labels["owner_name"] ? shortenFullname(row.labels["owner_name"]) : row.owner} sub={row.owner} />), sortBy: "owner" },
+              { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.labels["owner_name"] ? shortenFullname(row.labels["owner_name"].replace("_", " ")) : row.owner} sub={row.owner} />), sortBy: "owner" },
               { header: "Image", accessor: "image", sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
               { header: "Memory", accessor: "memory", sortBy: "memory" },
