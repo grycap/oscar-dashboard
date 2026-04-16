@@ -22,6 +22,8 @@ import DeploymentStatusBadge, {
 } from "../DeploymentStatusBadge";
 import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
 import { DeploymentStatus } from "../../models/deployment";
+import ServiceRedirectButton from "@/components/ServiceRedirectButton";
+import { shortenFullname } from "@/lib/utils";
 
 interface DeploymentStatusCellProps {
   initialDeployment?: DeploymentStatus;
@@ -48,15 +50,13 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate }: De
   return (
     <div
       className="flex items-center gap-1 cursor-pointer"
-      onClick={(e) => {
-        e.stopPropagation();
+      onClick={() => {
         fetchDeployment();
       }}
     >
       {deployment && !loading ? (
         <>
-        <div onClick={(e) => {
-          e.stopPropagation();
+        <div onClick={() => {
           onNavigate();
         }}>
           <DeploymentStatusBadge deployment={deployment} showTooltip className="cursor-pointer" />
@@ -171,7 +171,7 @@ function ServicesList() {
             data={filteredServices}
             idKey="name"
             columns={[
-              { header: "Name", accessor: "name", sortBy: "name" },
+              { header: "Name", accessor: (row) => (<Link to={`/ui/services/${row.name}/settings`}>{row.name}</Link>), sortBy: "name" },
               {
                 header: "Deployment",
                 accessor: (row) => (
@@ -187,7 +187,7 @@ function ServicesList() {
                 sortBy: "deployment",
                 sortValue: (row) => getDeploymentSortValue(row.deployment as DeploymentStatus),
               },
-              { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.owner} copy={false} />), sortBy: "owner" },
+              { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.labels["owner_name"] ? shortenFullname(row.labels["owner_name"]) : row.owner} sub={row.owner} />), sortBy: "owner" },
               { header: "Image", accessor: "image", sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
               { header: "Memory", accessor: "memory", sortBy: "memory" },
@@ -215,14 +215,25 @@ function ServicesList() {
               },
               {
                 button: (item) => (
-                  <InvokePopover
-                    service={item}
-                    triggerRenderer={
-                      <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Invoke">
-                        <Terminal />
-                      </Button>
-                    }
-                  />
+                  <>
+                  {item.expose.max_scale != "0" ?
+                    <ServiceRedirectButton 
+                      className="flex items-center justify-center ml-2 mr-2 "
+                      service={item}
+                      endpoint={authData.endpoint}
+                      healthcheckPath={item.expose.health_path}
+                    />
+                    :
+                    <InvokePopover
+                      service={item}
+                      triggerRenderer={
+                        <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Invoke">
+                          <Terminal />
+                        </Button>
+                      }
+                    />
+                  }
+                  </>
                 ),
               },
               {

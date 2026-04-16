@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import HubCard from "./components/HubCard/index";
 import parseROCrateDataJS, { RoCrateServiceDefinition } from "@/lib/roCrate";
 import { Input } from "@/components/ui/input";
@@ -25,11 +25,42 @@ function HubView() {
   const [isGridView, setIsGridView] = useState(true);
   const [selectedSource, setSelectedSource] = useState<GitHubSource>(DEFAULT_SOURCES[0]);
 
-  async function fetchData() {
+  const fetchService = useCallback(
+    async (
+      roCrateServiceDef: RoCrateServiceDefinition
+    ): Promise<Service | undefined> => {
+      const response = await fetch(roCrateServiceDef.fdlUrl);
+      if (response.ok) {
+        const service = yamlToServices(await response.text(), "")![0];
+        const services: Service = {
+          ...service,
+          environment: {
+            ...service.environment,
+            secrets: Object.fromEntries(
+              Object.entries(service.environment?.secrets || {}).map(
+                ([key]) => {
+                  return [key, ""];
+                }
+              )
+            ),
+          },
+        };
+        return services;
+      }
+      return undefined;
+    },
+    []
+  );
+
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     const repoOwner = selectedSource.repository.split("/")[0];
     const repoName = selectedSource.repository.split("/")[1];
-    const roCrateServices = await parseROCrateDataJS(repoOwner, repoName, selectedSource.branch);
+    const roCrateServices = await parseROCrateDataJS(
+      repoOwner,
+      repoName,
+      selectedSource.branch
+    );
     let i = 0;
     const services: Record<string, [RoCrateServiceDefinition, Service]> = {};
     for (const roCrateServiceDef of roCrateServices) {
@@ -40,44 +71,32 @@ function HubView() {
     setServiceDefinitions(services);
     setFilteredServices(services);
     setIsLoading(false);
-  }
-
-  async function fetchService(roCrateServiceDef: RoCrateServiceDefinition): Promise<Service | undefined> {
-    const response = await fetch(roCrateServiceDef.fdlUrl);
-    if (response.ok) {
-      const service = yamlToServices(await response.text(), "")![0];
-      const services: Service = {
-        ...service,
-        environment: {
-          ...service.environment,
-          secrets: Object.fromEntries(Object.entries(service.environment?.secrets || {}).map(([key, _]) => {
-            return [key, ''];
-          })),
-        },
-      };
-      return services;
-    }
-    return undefined;
-  }
+  }, [fetchService, selectedSource]);
 
   useEffect(() => {
     document.title ="OSCAR - Hub"
   }, []);
 
-  useMemo(() => {
-    fetchData();
-  }, [selectedSource]);
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   // Filter services based on search query
   useEffect(() => {
     if (!searchQuery.trim() && !filter.serviceType) {
       setFilteredServices(serviceDefinitions);
     } else {
-      const filtered = Object.entries(serviceDefinitions).filter(([, [roCrateServiceDef, _]]) => {
+      const filtered = Object.entries(serviceDefinitions).filter(([
+        ,
+        [roCrateServiceDef],
+      ]) => {
         const query = searchQuery.toLowerCase();
         return (
-          roCrateServiceDef.name.toLowerCase().includes(query) && 
-          (!filter.serviceType || roCrateServiceDef.type.some(type => type === filter.serviceType))
+          roCrateServiceDef.name.toLowerCase().includes(query) &&
+          (!filter.serviceType ||
+            roCrateServiceDef.type.some(
+              (type) => type === filter.serviceType
+            ))
         );
       });
       setFilteredServices(Object.fromEntries(filtered));
@@ -161,7 +180,11 @@ function HubView() {
       }
       >
         <div className="flex flex-row items-center w-full justify-end gap-2">
-          <HubSrcPopoverButton variant="mainGreen" selectedSource={selectedSource} setSelectedSource={setSelectedSource} />
+          <HubSrcPopoverButton
+            variant="mainGreen"
+            selectedSource={selectedSource}
+            setSelectedSource={setSelectedSource}
+          />
         </div>
       </GenericTopbar>
       <div className={`grid grid-cols-1 gap-6 ${isGridView ? `w-[95%] max-w-[1600px]` : 'w-full'} mx-auto mt-4 min-w-[300px] content-start`}>
