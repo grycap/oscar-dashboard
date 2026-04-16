@@ -74,6 +74,7 @@
         history.replaceState({}, null, '/callback.html'); // Remove the auth code from the browser address bar.
         const id_token = JSON.parse(atob(tokens.id_token.split('.')[1]));
         const access_token = JSON.parse(atob(tokens.access_token.split('.')[1]));
+        const refresh_token = JSON.parse(atob(tokens.refresh_token.split('.')[1]));
         const options = {
             headers: {Authorization: `Bearer ${tokens.access_token}` }
         };
@@ -114,6 +115,7 @@
                     "user":users?.name,
                     "password": "tokens['access_token']",
                     "token": tokens['access_token'],
+                    "refresh_token": tokens['refresh_token'],
                     "endpoint": localStorage.getItem('api'),
                     "egiSession": users
                   })                  
