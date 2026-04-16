@@ -27,9 +27,10 @@ interface DeploymentStatusCellProps {
   initialDeployment?: DeploymentStatus;
   serviceName: string;
   onNavigate: () => void;
+  eagerLoad?: boolean;
 }
 
-function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate }: DeploymentStatusCellProps) {
+function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eagerLoad }: DeploymentStatusCellProps) {
   const [deployment, setDeployment] = useState<DeploymentStatus | undefined>(initialDeployment);
   const [loading, setLoading] = useState(false);
 
@@ -44,6 +45,12 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate }: De
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (eagerLoad && !initialDeployment) {
+      fetchDeployment();
+    }
+  }, [eagerLoad]);
 
   return (
     <div
@@ -72,7 +79,7 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate }: De
 }
 
 function ServicesList() {
-  const { services, servicesAreLoading, setServices, setFormService, filter } =
+  const { services, servicesAreLoading, setServices, setFormService, filter, eagerLoadDeployment } =
     useServicesContext();
   const { authData } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
@@ -176,6 +183,7 @@ function ServicesList() {
                   <DeploymentStatusCell
                     initialDeployment={row.deployment as DeploymentStatus}
                     serviceName={row.name}
+                    eagerLoad={eagerLoadDeployment}
                     onNavigate={() => {
                       setFormService(row);
                       navigate(`/ui/services/${row.name}/deployment`);

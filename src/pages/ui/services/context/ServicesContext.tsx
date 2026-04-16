@@ -45,6 +45,9 @@ interface ServiceContextType {
   refreshServices: () => void;
   formMode: ServiceViewMode;
 
+  eagerLoadDeployment: boolean;
+  setEagerLoadDeployment: Dispatch<SetStateAction<boolean>>;
+
   refreshServiceLogs: () => void;
   serviceLogs: {next_page: string | null, jobs: Record<string, Log>};
   formFunctions: FormFunctions;
@@ -83,6 +86,9 @@ export const ServicesProvider = ({
 }) => {
   const [services, setServices] = useState([] as Service[]);
   const [servicesAreLoading, setServicesAreLoading] = useState(false);
+  const [eagerLoadDeployment, setEagerLoadDeployment] = useState(() => {
+    return localStorage.getItem("eagerLoadDeployment") === "true";
+  });
   const [serviceLogs, setServiceLogs] = useState<{next_page: string | null, jobs: Record<string, Log>}>({next_page: null, jobs: {}});
   const [logsAreLoading, setLogsAreLoading] = useState(true);
   const [showFDLModal, setShowFDLModal] = useState(false);
@@ -216,6 +222,10 @@ export const ServicesProvider = ({
     handleGetServices();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("eagerLoadDeployment", String(eagerLoadDeployment));
+  }, [eagerLoadDeployment]);
+
   useUpdate(() => {
     handleFormService(services);
   }, [serviceId]);
@@ -237,6 +247,8 @@ export const ServicesProvider = ({
         showFDLModal,
         setShowFDLModal,
         refreshServices: handleGetServices,
+        eagerLoadDeployment,
+        setEagerLoadDeployment,
         serviceLogs,
         refreshServiceLogs: handleGetServiceLogs,
         formFunctions: {

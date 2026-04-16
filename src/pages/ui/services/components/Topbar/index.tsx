@@ -5,6 +5,17 @@ import AddServiceButton from "./components/CreateServiceButton";
 import CreateUpdateServiceTabs from "./components/CreateUpdateServiceTabs";
 import useServicesContext from "../../context/ServicesContext";
 import GenericTopbar from "@/components/Topbar";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Settings2 } from "lucide-react";
 
 export enum ServiceViewMode {
   List = "List",
@@ -13,7 +24,7 @@ export enum ServiceViewMode {
 }
 
 function ServicesTopbar() {
-  const { formMode, refreshServices, refreshServiceLogs } = useServicesContext();
+  const { formMode, refreshServices, refreshServiceLogs, eagerLoadDeployment, setEagerLoadDeployment } = useServicesContext();
 
   function getCurrentSubview() {
     const location = window.location.hash.split("/");
@@ -67,8 +78,30 @@ function ServicesTopbar() {
       refresher={getRefresher()}
       secondaryRow={
         formMode === ServiceViewMode.List ? 
-        <div className="w-full p-2 pt-1">
+        <div className="w-full p-2 pt-1 flex items-center gap-2">
           <ServicesFilterBy />
+          {/* Options dropdown for services */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="shrink-0" tooltipLabel="Options">
+                <Settings2 className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Display options</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="flex items-center justify-between px-2 py-1.5">
+                <Label htmlFor="eager-load-deployment" className="text-sm cursor-pointer">
+                  Auto-load deployment status
+                </Label>
+                <Switch
+                  id="eager-load-deployment"
+                  checked={eagerLoadDeployment}
+                  onCheckedChange={setEagerLoadDeployment}
+                />
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         : null
       }
