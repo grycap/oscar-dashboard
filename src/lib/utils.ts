@@ -7,7 +7,52 @@ import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
-} 
+}
+
+/**
+ * Parses a Kubernetes CPU string and returns the value in millicores.
+ * Supported formats: "2" (cores), "1500m" (millicores)
+ */
+export function parseCpuToMillicores(value: string): number {
+  const trimmed = value.trim();
+  if (trimmed.endsWith("m")) {
+    return parseFloat(trimmed.slice(0, -1));
+  }
+  return parseFloat(trimmed) * 1000;
+}
+
+/**
+ * Parses a Kubernetes memory string and returns the value in bytes.
+ * Supported formats: "2Gi", "1174Mi", "500Ki", "1G", "1M", "1K", "1024" (bytes)
+ */
+export function parseMemoryToBytes(value: string): number {
+  const trimmed = value.trim();
+  const binarySuffixes: Record<string, number> = {
+    Ki: 1024,
+    Mi: 1024 ** 2,
+    Gi: 1024 ** 3,
+    Ti: 1024 ** 4,
+    Pi: 1024 ** 5,
+  };
+  const decimalSuffixes: Record<string, number> = {
+    K: 1000,
+    M: 1000 ** 2,
+    G: 1000 ** 3,
+    T: 1000 ** 4,
+    P: 1000 ** 5,
+  };
+  for (const [suffix, multiplier] of Object.entries(binarySuffixes)) {
+    if (trimmed.endsWith(suffix)) {
+      return parseFloat(trimmed.slice(0, -suffix.length)) * multiplier;
+    }
+  }
+  for (const [suffix, multiplier] of Object.entries(decimalSuffixes)) {
+    if (trimmed.endsWith(suffix)) {
+      return parseFloat(trimmed.slice(0, -suffix.length)) * multiplier;
+    }
+  }
+  return parseFloat(trimmed);
+}
 
 export  function genRandomString(length: number = 32): string {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -137,6 +182,36 @@ export const fetchFromGitHubOptions = {
   }
 };
 
+function isLoopbackHostname(hostname: string): boolean {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1';
+}
+
+// Safari blocks mixed-content XHR/fetch to loopback more aggressively than Chrome.
+// When the dashboard itself is already running on https://localhost, reuse that origin.
+export function normalizeLoopbackAPIEndpoint(endpoint: string, currentOrigin = window.location.origin): string {
+  try {
+    const endpointURL = new URL(endpoint);
+    const originURL = new URL(currentOrigin);
+
+    const isLoopbackUpgrade =
+      endpointURL.protocol === 'http:' &&
+      originURL.protocol === 'https:' &&
+      isLoopbackHostname(endpointURL.hostname) &&
+      isLoopbackHostname(originURL.hostname) &&
+      endpointURL.hostname === originURL.hostname &&
+      (endpointURL.port === '' || endpointURL.port === '80') &&
+      (originURL.port === '' || originURL.port === '443');
+
+    if (isLoopbackUpgrade) {
+      return originURL.origin;
+    }
+  } catch {
+    return endpoint;
+  }
+
+  return endpoint;
+}
+
 export function isSafariBrowser(): boolean {
   const ua = navigator.userAgent;
   const provider = navigator.vendor;
@@ -151,6 +226,28 @@ export function bytesSizeToHumanReadable(size: number): string {
   const i = Math.floor(Math.log(size) / Math.log(k));
   const humanReadableSize = parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   return humanReadableSize;
+}
+
+export function humanReadableSizeToBytes(size: string): number {
+  const units: { [key: string]: number } = {
+    'B': 1,
+    'KB': 1024,
+    'MB': 1024 ** 2,
+    'GB': 1024 ** 3,
+    'TB': 1024 ** 4,
+    'PB': 1024 ** 5,
+    'EB': 1024 ** 6,
+    'ZB': 1024 ** 7,
+    'YB': 1024 ** 8,
+  };
+  const regex = /^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB|TB|PB|EB|ZB|YB)$/i;
+  const match = size.trim().match(regex);
+  if (!match) {
+    throw new Error('Invalid size format');
+  }
+  const value = parseFloat(match[1]);
+  const unit = match[2].toUpperCase();
+  return Math.round(value * (units[unit] || 1));
 }
 
 export async function getCurrentBucketItems(bucketName: string, prefix: string): Promise<{folders: CommonPrefix[], items: _Object[]}> {
@@ -204,4 +301,29 @@ export function isFileBase64(content: string): boolean {
   } catch (e) {
     return false;
   }
+}
+
+export function addItemToPosition(array: any[], item: any, position: number, countFromLast: boolean = false): any[] {
+  if (countFromLast) {
+    position = array.length - position;
+  }
+  if (position < 0) position = 0;
+  if (position > array.length) position = array.length;
+  const newArray = [...array];
+  newArray.splice(position, 0, item);
+  return newArray;
+}
+
+export interface DockerImage {
+  tag: string;
+  description: string;
+  url: string;
+}
+
+export const convertDockerImageToMap = (images: DockerImage[]): Map<string, DockerImage> => {
+  const map = new Map<string, DockerImage>();
+  images.forEach(image => {
+    map.set(image.tag, image);
+  });
+  return map;
 }

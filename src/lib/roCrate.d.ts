@@ -10,7 +10,7 @@ export interface RoCrateServiceDefinition {
     memoryUnits: string;
     cpuRequirements: string;
     gpuRequirements: string;
-};
+}
 
 /**
  * Parses the RO-Crate data and returns an array of service definitions.

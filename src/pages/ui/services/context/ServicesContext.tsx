@@ -23,6 +23,8 @@ import { z } from "zod";
 import Log from "../models/log";
 import { getServiceLogsApi } from "@/api/logs/getServiceLogs";
 import { delay } from "@/lib/utils";
+import { alert } from "@/lib/alert";
+import { errorMessage } from "@/lib/error";
 
 interface ServiceContextType {
   filter: ServiceFilter;
@@ -42,6 +44,9 @@ interface ServiceContextType {
 
   refreshServices: () => void;
   formMode: ServiceViewMode;
+
+  eagerLoadDeployment: boolean;
+  setEagerLoadDeployment: Dispatch<SetStateAction<boolean>>;
 
   refreshServiceLogs: () => void;
   serviceLogs: {next_page: string | null, jobs: Record<string, Log>};
@@ -81,6 +86,9 @@ export const ServicesProvider = ({
 }) => {
   const [services, setServices] = useState([] as Service[]);
   const [servicesAreLoading, setServicesAreLoading] = useState(false);
+  const [eagerLoadDeployment, setEagerLoadDeployment] = useState(() => {
+    return localStorage.getItem("eagerLoadDeployment") === "true";
+  });
   const [serviceLogs, setServiceLogs] = useState<{next_page: string | null, jobs: Record<string, Log>}>({next_page: null, jobs: {}});
   const [logsAreLoading, setLogsAreLoading] = useState(true);
   const [showFDLModal, setShowFDLModal] = useState(false);
@@ -166,6 +174,7 @@ export const ServicesProvider = ({
       setServiceLogs(response);
     } catch (error) {
       console.error("Failed to fetch service logs:", error);
+      alert.error(`Failed to fetch service logs: ${errorMessage(error)}`);
       setServiceLogs({jobs: {}, next_page: null});
     } finally {
       setLogsAreLoading(false);
@@ -213,6 +222,10 @@ export const ServicesProvider = ({
     handleGetServices();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("eagerLoadDeployment", String(eagerLoadDeployment));
+  }, [eagerLoadDeployment]);
+
   useUpdate(() => {
     handleFormService(services);
   }, [serviceId]);
@@ -234,6 +247,8 @@ export const ServicesProvider = ({
         showFDLModal,
         setShowFDLModal,
         refreshServices: handleGetServices,
+        eagerLoadDeployment,
+        setEagerLoadDeployment,
         serviceLogs,
         refreshServiceLogs: handleGetServiceLogs,
         formFunctions: {

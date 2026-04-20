@@ -8,15 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import { alert } from "@/lib/alert";
-import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
+import { convertDockerImageToMap, fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Plus, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-
-
+import { IMAGE_TAGS } from "./images";
+import InfoPopUp from "@/components/InfoPopUp";
+import InfoItem from "@/pages/ui/info/components/InfoItem";
+import { errorMessage } from "@/lib/error";
 
 function JunoFormPopover() {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,6 +28,7 @@ function JunoFormPopover() {
   const buckets = useGetPrivateBuckets();
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
+  const imageTagsMap = convertDockerImageToMap(IMAGE_TAGS);
 
   function nameService() {
     return `juno-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
@@ -39,6 +42,7 @@ function JunoFormPopover() {
     bucket: "",
     vo: "",
     token: "",
+    imageTag: IMAGE_TAGS[0].tag,
   });
 
   const [errors, setErrors] = useState({
@@ -66,6 +70,7 @@ function JunoFormPopover() {
       memoryUnit: "Gi",
       bucket: "",
       token: genRandomString(128),
+      imageTag: IMAGE_TAGS[0].tag,
     }));
     setErrors({
       name: false,
@@ -96,10 +101,9 @@ function JunoFormPopover() {
 
     try {
       const fdlUrl =
-        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/juno.yaml";
+        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/feat-notebook-select-image/juno.yaml";
       const fdlResponse = await fetch(fdlUrl, fetchFromGitHubOptions);
       const fdlText = await fdlResponse.text();
-
       const scriptUrl =
         "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/script.sh";
       const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
@@ -114,6 +118,7 @@ function JunoFormPopover() {
 
       const modifiedService: Service = {
         ...service,
+        image: `${service.image.split(':')[0]}:${formData.imageTag}`,
         name: serviceName,
         vo: formData.vo,
         memory: `${formData.memoryRam}${formData.memoryUnit}`,
@@ -147,7 +152,7 @@ function JunoFormPopover() {
       alert.success("Jupyter Notebook instance deployed");
       setIsOpen(false);
     } catch (error) {
-      alert.error("Error deploying Jupyter Notebook instance");
+      alert.error(`Error deploying Jupyter Notebook instance: ${errorMessage(error)}`);
     }
   };
 
@@ -252,6 +257,7 @@ return (
                   </Select>
               </div>
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
             <div>
                 <Label htmlFor="vo">VO</Label>
                 <Select
@@ -272,6 +278,47 @@ return (
                     ))}
                 </SelectContent>
                 </Select>
+            </div>
+            <div>
+                <Label htmlFor="image-tag">Notebook Version</Label>
+                <div className="flex flex-row items-center gap-1">
+                  <Select
+                  value={formData.imageTag}
+                  onValueChange={(value) => {
+                      setFormData({ ...formData, imageTag: value });
+                  }}
+                  >
+                  <SelectTrigger id="image-tag">
+                      <SelectValue placeholder="Select an image version" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {IMAGE_TAGS.map((image) => (
+                      <SelectItem key={image.tag} value={image.tag}>
+                          {image.tag}
+                      </SelectItem>
+                      ))}
+                  </SelectContent>
+                  </Select>
+
+                  <InfoPopUp
+                    content={
+                      <>
+                        <h4 className="font-semibold leading-none pb-2">
+                          {`Version: ${formData.imageTag}`}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {imageTagsMap.get(formData.imageTag)?.description}
+                        </p>
+                        <InfoItem 
+                            link={{
+                            url: imageTagsMap.get(formData.imageTag)?.url,
+                            enableRedirectIcon: true,
+                          }} value={"More Info"} label={""} displayLabel={false} padding="0px"/>
+                      </>
+                    }
+                  />
+                </div>
+            </div>
             </div>
             <div>
               <div className="flex flex-row items-center" >
