@@ -28,6 +28,7 @@ import {
   generateReadableName,
   genRandomString,
   getAllowedVOs,
+  isVersionLower,
 } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
@@ -59,7 +60,7 @@ function TerminalFormPopover() {
   const [newBucket, setNewBucket] = useState(false);
   const [newVolume, setNewVolume] = useState(false);
   const [volumes, setVolumes] = useState<ManagedVolume[]>([]);
-  const { systemConfig, authData } = useAuth();
+  const { systemConfig, authData, clusterInfo } = useAuth();
   const { refreshServices } = useServicesContext();
   const buckets = useGetPrivateBuckets();
 
@@ -479,6 +480,8 @@ function TerminalFormPopover() {
               )}
             </div>
           </div>
+          { // CHANGE ON NEW RELEASE
+          clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") && (
           <div>
             <Label>Volume</Label>
             <hr className="mb-2" />
@@ -569,6 +572,7 @@ function TerminalFormPopover() {
               ) : null}
             </div>
           </div>
+          )}
         </div>
         <DialogFooter>
           <RequestButton

@@ -5,12 +5,15 @@ import { Link, useParams } from "react-router-dom";
 import { CreateUpdateServiceButton } from "./CreateUpdateButton";
 import { InvokePopover } from "../../InvokePopover";
 import { AnimatePresence, motion, MotionConfig } from "framer-motion";
+import { isVersionLower } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
   mode: ServiceViewMode;
 }
 
 function CreateUpdateServiceTabs({ mode }: Props) {
+  const { clusterInfo } = useAuth();
   const tab = useLastUriParam();
   const { serviceId } = useParams();
   const isInCreateMode = mode === ServiceViewMode.Create;
@@ -46,10 +49,13 @@ function CreateUpdateServiceTabs({ mode }: Props) {
             <Link to={`/ui/services/${serviceId}/settings`}>
               <Button variant={getVariant("settings")}>Settings</Button>
             </Link>
-
-            <Link to={`/ui/services/${serviceId}/deployment`}>
-              <Button variant={getVariant("deployment")}>Deployment</Button>
-            </Link>
+            { // CHANGE ON NEW RELEASE
+            clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") && (
+              <Link to={`/ui/services/${serviceId}/deployment`}>
+                <Button variant={getVariant("deployment")}>Deployment</Button>
+              </Link>
+            )}
+            
 
             <Link to={`/ui/services/${serviceId}/logs`}>
               <Button variant={getVariant("logs")}>Logs</Button>
