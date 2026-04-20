@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import { Link, useNavigate } from "react-router-dom";
-import GenericTable from "@/components/Table";
+import GenericTable, { ColumnDef } from "@/components/Table";
 import { InvokePopover } from "../InvokePopover";
 import { handleFilterServices } from "./domain/filterUtils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,7 +21,7 @@ import DeploymentStatusBadge from "../DeploymentStatusBadge";
 import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
 import { DeploymentStatus } from "../../models/deployment";
 import ServiceRedirectButton from "@/components/ServiceRedirectButton";
-import { shortenFullname } from "@/lib/utils";
+import { isVersionLower, shortenFullname } from "@/lib/utils";
 
 interface DeploymentStatusCellProps {
   initialDeployment?: DeploymentStatus;
@@ -81,7 +81,7 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eage
 function ServicesList() {
   const { services, servicesAreLoading, setServices, setFormService, filter, eagerLoadDeployment } =
     useServicesContext();
-  const { authData } = useAuth();
+  const { authData, clusterInfo } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const navigate = useNavigate();
   const buttonRef = useRef<Map<string, HTMLButtonElement>>(new Map())
@@ -177,7 +177,8 @@ function ServicesList() {
             idKey="name"
             columns={[
               { header: "Name", accessor: (row) => (<Link to={`/ui/services/${row.name}/settings`}>{row.name}</Link>), sortBy: "name" },
-              {
+              // CHANGE ON NEW RELEASE
+              ...(clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") ? [{
                 header: "Deployment",
                 accessor: (row) => (
                   <DeploymentStatusCell
@@ -191,7 +192,7 @@ function ServicesList() {
                   />
                 ),
                 sortBy: "deployment",
-              },
+              }] as ColumnDef<Service>[] : []),
               { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.labels["owner_name"] ? shortenFullname(row.labels["owner_name"].replace("_", " ")) : row.owner} sub={row.owner} />), sortBy: "owner" },
               { header: "Image", accessor: "image", sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
