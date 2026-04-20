@@ -7,7 +7,52 @@ import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
-} 
+}
+
+/**
+ * Parses a Kubernetes CPU string and returns the value in millicores.
+ * Supported formats: "2" (cores), "1500m" (millicores)
+ */
+export function parseCpuToMillicores(value: string): number {
+  const trimmed = value.trim();
+  if (trimmed.endsWith("m")) {
+    return parseFloat(trimmed.slice(0, -1));
+  }
+  return parseFloat(trimmed) * 1000;
+}
+
+/**
+ * Parses a Kubernetes memory string and returns the value in bytes.
+ * Supported formats: "2Gi", "1174Mi", "500Ki", "1G", "1M", "1K", "1024" (bytes)
+ */
+export function parseMemoryToBytes(value: string): number {
+  const trimmed = value.trim();
+  const binarySuffixes: Record<string, number> = {
+    Ki: 1024,
+    Mi: 1024 ** 2,
+    Gi: 1024 ** 3,
+    Ti: 1024 ** 4,
+    Pi: 1024 ** 5,
+  };
+  const decimalSuffixes: Record<string, number> = {
+    K: 1000,
+    M: 1000 ** 2,
+    G: 1000 ** 3,
+    T: 1000 ** 4,
+    P: 1000 ** 5,
+  };
+  for (const [suffix, multiplier] of Object.entries(binarySuffixes)) {
+    if (trimmed.endsWith(suffix)) {
+      return parseFloat(trimmed.slice(0, -suffix.length)) * multiplier;
+    }
+  }
+  for (const [suffix, multiplier] of Object.entries(decimalSuffixes)) {
+    if (trimmed.endsWith(suffix)) {
+      return parseFloat(trimmed.slice(0, -suffix.length)) * multiplier;
+    }
+  }
+  return parseFloat(trimmed);
+}
 
 export  function genRandomString(length: number = 32): string {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
