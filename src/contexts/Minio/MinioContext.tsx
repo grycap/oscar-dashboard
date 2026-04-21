@@ -195,22 +195,29 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
 
   async function updateBuckets() {
     if (!client) return;
+    let bucketsOSCAR: Bucket_oscar[] = [];
     try {
       setBucketsAreLoading(true);
       setBucketsLoadingError(false);
+
+      bucketsOSCAR = (await getBucketsApi()) ?? [];
+
       const res = await client.send(new ListBucketsCommand({}));
       const buckets = res?.Buckets;
       if (!buckets) return;
 
-      const bucketsOSCARResponse = await getBucketsApi();
-      const bucketsOSCAR = bucketsOSCARResponse ?? [];
-      
       setBucketsOSCAR(bucketsOSCAR);
       setBuckets(buckets);
     } catch (error) {
-      console.error("Error fetching buckets:", error);
-      alert.error(`Error fetching buckets: ${errorMessage(error)}`);
-      setBucketsLoadingError(true);
+      const statusCode = (error as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode;
+      if (statusCode === 403 && bucketsOSCAR.length === 0) {
+        setBuckets([]);
+        setBucketsOSCAR([]);
+      } else {
+        console.error("Error fetching buckets:", error);
+        alert.error(`Error fetching buckets: ${errorMessage(error)}`);
+        setBucketsLoadingError(true);
+      }
     } finally {
       setBucketsAreLoading(false);
     }
