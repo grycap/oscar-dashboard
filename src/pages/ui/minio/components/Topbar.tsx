@@ -127,7 +127,7 @@ function MinioTopbar() {
                 {breadcrumbs.length > 0 && breadcrumbs ? breadcrumbs : <Slash size={12} className="pt-[2px] text-gray-400" aria-hidden="true" />}
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setRefreshBucketItems(!refreshBucketItems)} title="Refresh" className="group text-gray-500 hover:text-gray-700 hover:bg-gray-200 " >
+            <Button variant="outline" size="sm" onClick={() => setRefreshBucketItems(!refreshBucketItems)} title="Refresh" className="group text-gray-600 hover:text-gray-800 hover:bg-gray-200 border-y-0 border-r-0 border-l border-l-gray-300 rounded-none" >
               <AnimatedRefreshCw size={16} className="group-hover:rotate-180"/>
             </Button>
           </nav>
