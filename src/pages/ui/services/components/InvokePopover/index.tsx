@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import JSZip from "jszip";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +19,7 @@ import {
   Trash2,
   ArrowRight,
   Terminal,
+  Download,
 } from "lucide-react";
 import {
   Select,
@@ -33,10 +35,23 @@ import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 import RequestButton from "@/components/RequestButton";
 import invokeServiceSync from "@/api/invoke/invokeServiceSync";
-import { isFileBase64 } from "@/lib/utils";
+import {
+  decodeBase64ToBytes,
+  detectBinaryMimeType,
+  extractBase64Payload,
+} from "@/lib/utils";
+import { getMimeTypeFromPath } from "@/lib/mimeType";
 import { errorMessage } from "@/lib/error";
 
 type View = "upload" | "editor" | "response";
+type ResponseType = "text" | "image" | "file" | "zip";
+type ZipPreviewType = "text" | "image" | "pdf" | "other";
+
+interface ZipEntryPreview {
+  name: string;
+  mimeType: string;
+  previewType: ZipPreviewType;
+}
 
 interface Props {
   service?: Service;
@@ -56,10 +71,39 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<string>("plaintext");
   const [response, setResponse] = useState<string>("");
+  const [responsePayloadBase64, setResponsePayloadBase64] = useState<string>("");
+  const [responsePayloadMimeType, setResponsePayloadMimeType] = useState<string>("");
+  const [responseDownloadUrl, setResponseDownloadUrl] = useState<string>("");
+  const [responseDownloadName, setResponseDownloadName] = useState<string>("");
+  const [zipArchive, setZipArchive] = useState<JSZip | null>(null);
+  const [zipEntries, setZipEntries] = useState<ZipEntryPreview[]>([]);
+  const [selectedZipEntryName, setSelectedZipEntryName] = useState<string>("");
+  const [zipPreviewType, setZipPreviewType] = useState<ZipPreviewType>("other");
+  const [zipPreviewText, setZipPreviewText] = useState<string>("");
+  const [zipPreviewUrl, setZipPreviewUrl] = useState<string>("");
+  const [zipPreviewLoading, setZipPreviewLoading] = useState<boolean>(false);
 
-  const [responseType, setResponseType] = useState<"text" | "image" | "file">(
-    "text"
-  );
+  const [responseType, setResponseType] = useState<ResponseType>("text");
+
+  const getBlobData = (bytes: Uint8Array) =>
+    bytes.buffer instanceof ArrayBuffer
+      ? bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+      : Uint8Array.from(bytes).buffer;
+
+  const getZipEntryPreviewType = (mimeType: string): ZipPreviewType => {
+    if (mimeType.startsWith("image/")) return "image";
+    if (mimeType === "application/pdf") return "pdf";
+    if (
+      mimeType.startsWith("text/") ||
+      mimeType === "application/json" ||
+      mimeType === "application/xml" ||
+      mimeType === "application/yaml" ||
+      mimeType === "application/javascript"
+    ) {
+      return "text";
+    }
+    return "other";
+  };
 
   const handleFileUpload = (uploadedFile: File) => {
     setFile(uploadedFile);
@@ -128,13 +172,57 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
       });
       const responseString = responseLocal as string;
       setResponse(responseString);
+      setResponsePayloadBase64("");
+      setResponsePayloadMimeType("");
+      setResponseDownloadName("");
+      setZipArchive(null);
+      setZipEntries([]);
+      setSelectedZipEntryName("");
+
       if (responseString.trim() !== "") {
         if (responseString.startsWith("data:image/")) {
+          const [dataUriPrefix, dataUriPayload = ""] = responseString.split(",");
+          const mimeType = dataUriPrefix
+            .replace(/^data:/, "")
+            .replace(/;base64$/, "");
+          setResponsePayloadBase64(dataUriPayload);
+          setResponsePayloadMimeType(mimeType);
           setResponseType("image");
-        } else if (isFileBase64(responseString)) {
-          setResponseType("file");
         } else {
-          setResponseType("text");
+          const base64Payload = extractBase64Payload(responseString);
+          const bytes = base64Payload
+            ? decodeBase64ToBytes(base64Payload)
+            : null;
+          const mimeType = bytes ? detectBinaryMimeType(bytes) : null;
+
+          if (
+            base64Payload &&
+            bytes &&
+            mimeType &&
+            mimeType !== "application/octet-stream"
+          ) {
+            setResponsePayloadBase64(base64Payload);
+            setResponsePayloadMimeType(mimeType);
+            if (mimeType === "application/zip") {
+              setResponseDownloadName(`${currentService?.name ?? "response"}.zip`);
+              setResponseType("zip");
+            } else if (mimeType.startsWith("image/")) {
+              setResponseType("image");
+            } else {
+              const extension =
+                mimeType === "application/pdf"
+                  ? "pdf"
+                  : mimeType.startsWith("text/")
+                    ? "txt"
+                    : "bin";
+              setResponseDownloadName(
+                `${currentService?.name ?? "response"}.${extension}`
+              );
+              setResponseType("file");
+            }
+          } else {
+            setResponseType("text");
+          }
         }
       }
       setCurrentView("response");
@@ -241,16 +329,223 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
 
   const [responseFileContent, setResponseFileContent] = useState<string>("");
   useEffect(() => {
+    if (!responsePayloadBase64) {
+      setResponseFileContent("");
+      return;
+    }
+
+    const bytes = decodeBase64ToBytes(responsePayloadBase64);
+    if (!bytes) {
+      setResponseFileContent(response);
+      return;
+    }
+
     if (responseType === "file") {
       try {
-        const base64 = response.split("\n")[0];
-        const decodedContent = atob(base64);
+        const decodedContent = new TextDecoder().decode(bytes);
         setResponseFileContent(decodedContent);
       } catch (error) {
-        setResponseFileContent(response);
-      }      
+        setResponseFileContent("Binary file ready to download.");
+      }
     }
-  }, [responseType]);
+
+    if (responseType === "zip") {
+      setResponseFileContent("ZIP file ready to download.");
+    }
+  }, [response, responsePayloadBase64, responseType]);
+
+  useEffect(() => {
+    if (!responsePayloadBase64 || !responsePayloadMimeType) {
+      if (responseDownloadUrl) {
+        URL.revokeObjectURL(responseDownloadUrl);
+      }
+      setResponseDownloadUrl("");
+      return;
+    }
+
+    const bytes = decodeBase64ToBytes(responsePayloadBase64);
+    if (!bytes) {
+      return;
+    }
+
+    const blobData = getBlobData(bytes);
+    const blob = new Blob([blobData], { type: responsePayloadMimeType });
+    const nextUrl = URL.createObjectURL(blob);
+
+    setResponseDownloadUrl((previousUrl) => {
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+      }
+      return nextUrl;
+    });
+
+    return () => {
+      URL.revokeObjectURL(nextUrl);
+    };
+  }, [responsePayloadBase64, responsePayloadMimeType]);
+
+  useEffect(() => {
+    if (responsePayloadMimeType !== "application/zip" || !responsePayloadBase64) {
+      setZipArchive(null);
+      setZipEntries([]);
+      setSelectedZipEntryName("");
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadZipArchive() {
+      const bytes = decodeBase64ToBytes(responsePayloadBase64);
+      if (!bytes) return;
+
+      const archive = await JSZip.loadAsync(getBlobData(bytes));
+      const entries = Object.values(archive.files)
+        .filter((entry) => !entry.dir)
+        .map((entry) => {
+          const mimeType = getMimeTypeFromPath(entry.name) || "application/octet-stream";
+          return {
+            name: entry.name,
+            mimeType,
+            previewType: getZipEntryPreviewType(mimeType),
+          };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      if (!isMounted) return;
+
+      setZipArchive(archive);
+      setZipEntries(entries);
+      setSelectedZipEntryName((current) =>
+        current && entries.some((entry) => entry.name === current)
+          ? current
+          : (entries[0]?.name ?? "")
+      );
+    }
+
+    loadZipArchive().catch((error) => {
+      console.error("Error parsing ZIP response:", error);
+      if (!isMounted) return;
+      setZipArchive(null);
+      setZipEntries([]);
+      setSelectedZipEntryName("");
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [responsePayloadBase64, responsePayloadMimeType]);
+
+  useEffect(() => {
+    setZipPreviewUrl((previousUrl) => {
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+      }
+      return "";
+    });
+
+    if (!zipArchive || !selectedZipEntryName) {
+      setZipPreviewText("");
+      setZipPreviewType("other");
+      return;
+    }
+
+    let isMounted = true;
+    const currentArchive = zipArchive;
+    setZipPreviewLoading(true);
+
+    async function loadZipEntryPreview() {
+      const entry = currentArchive.file(selectedZipEntryName);
+      const entryMeta = zipEntries.find((item) => item.name === selectedZipEntryName);
+      if (!entry || !entryMeta) {
+        if (!isMounted) return;
+        setZipPreviewType("other");
+        setZipPreviewText("");
+        setZipPreviewLoading(false);
+        return;
+      }
+
+      if (entryMeta.previewType === "text") {
+        const text = await entry.async("text");
+        if (!isMounted) return;
+
+        if (entryMeta.mimeType === "application/json") {
+          try {
+            setZipPreviewText(JSON.stringify(JSON.parse(text), null, 2));
+          } catch (_error) {
+            setZipPreviewText(text);
+          }
+        } else {
+          setZipPreviewText(text);
+        }
+
+        setZipPreviewType("text");
+        setZipPreviewLoading(false);
+        return;
+      }
+
+      if (entryMeta.previewType === "image" || entryMeta.previewType === "pdf") {
+        const bytes = await entry.async("uint8array");
+        if (!isMounted) return;
+
+        const url = URL.createObjectURL(
+          new Blob([getBlobData(bytes)], { type: entryMeta.mimeType })
+        );
+        setZipPreviewUrl(url);
+        setZipPreviewText("");
+        setZipPreviewType(entryMeta.previewType);
+        setZipPreviewLoading(false);
+        return;
+      }
+
+      if (!isMounted) return;
+      setZipPreviewType("other");
+      setZipPreviewText("");
+      setZipPreviewLoading(false);
+    }
+
+    loadZipEntryPreview().catch((error) => {
+      console.error("Error loading ZIP entry preview:", error);
+      if (!isMounted) return;
+      setZipPreviewType("other");
+      setZipPreviewText("");
+      setZipPreviewLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedZipEntryName, zipArchive, zipEntries]);
+
+  const handleDownloadResponse = () => {
+    if (!responseDownloadUrl) return;
+
+    const anchor = document.createElement("a");
+    anchor.href = responseDownloadUrl;
+    anchor.download = responseDownloadName || `${currentService?.name ?? "response"}.bin`;
+    anchor.click();
+  };
+
+  const handleDownloadZipEntry = async () => {
+    if (!zipArchive || !selectedZipEntryName) return;
+
+    const entry = zipArchive.file(selectedZipEntryName);
+    if (!entry) return;
+
+    const bytes = await entry.async("uint8array");
+    const mimeType =
+      zipEntries.find((item) => item.name === selectedZipEntryName)?.mimeType ||
+      "application/octet-stream";
+    const url = URL.createObjectURL(
+      new Blob([getBlobData(bytes)], { type: mimeType })
+    );
+
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = selectedZipEntryName.split("/").pop() || "download";
+    anchor.click();
+
+    URL.revokeObjectURL(url);
+  };
 
   const renderEditorView = () => (
     <div className="grid grid-cols-1 grid-rows-[auto_1fr] w-full gap-2">
@@ -290,7 +585,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
         <Select
           value={responseType}
           onValueChange={(value) =>
-            setResponseType(value as "text" | "image" | "file")
+            setResponseType(value as ResponseType)
           }
         >
           <SelectTrigger className="w-[100px]">
@@ -298,8 +593,17 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="text">Text</SelectItem>
-            <SelectItem value="image">Image</SelectItem>
-            <SelectItem value="file">File</SelectItem>
+            {responsePayloadMimeType.startsWith("image/") && (
+              <SelectItem value="image">Image</SelectItem>
+            )}
+            {responsePayloadMimeType === "application/zip" && (
+              <SelectItem value="zip">ZIP</SelectItem>
+            )}
+            {responsePayloadMimeType &&
+              responsePayloadMimeType !== "application/zip" &&
+              !responsePayloadMimeType.startsWith("image/") && (
+                <SelectItem value="file">File</SelectItem>
+              )}
           </SelectContent>
         </Select>
         <div className="h-full">
@@ -319,7 +623,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
           )}
           {responseType === "image" && (
             <img
-              src={`data:image/png;base64,${response.split("\n")[0]}`}
+              src={`data:${responsePayloadMimeType || "image/png"};base64,${responsePayloadBase64}`}
               alt="Response"
             />
           )}
@@ -333,6 +637,108 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
               }}
             >
               {responseFileContent}
+              {responseDownloadUrl && (
+                <div className="mt-4">
+                  <Button variant="outline" onClick={handleDownloadResponse}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Download file
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+          {responseType === "zip" && (
+            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 h-full min-h-0">
+              <div className="border rounded-md overflow-hidden min-h-[220px]">
+                <div className="flex items-center justify-between p-3 border-b bg-muted/50">
+                  <div>
+                    <p className="font-medium">ZIP contents</p>
+                    <p className="text-xs text-muted-foreground">
+                      {zipEntries.length} files
+                    </p>
+                  </div>
+                  {responseDownloadUrl && (
+                    <Button variant="outline" size="sm" onClick={handleDownloadResponse}>
+                      <Download className="h-4 w-4 mr-2" />
+                      ZIP
+                    </Button>
+                  )}
+                </div>
+                <div className="max-h-[50vh] overflow-auto">
+                  {zipEntries.map((entry) => (
+                    <button
+                      key={entry.name}
+                      type="button"
+                      className={`w-full text-left px-3 py-2 border-b hover:bg-muted/50 ${
+                        selectedZipEntryName === entry.name ? "bg-muted" : ""
+                      }`}
+                      onClick={() => setSelectedZipEntryName(entry.name)}
+                    >
+                      <div className="font-medium truncate">
+                        {entry.name.split("/").pop() || entry.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {entry.name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="border rounded-md min-h-[220px] overflow-hidden flex flex-col">
+                <div className="flex items-center justify-between p-3 border-b bg-muted/50">
+                  <div>
+                    <p className="font-medium">Preview</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {selectedZipEntryName || "Select a file from the ZIP"}
+                    </p>
+                  </div>
+                  {selectedZipEntryName && (
+                    <Button variant="outline" size="sm" onClick={handleDownloadZipEntry}>
+                      <Download className="h-4 w-4 mr-2" />
+                      File
+                    </Button>
+                  )}
+                </div>
+                <div className="flex-1 min-h-0 overflow-auto p-3">
+                  {!selectedZipEntryName && (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                      Select a file to preview it before downloading.
+                    </div>
+                  )}
+                  {selectedZipEntryName && zipPreviewLoading && (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                      Loading preview...
+                    </div>
+                  )}
+                  {selectedZipEntryName && !zipPreviewLoading && zipPreviewType === "text" && (
+                    <pre className="whitespace-pre-wrap break-words text-sm">
+                      {zipPreviewText}
+                    </pre>
+                  )}
+                  {selectedZipEntryName && !zipPreviewLoading && zipPreviewType === "image" && zipPreviewUrl && (
+                    <div className="h-full flex items-center justify-center">
+                      <img
+                        src={zipPreviewUrl}
+                        alt={selectedZipEntryName}
+                        className="max-h-[52vh] w-auto rounded"
+                      />
+                    </div>
+                  )}
+                  {selectedZipEntryName && !zipPreviewLoading && zipPreviewType === "pdf" && zipPreviewUrl && (
+                    <iframe
+                      src={zipPreviewUrl}
+                      title={selectedZipEntryName}
+                      className="w-full h-[52vh] border-0"
+                    />
+                  )}
+                  {selectedZipEntryName && !zipPreviewLoading && zipPreviewType === "other" && (
+                    <div className="h-full flex items-center justify-center text-center text-muted-foreground px-6">
+                      Preview is not available for this file type. You can still
+                      download the selected file or the full ZIP.
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -347,6 +753,23 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
     setCurrentView("upload");
     setSelectedLanguage("plaintext");
     setResponse("");
+    setResponsePayloadBase64("");
+    setResponsePayloadMimeType("");
+    setResponseDownloadName("");
+    setZipArchive(null);
+    setZipEntries([]);
+    setSelectedZipEntryName("");
+    setZipPreviewType("other");
+    setZipPreviewText("");
+    setZipPreviewLoading(false);
+    if (zipPreviewUrl) {
+      URL.revokeObjectURL(zipPreviewUrl);
+    }
+    setZipPreviewUrl("");
+    if (responseDownloadUrl) {
+      URL.revokeObjectURL(responseDownloadUrl);
+    }
+    setResponseDownloadUrl("");
     setResponseType("text");
   };
 
