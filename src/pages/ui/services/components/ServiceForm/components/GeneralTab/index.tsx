@@ -1,7 +1,6 @@
 import { Input } from "@/components/ui/input";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { LOG_LEVEL, Service } from "@/pages/ui/services/models/service";
-import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -39,9 +38,9 @@ function ServiceGeneralTab() {
     else if (JSON.stringify(voGroups) === '[""]'){ return true}
     else {return false}
   } 
-  const [memoryUnits, setMemoryUnits] = useState<"Mi" | "Gi">(formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi");
-  const [memory, setMemory] = useState<string>(formService?.memory?.replace(/[a-zA-Z]/g, ""));
-
+  
+  const memoryUnits = formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi";
+  const memory = formService?.memory?.replace(/[a-zA-Z]/g, "");
 
   const setAllowedUsers = (users: string[]) => {
     setFormService((prev) => ({
@@ -254,7 +253,6 @@ function ServiceGeneralTab() {
               value={memory}
               label="Memory"
               onChange={(e) => {
-                setMemory(e.target.value);
                 setFormService((service: Service) => {
                   return {
                     ...service,
@@ -268,7 +266,6 @@ function ServiceGeneralTab() {
             <Select
               value={memoryUnits}
               onValueChange={(value) => {
-                setMemoryUnits(value as "Mi" | "Gi");
                 setFormService((service: Service) => {
                   return {
                     ...service,
