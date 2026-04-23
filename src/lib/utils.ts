@@ -381,7 +381,7 @@ export function detectBinaryMimeType(bytes: Uint8Array): string | null {
     }
   }
 
-  return "application/octet-stream";
+  return "text/plain";
 }
 
 export function addItemToPosition(array: any[], item: any, position: number, countFromLast: boolean = false): any[] {
