@@ -1,8 +1,8 @@
 import UserInfo from "@/components/UserInfo";
 import OscarColors, { OscarStyles } from "@/styles";
-import { RefreshCcwIcon } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import AnimatedRefreshCw from "../ui/animatedRefreshCw";
 
 interface GenericTopbarProps {
     customHeader?: React.ReactNode;
@@ -39,10 +39,7 @@ function GenericTopbar({ customHeader, defaultHeader, refresher, children, secon
           <Link to="#"
             onClick={() => refresher()}
           >
-            <RefreshCcwIcon size={16} 
-              onMouseEnter={(e) => {e.currentTarget.style.transform = 'rotate(90deg)'}}
-              onMouseLeave={(e) => {e.currentTarget.style.transform = 'rotate(0deg)'}}
-            />
+            <AnimatedRefreshCw size={16} />
           </Link>)
           }
         </div>

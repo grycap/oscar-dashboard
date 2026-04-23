@@ -72,6 +72,8 @@ export type MinioProviderData = {
   createBucket: (bucketName: Bucket_oscar) => Promise<void>;
   updateBucketsVisibilityControl: (bucketName: Bucket_oscar) => Promise<void>; 
   updateBuckets: () => Promise<void>;
+  refreshBucketItems: boolean;
+  setRefreshBucketItems: (value: boolean) => void;
   getBucketItems: (
     bucketName: string,
     path: string
@@ -110,6 +112,7 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
   const [bucketsAreLoading, setBucketsAreLoading] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<UploadBatchProgress | null>(null);
   const [bucketsLoadingError, setBucketsLoadingError] = useState<boolean>(false);
+  const [refreshBucketItems, setRefreshBucketItems] = useState<boolean>(false);
 
   const [bucketsFilter, setBucketsFilter] = useState<BucketsFilterProps>({
     myBuckets: false,
@@ -534,6 +537,8 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
         createFolder,
         updateBuckets,
         updateBucketsVisibilityControl,
+        setRefreshBucketItems,
+        refreshBucketItems,
         getBucketItems,
         deleteBucket,
         uploadFiles,

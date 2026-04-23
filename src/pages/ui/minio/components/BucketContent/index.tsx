@@ -10,6 +10,7 @@ import {
   Trash,
   Download,
   DownloadIcon,
+  LoaderPinwheel,
 } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import OscarColors from "@/styles";
@@ -44,9 +45,11 @@ export type BucketItem =
 
 export default function BucketContent() {
   const { name: bucketName, path } = useSelectedBucket();
+  const [isLoading, setIsLoading] = useState(true);
 
   const {
     getBucketItems,
+    refreshBucketItems,
     downloadAndZipFolders,
     buckets,
     uploadFiles,
@@ -64,6 +67,7 @@ export default function BucketContent() {
 
   useEffect(() => {
     if (bucketName) {
+      setIsLoading(true);
       getBucketItems(bucketName, path).then(({ items, folders }) => {
         const combinedItems = [
           ...(folders?.map((folder) => {
@@ -87,10 +91,11 @@ export default function BucketContent() {
             return res;
           }) || []),
         ];
+        setIsLoading(false);
         setItems(combinedItems);
       });
     }
-  }, [bucketName, getBucketItems, buckets, path]);
+  }, [bucketName, getBucketItems, buckets, path, refreshBucketItems]);
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -232,6 +237,11 @@ export default function BucketContent() {
           }}
           itemNames={itemsToDelete.map((item) => item.Name)}
         />
+        {isLoading ? 
+          <div className="flex items-center justify-center h-full w-full">
+            <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+          </div>
+        :
         <GenericTable
           data={items.map((item) => {
             return {
@@ -365,6 +375,7 @@ export default function BucketContent() {
             },
           ]}
         />
+        }
         <UploadFileDialog
           progress={uploadProgress}
           onClose={clearUploadProgress}
