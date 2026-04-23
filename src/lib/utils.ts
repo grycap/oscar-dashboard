@@ -303,6 +303,87 @@ export function isFileBase64(content: string): boolean {
   }
 }
 
+export function extractBase64Payload(content: string): string | null {
+  const base64LinePattern =
+    /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
+  const normalizedLines = content
+    .split(/\r?\n/)
+    .map((line) => line.trim().replace(/\s+/g, ""))
+    .filter(Boolean);
+
+  const payloadLines: string[] = [];
+  for (let i = normalizedLines.length - 1; i >= 0; i -= 1) {
+    const line = normalizedLines[i];
+    if (base64LinePattern.test(line)) {
+      payloadLines.unshift(line);
+      continue;
+    }
+    if (payloadLines.length > 0) {
+      break;
+    }
+  }
+
+  const candidate = payloadLines.join("");
+  if (!candidate || candidate.length < 32 || candidate.length % 4 !== 0) {
+    return null;
+  }
+
+  try {
+    atob(candidate);
+    return candidate;
+  } catch (_error) {
+    return null;
+  }
+
+}
+
+export function decodeBase64ToBytes(content: string): Uint8Array | null {
+  try {
+    const decoded = atob(content);
+    return Uint8Array.from(decoded, (char) => char.charCodeAt(0));
+  } catch (_error) {
+    return null;
+  }
+}
+
+export function detectBinaryMimeType(bytes: Uint8Array): string | null {
+  if (bytes.length >= 4) {
+    if (
+      bytes[0] === 0x50 &&
+      bytes[1] === 0x4b &&
+      (bytes[2] === 0x03 || bytes[2] === 0x05 || bytes[2] === 0x07) &&
+      (bytes[3] === 0x04 || bytes[3] === 0x06 || bytes[3] === 0x08)
+    ) {
+      return "application/zip";
+    }
+    if (
+      bytes[0] === 0x89 &&
+      bytes[1] === 0x50 &&
+      bytes[2] === 0x4e &&
+      bytes[3] === 0x47
+    ) {
+      return "image/png";
+    }
+    if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+      return "image/jpeg";
+    }
+    if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
+      return "image/gif";
+    }
+    if (
+      bytes[0] === 0x25 &&
+      bytes[1] === 0x50 &&
+      bytes[2] === 0x44 &&
+      bytes[3] === 0x46
+    ) {
+      return "application/pdf";
+    }
+  }
+
+  return "text/plain";
+}
+
 export function addItemToPosition(array: any[], item: any, position: number, countFromLast: boolean = false): any[] {
   if (countFromLast) {
     position = array.length - position;
