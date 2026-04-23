@@ -244,7 +244,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   };
 
   const renderUploadView = () => (
-    <div className="grid grid-cols-1 w-full">
+    <div className="grid grid-cols-1 w-full overflow-y-auto">
       {!file ? (
         <>
           <input
@@ -581,7 +581,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
 
   const renderResponseView = () => {
     return (
-      <div className="grid grid-cols-1 grid-rows-[auto_1fr] w-full gap-2">
+      <div className="grid grid-cols-1 grid-rows-[auto_1fr] w-full h-full gap-2 min-h-0">
         <Select
           value={responseType}
           onValueChange={(value) =>
@@ -606,17 +606,10 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
               )}
           </SelectContent>
         </Select>
-        <div className="h-full">
+        <div className="h-full w-full min-h-0">
           {responseType === "text" && (
             <div
-              style={{
-                overflow: "auto",
-                padding: "0px 10px",
-                whiteSpace: "pre-wrap",
-                wordWrap: "break-word",
-                overflowWrap: "break-word",
-                maxHeight: "75vh",
-              }}
+              className="h-full overflow-y-auto whitespace-pre-wrap break-words"
             >
               {response}
             </div>
@@ -629,16 +622,13 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
           )}
           {responseType === "file" && (
             <div
-              style={{
-                padding: "0px 10px",
-                whiteSpace: "pre-wrap",
-                wordWrap: "break-word",
-                overflowWrap: "break-word",
-              }}
+              className="h-full w-full min-h-0"
             >
+              <div className="overflow-y-auto whitespace-pre-wrap break-words h-full w-full min-h-0">
               {responseFileContent}
+              </div>
               {responseDownloadUrl && (
-                <div className="mt-4">
+                <div className="mt-5">
                   <Button variant="outline" onClick={handleDownloadResponse}>
                     <Download className="h-4 w-4 mr-2" />
                     Download file
@@ -648,7 +638,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
             </div>
           )}
           {responseType === "zip" && (
-            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 h-full min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 h-full min-h-0 overflow-y-auto">
               <div className="border rounded-md overflow-hidden min-h-[220px]">
                 <div className="flex items-center justify-between p-3 border-b bg-muted/50">
                   <div>
@@ -789,7 +779,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="grid grid-cols-1 grid-rows-[auto_1fr_auto] w-screen sm:w-[70%] 2xl:w-[60%] h-[90%] sm:h-[80%] 2xl:h-[60%] overflow-y-auto gap-5">
+      <DialogContent className="grid grid-cols-1 grid-rows-[auto_1fr_auto] w-screen sm:w-[70%] 2xl:w-[60%] h-[90%] sm:h-[80%] 2xl:h-[60%] gap-5">
         <DialogHeader>
           <DialogTitle>
             <span style={{ color: OscarColors.DarkGrayText }}>
