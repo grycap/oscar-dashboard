@@ -20,6 +20,7 @@ import HubView from "@/pages/ui/hub";
 import Quotas from "@/pages/ui/quotas";
 import AdminRoute from "@/components/AdminRoute/AdminRoute";
 import UploadFromPresignedURL from "@/pages/UploadFromPresignedURL";
+import MetricsView from "@/pages/ui/metrics";
 
 function AppRouter() {
   return (
@@ -47,6 +48,7 @@ function AppRouter() {
           <Route path="flows" element={<FlowsView />} />
           <Route path="terminals" element={<TerminalView />} />
           <Route path="status" element={<Cluster />} />
+          <Route path="metrics" element={<MetricsView />} />
           <Route path="hub" element={<HubView />} />
           <Route path="quotas" element={
             <AdminRoute>

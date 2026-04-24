@@ -1,5 +1,6 @@
 import OscarLogo from "@/assets/oscar-big.png";
 import {
+  Activity,
   BarChart2,
   Boxes,
   ChartPie,
@@ -80,6 +81,11 @@ function AppSidebar() {
       title: "Status",
       icon: <BarChart2  size={20} />,
       path: "/status",
+    },
+    {
+      title: "Metrics",
+      icon: <Activity size={20} />,
+      path: "/metrics",
     },
     {
       title: "Info",
