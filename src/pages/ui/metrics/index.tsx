@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
 import { errorMessage } from "@/lib/error";
+import { shortenFullname } from "@/lib/utils";
 import {
   BreakdownItem,
   MetricKey,
@@ -44,7 +46,8 @@ import {
   Users,
   Waypoints,
 } from "lucide-react";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
+import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import {
   Bar,
   BarChart,
@@ -234,6 +237,8 @@ function BreakdownChartCard({
 
 function MetricsView() {
   const location = useLocation();
+  const { authData } = useAuth();
+  const { services } = useServicesContext();
   const initialRange = buildPresetRange("24h");
 
   const [selectedPreset, setSelectedPreset] = useState<RangePreset>("24h");
@@ -435,6 +440,29 @@ function MetricsView() {
   const selectedServiceBreakdown = serviceBreakdown?.items.find((item) => item.key === selectedService) ?? null;
 
   const selectedServiceMetrics = serviceMetrics?.metrics ?? [];
+  const userDisplayNamesBySub = useMemo(() => {
+    const names = new Map<string, string>();
+
+    if (authData.egiSession?.sub && authData.egiSession.name) {
+      names.set(authData.egiSession.sub, shortenFullname(authData.egiSession.name));
+    }
+
+    services.forEach((service) => {
+      const ownerName = service.labels?.owner_name;
+
+      if (service.owner && ownerName) {
+        names.set(service.owner, shortenFullname(ownerName.replace(/_/g, " ")));
+      }
+    });
+
+    return names;
+  }, [authData.egiSession?.name, authData.egiSession?.sub, services]);
+
+  function getUserDisplayName(userId: string): string {
+    if (!userId || userId === "unknown") return "Unknown";
+    return userDisplayNamesBySub.get(userId) ?? userId;
+  }
+
   const sourceStatuses = summary?.sources ?? [];
   const sourceNotes = sourceStatuses.filter((source) => source.notes);
 
@@ -475,7 +503,7 @@ function MetricsView() {
                 </div>
                 <div className="max-w-2xl space-y-2">
                   <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-                    Metrics for your services
+                    Metrics of your services
                   </h1>
                   <p className="text-sm leading-6 text-slate-600">
                     Aggregated CPU/GPU usage, request traffic and geographic reach for your active services.
@@ -670,7 +698,7 @@ function MetricsView() {
               />
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)]">
+            <div className="grid gap-6">
               <div className="grid gap-6">
                 <Card className="border-slate-200/80 shadow-sm">
                   <CardHeader className="pb-3">
@@ -699,7 +727,7 @@ function MetricsView() {
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart
                                 data={serviceItems.map((item) => ({
-                                  name: truncateLabel(item.key, 28),
+                                  name: truncateLabel(item.key, 44),
                                   sync: item.requests_count_sync ?? 0,
                                   async: item.requests_count_async ?? 0,
                                   exposed: item.requests_count_exposed ?? 0,
@@ -710,7 +738,7 @@ function MetricsView() {
                               >
                                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                                 <XAxis type="number" allowDecimals={false} />
-                                <YAxis type="category" dataKey="name" width={180} />
+                                <YAxis type="category" dataKey="name" width={300} />
                                 <Tooltip
                                   formatter={(value: number, name: string) => [formatNumber(value), name]}
                                   labelFormatter={(label) => `Service: ${label}`}
@@ -777,7 +805,7 @@ function MetricsView() {
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart
                                 data={userItems.map((item) => ({
-                                  name: truncateLabel(item.key || "unknown", 26),
+                                  name: truncateLabel(getUserDisplayName(item.key), 44),
                                   executions: item.executions_count ?? 0,
                                 }))}
                                 layout="vertical"
@@ -785,7 +813,7 @@ function MetricsView() {
                               >
                                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                                 <XAxis type="number" allowDecimals={false} />
-                                <YAxis type="category" dataKey="name" width={180} />
+                                <YAxis type="category" dataKey="name" width={300} />
                                 <Tooltip
                                   formatter={(value: number, name: string) => [formatNumber(value), name]}
                                   labelFormatter={(label) => `User: ${label}`}
@@ -906,7 +934,9 @@ function MetricsView() {
                                   Known users
                                 </p>
                                 <p className="mt-1 text-sm text-slate-600">
-                                  {formatUsers(selectedServiceBreakdown.users ?? [])}
+                                  {formatUsers(
+                                    (selectedServiceBreakdown.users ?? []).map(getUserDisplayName),
+                                  )}
                                 </p>
 
                                 <div className="mt-4 grid gap-2">
