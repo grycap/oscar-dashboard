@@ -152,7 +152,7 @@ const Cluster = () => {
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4 items-stretch">
             
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {userQuotaData.resources && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid grid-cols-1 gap-4">
                   <div className="border rounded-lg p-4 shadow-sm">
                     <div className="flex items-center gap-2">
@@ -160,17 +160,17 @@ const Cluster = () => {
                       <p className="text-lg font-semibold">
                         Max provided CPU:{" "}
                         <span className={`text-xl font-bold`}>
-                           {formatCores(userQuotaData?.resources.cpu.max ?? 0)}
+                           {formatCores(userQuotaData?.resources?.cpu.max ?? 0)}
                         </span>
                       </p>
                     </div>
                   </div>
                   <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-start">
-                    <h2 className="text-lg font-semibold">{`CPU used ${formatCores(userQuotaData?.resources.cpu.used ?? 0)}`}</h2>
+                    <h2 className="text-lg font-semibold">{`CPU used ${formatCores(userQuotaData?.resources?.cpu.used ?? 0)}`}</h2>
                     <div className="flex flex-col h-full justify-center">
-                      <DonutChart percentage={Math.round((userQuotaData?.resources.cpu.used ?? 0) / (userQuotaData?.resources.cpu.max ?? 1) * 100)} dangerThreshold={80} />
+                      <DonutChart percentage={Math.round((userQuotaData?.resources?.cpu.used ?? 0) / (userQuotaData?.resources?.cpu.max ?? 1) * 100)} dangerThreshold={80} />
                       <p className="text-center font-bold text-sm mt-2">
-                        {Number(((userQuotaData?.resources.cpu.used ?? 0) / (userQuotaData?.resources.cpu.max ?? 1) * 100).toFixed(1))}% Used
+                        {Number(((userQuotaData?.resources?.cpu.used ?? 0) / (userQuotaData?.resources?.cpu.max ?? 1) * 100).toFixed(1))}% Used
                       </p>
                     </div>
                   </div>
@@ -182,22 +182,46 @@ const Cluster = () => {
                       <p className="text-lg font-semibold">
                         Max provided memory:{" "}
                         <span className={`text-xl font-bold`}>
-                           {formatBytes(userQuotaData?.resources.memory.max ?? 0)}
+                           {formatBytes(userQuotaData?.resources?.memory.max ?? 0)}
                         </span>
                       </p>
                     </div>
                   </div>
                   <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-start">
-                    <h2 className="text-lg font-semibold">{`Memory used ${formatBytes(userQuotaData?.resources.memory.used ?? 0)}`}</h2>
+                    <h2 className="text-lg font-semibold">{`Memory used ${formatBytes(userQuotaData?.resources?.memory.used ?? 0)}`}</h2>
                     <div className="flex flex-col h-full justify-center">
-                      <DonutChart percentage={Math.round((userQuotaData?.resources.memory.used ?? 0) / (userQuotaData?.resources.memory.max ?? 1) * 100)} dangerThreshold={80} />
+                      <DonutChart percentage={Math.round((userQuotaData?.resources?.memory.used ?? 0) / (userQuotaData?.resources?.memory.max ?? 1) * 100)} dangerThreshold={80} />
                       <p className="text-center font-bold text-sm mt-2">
-                        {Number(((userQuotaData?.resources.memory.used ?? 0) / (userQuotaData?.resources.memory.max ?? 1) * 100).toFixed(1))}% Used
+                        {Number(((userQuotaData?.resources?.memory.used ?? 0) / (userQuotaData?.resources?.memory.max ?? 1) * 100).toFixed(1))}% Used
                       </p>
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>}
+              {userQuotaData.volumes && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="border rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <Database className="text-black" size={24} />
+                    <p className="text-lg font-semibold">
+                      Volume disk used:{" "}
+                      <span className="text-xl font-bold">
+                        {userQuotaData.volumes.disk.used} / {userQuotaData.volumes.disk.max}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div className="border rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <Files className="text-black" size={24} />
+                    <p className="text-lg font-semibold">
+                      Managed volumes used:{" "}
+                      <span className="text-xl font-bold">
+                        {userQuotaData.volumes.volumes.used} / {userQuotaData.volumes.volumes.max}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>}
           </CardContent>
         </Card>
         )}

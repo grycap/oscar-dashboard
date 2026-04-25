@@ -11,6 +11,25 @@ import EditPopover from "./components/EditPopover";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import { errorMessage } from "@/lib/error";
 
+type QuotaRow = {
+  uid: string;
+  cpuUsed?: number;
+  cpuMax?: number;
+  memoryUsed?: number;
+  memoryMax?: number;
+  volumeDiskUsed?: string;
+  volumeDiskMax?: string;
+  volumesUsed?: string;
+  volumesMax?: string;
+};
+
+const formatCores = (millicores?: number) =>
+  millicores === undefined ? "-" : (millicores / 1000).toString();
+
+const formatBytes = (bytes?: number) =>
+  bytes === undefined ? "-" : bytesSizeToHumanReadable(bytes);
+
+const formatQuota = (value?: string) => value || "-";
 
 function Quotas() {
   const [users, setUsers] = useState(Array<ClusterUserQuota>());
@@ -46,13 +65,17 @@ function Quotas() {
 
       <GenericTable
         data={users.map((user) => ({
-            uid: user.user_id!,
-            cpuUsed: user.resources.cpu.used,
-            cpuMax: user.resources.cpu.max,
-            memoryUsed: user.resources.memory.used,
-            memoryMax: user.resources.memory.max,
+            uid: user.user_id ?? "",
+            cpuUsed: user.resources?.cpu.used,
+            cpuMax: user.resources?.cpu.max,
+            memoryUsed: user.resources?.memory.used,
+            memoryMax: user.resources?.memory.max,
+            volumeDiskUsed: user.volumes?.disk.used,
+            volumeDiskMax: user.volumes?.disk.max,
+            volumesUsed: user.volumes?.volumes.used,
+            volumesMax: user.volumes?.volumes.max,
             })
-          )
+          ) as QuotaRow[]
         }
         idKey={"uid"}
         columns={
@@ -64,23 +87,43 @@ function Quotas() {
             },
             {
               header: "CPU Used",
-              accessor: (row) => (row.cpuUsed / 1000).toString(),
+              accessor: (row) => formatCores(row.cpuUsed),
               sortBy: "cpuUsed",
             },
             {
               header: "CPU Max",
-              accessor: (row) => (row.cpuMax / 1000).toString(),
+              accessor: (row) => formatCores(row.cpuMax),
               sortBy: "cpuMax",
             },
             {
               header: "Memory Used",
-              accessor: (row) => bytesSizeToHumanReadable(row.memoryUsed),
+              accessor: (row) => formatBytes(row.memoryUsed),
               sortBy: "memoryUsed",
             },
             {
               header: "Memory Max",
-              accessor: (row) => bytesSizeToHumanReadable(row.memoryMax),
+              accessor: (row) => formatBytes(row.memoryMax),
               sortBy: "memoryMax",
+            },
+            {
+              header: "Volume Disk Used",
+              accessor: (row) => formatQuota(row.volumeDiskUsed),
+              sortBy: "volumeDiskUsed",
+            },
+            {
+              header: "Volume Disk Max",
+              accessor: (row) => formatQuota(row.volumeDiskMax),
+              sortBy: "volumeDiskMax",
+            },
+            {
+              header: "Volumes Used",
+              accessor: (row) => formatQuota(row.volumesUsed),
+              sortBy: "volumesUsed",
+            },
+            {
+              header: "Volumes Max",
+              accessor: (row) => formatQuota(row.volumesMax),
+              sortBy: "volumesMax",
             },
           ]
         }
