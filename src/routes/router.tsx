@@ -18,7 +18,6 @@ import TerminalView from "@/pages/ui/terminals";
 import Cluster from "@/pages/ui/cluster_info"
 import HubView from "@/pages/ui/hub";
 import Quotas from "@/pages/ui/quotas";
-import AdminRoute from "@/components/AdminRoute/AdminRoute";
 import UploadFromPresignedURL from "@/pages/UploadFromPresignedURL";
 
 function AppRouter() {
@@ -48,12 +47,7 @@ function AppRouter() {
           <Route path="terminals" element={<TerminalView />} />
           <Route path="status" element={<Cluster />} />
           <Route path="hub" element={<HubView />} />
-          <Route path="quotas" element={
-            <AdminRoute>
-              <Quotas />
-            </AdminRoute>
-            }
-          />
+          <Route path="quotas" element={<Quotas />} />
           
           
         </Route>

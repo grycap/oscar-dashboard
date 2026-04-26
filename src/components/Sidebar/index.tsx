@@ -41,6 +41,11 @@ function AppSidebar() {
 
   let items = [
     {
+      title: "Hub",
+      icon: <Boxes size={20} />,
+      path: "/hub",
+    },
+    {
       title: "Services",
       icon: <Codesandbox size={20} />,
       path: "/services",
@@ -72,11 +77,6 @@ function AppSidebar() {
       path: "/terminals",
     },
     {
-      title: "Hub",
-      icon: <Boxes size={20} />,
-      path: "/hub",
-    },
-    {
       title: "Status",
       icon: <BarChart2  size={20} />,
       path: "/status",
@@ -88,14 +88,14 @@ function AppSidebar() {
     },
   ];
 
-  // Only show quotas if the user is oscar
-  if (authContext.authData.user === "oscar") {
-    items = addItemToPosition(items, 
-      {
-        title: "Quotas",
-        icon: <ChartPie size={20} />,
-        path: "/quotas",
-      }, 6);
+  // Show quotas for the OSCAR admin and OIDC users with personal quota support.
+  if (authContext.authData.user === "oscar" || authContext.authData.egiSession) {
+    const statusIndex = items.findIndex((item) => item.path === "/status");
+    items = addItemToPosition(items, {
+      title: "Quotas",
+      icon: <ChartPie size={20} />,
+      path: "/quotas",
+    }, statusIndex + 1);
   }
   
   function buildLogoutRedirectUrl(token: string): string {
