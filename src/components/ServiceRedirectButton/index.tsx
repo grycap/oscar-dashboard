@@ -21,8 +21,8 @@ function ServiceRedirectButton({
   healthcheckPath?: string;
 }) {
   const [isAlive, setIsAlive] = useState<boolean | null>(null);
+  const [redirectLink, setRedirectLink] = useState<string>("");
   const { clusterInfo } = useAuth();
-  const redirectLink = `${endpoint}/system/services/${service.name}/exposed/${interpolateVariables(service, additionalExposedPathArgs)}`
 
   const safeHealthcheckPath = healthcheckPath.startsWith("/") ? healthcheckPath.slice(1).trim() : healthcheckPath
   const healthcheckLink = `${endpoint}/system/services/${service.name}/exposed/${safeHealthcheckPath}`;
@@ -30,30 +30,139 @@ function ServiceRedirectButton({
   /**
    * Interpolate variables in the additionalExposedPathArgs string.
    * This function replaces variables in the format {{ variableName }} with their corresponding values from the
-   * service's environment variables or service properties. It supports variables prefixed with "env." for environment variables and "service."
-   * example: evn.MY_VAR or service.token
+   * service's environment variables, service properties, or short-lived JWTs.
+   * Examples: env.MY_VAR, service.token, jwt.service.token
    */
-  function interpolateVariables(service: Service, additionalExposedPathArgs?: string) {
+  async function interpolateVariables(service: Service, additionalExposedPathArgs?: string) {
     if (!additionalExposedPathArgs) return "";
 
-    return additionalExposedPathArgs.replace(/{{\s*([^}]+)\s*}}/g, (_, variableName) => {
+    const matches = [...additionalExposedPathArgs.matchAll(/{{\s*([^}]+)\s*}}/g)];
+    let interpolatedValue = additionalExposedPathArgs;
+
+    for (const match of matches) {
+      const placeholder = match[0];
+      const variableName = match[1];
       const splitVariable = variableName.split(".");
       const prefix = splitVariable[0];
       const variableKey = splitVariable[1];
+      let resolvedValue = "";
+
       switch (prefix) {
         case "env":
-          return service.environment.variables[variableKey] ?? "";
+          resolvedValue = service.environment.variables[variableKey] ?? "";
+          break;
         case "service":
           const serviceValue = (service[variableKey as keyof Service]);
-          return typeof serviceValue === "string" ? serviceValue : "";
+          resolvedValue = typeof serviceValue === "string" ? serviceValue : "";
+          break;
+        case "jwt":
+          resolvedValue = await generateJwtPlaceholder(service, splitVariable);
+          break;
         default:
-          return "";
+          resolvedValue = "";
       }
+
+      interpolatedValue = interpolatedValue.replace(placeholder, resolvedValue);
+    }
+
+    return interpolatedValue;
+  }
+
+  function resolveStringValue(service: Service, source: string, key: string) {
+    if (source === "env") {
+      return service.environment.variables[key] ?? "";
+    }
+
+    if (source === "service") {
+      const serviceValue = service[key as keyof Service];
+      return typeof serviceValue === "string" ? serviceValue : "";
+    }
+
+    return "";
+  }
+
+  async function generateJwtPlaceholder(service: Service, splitVariable: string[]) {
+    const secretSource = splitVariable[1];
+    const secretKey = splitVariable[2];
+    const secret = resolveStringValue(service, secretSource, secretKey);
+
+    if (!secret) {
+      return "";
+    }
+
+    const token = await signJwt(
+      {
+        sub: service.environment.variables.FILEBROWSER_JWT_SUB ?? "admin",
+        groups: ["admin"],
+      },
+      secret,
+      3600
+    );
+
+    return encodeURIComponent(token);
+  }
+
+  async function signJwt(
+    payload: Record<string, unknown>,
+    secret: string,
+    ttlSeconds: number
+  ) {
+    const now = Math.floor(Date.now() / 1000);
+    const encoder = new TextEncoder();
+    const header = base64UrlEncode(encoder.encode(JSON.stringify({
+      alg: "HS256",
+      typ: "JWT",
+    })));
+    const body = base64UrlEncode(encoder.encode(JSON.stringify({
+      ...payload,
+      iat: now,
+      exp: now + ttlSeconds,
+    })));
+    const unsignedToken = `${header}.${body}`;
+    const cryptoKey = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const signature = await crypto.subtle.sign(
+      "HMAC",
+      cryptoKey,
+      encoder.encode(unsignedToken)
+    );
+
+    return `${unsignedToken}.${base64UrlEncode(new Uint8Array(signature))}`;
+  }
+
+  function base64UrlEncode(bytes: Uint8Array) {
+    let binary = "";
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
     });
+
+    return btoa(binary)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/g, "");
   }
 
   useEffect(() => {
     let isMounted = true;
+
+    const buildRedirectLink = async () => {
+      const interpolatedArgs = await interpolateVariables(
+        service,
+        additionalExposedPathArgs
+      );
+
+      if (isMounted) {
+        setRedirectLink(
+          `${endpoint}/system/services/${service.name}/exposed/${interpolatedArgs}`
+        );
+      }
+    };
+
     const checkStatus = async () => {
       if (clusterInfo && isVersionLower(clusterInfo.version, "3.6.4")) {
         if (isMounted) setIsAlive(true);
@@ -70,13 +179,14 @@ function ServiceRedirectButton({
         }
       }
     };
+    buildRedirectLink();
     checkStatus();
     return () => {
       isMounted = false;
     };
-  }, [service.name, endpoint, healthcheckPath]);
+  }, [service, endpoint, additionalExposedPathArgs, healthcheckPath]);
 
-  return isAlive ? (
+  return isAlive && redirectLink ? (
     <Link
       className={`${className ?? ""}`}
       to={redirectLink}

@@ -81,25 +81,29 @@ export function generateReadableName(length = 6) {
 export async function exposedServiceIsAlive(url: string, delay = 6000, attempts = -1): Promise<boolean> {
   for (let i = 0; i < attempts || attempts === -1; i++) {
     try {
-      const response = await fetch(url, { 
+      const headResponse = await fetch(url, { 
         method: 'HEAD',
         mode: 'cors',
         credentials: 'omit'
       });
-      if (response.ok) {
+      if (headResponse.ok) {
         return true;
-      } else if (response.status === 405) {
-        const response = await fetch(url, { 
-          method: 'GET',
-          mode: 'cors',
-          credentials: 'omit'
-        });
-        if (response.ok) {
-          return true;
-        }
       }
     } catch (error) {
-      console.error(`Attempt ${i + 1} failed:`, error);
+      console.warn(`HEAD health check attempt ${i + 1} failed:`, error);
+    }
+
+    try {
+      const getResponse = await fetch(url, { 
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      if (getResponse.ok) {
+        return true;
+      }
+    } catch (error) {
+      console.error(`GET health check attempt ${i + 1} failed:`, error);
     }
     await sleep(delay);
   }
