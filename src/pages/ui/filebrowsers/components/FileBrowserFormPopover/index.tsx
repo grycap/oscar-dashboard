@@ -38,9 +38,9 @@ import { Plus, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const FILEBROWSER_FDL_URL =
-  "https://raw.githubusercontent.com/grycap/oscar-hub/refs/heads/feat-add-filebrowser/crates/filebrowser-quantum/fdl.yml";
+  "https://raw.githubusercontent.com/grycap/oscar-filebrowser/refs/heads/main/fdl.yml";
 const FILEBROWSER_SCRIPT_URL =
-  "https://raw.githubusercontent.com/grycap/oscar-hub/refs/heads/feat-add-filebrowser/crates/filebrowser-quantum/script.sh";
+  "https://raw.githubusercontent.com/grycap/oscar-filebrowser/refs/heads/main/script.sh";
 
 type StorageMode = "volume" | "bucket";
 
