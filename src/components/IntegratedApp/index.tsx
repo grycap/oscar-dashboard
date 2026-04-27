@@ -23,6 +23,8 @@ interface IntegratedAppProps {
     filteredServices: Service[];
     DeployInstancePopover: React.ComponentType;
     additionalExposedPathArgs?: string;
+    authActionPathArgs?: string;
+    targetExposedPath?: string;
     healthcheckPath?: string;
 }
 
@@ -31,6 +33,8 @@ function IntegratedApp({
   deployedServiceEndpoint,
   filteredServices,
   additionalExposedPathArgs,
+  authActionPathArgs,
+  targetExposedPath,
   healthcheckPath,
   DeployInstancePopover,
 }: IntegratedAppProps) {
@@ -183,6 +187,8 @@ function IntegratedApp({
                   service={service}
                   endpoint={deployedServiceEndpoint}
                   additionalExposedPathArgs={additionalExposedPathArgs}
+                  authActionPathArgs={authActionPathArgs}
+                  targetExposedPath={targetExposedPath}
                   healthcheckPath={healthcheckPath}
                 />
               </div>

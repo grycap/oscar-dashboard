@@ -2,7 +2,6 @@ import { ExternalLink, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { exposedServiceIsAlive, isVersionLower } from "@/lib/utils";
 import { Service } from "@/pages/ui/services/models/service";
-import { Link } from "react-router-dom";
 import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -12,20 +11,26 @@ function ServiceRedirectButton({
   service,
   endpoint,
   additionalExposedPathArgs,
+  authActionPathArgs,
+  targetExposedPath,
   healthcheckPath = "",
 }: {
   className?: string;
   service: Service;
   endpoint: string;
   additionalExposedPathArgs?: string;
+  authActionPathArgs?: string;
+  targetExposedPath?: string;
   healthcheckPath?: string;
 }) {
   const [isAlive, setIsAlive] = useState<boolean | null>(null);
   const [redirectLink, setRedirectLink] = useState<string>("");
+  const [authActionLink, setAuthActionLink] = useState<string>("");
   const { clusterInfo } = useAuth();
 
   const safeHealthcheckPath = healthcheckPath.startsWith("/") ? healthcheckPath.slice(1).trim() : healthcheckPath
   const healthcheckLink = `${endpoint}/system/services/${service.name}/exposed/${safeHealthcheckPath}`;
+  const exposedBaseLink = `${endpoint}/system/services/${service.name}/exposed/`;
       
   /**
    * Interpolate variables in the additionalExposedPathArgs string.
@@ -147,6 +152,65 @@ function ServiceRedirectButton({
       .replace(/=+$/g, "");
   }
 
+  function buildExposedUrl(pathArgs?: string) {
+    if (!pathArgs) {
+      return exposedBaseLink;
+    }
+
+    const safePathArgs = pathArgs.startsWith("/")
+      ? pathArgs.slice(1)
+      : pathArgs;
+
+    return `${exposedBaseLink}${safePathArgs}`;
+  }
+
+  function submitAuthFormAndRedirect() {
+    const targetName = `oscar-filebrowser-${Date.now()}`;
+    const popup = window.open("about:blank", targetName);
+
+    if (!popup) {
+      return;
+    }
+
+    popup.document.write("<!doctype html><title>Opening FileBrowser</title><p>Opening FileBrowser...</p>");
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = authActionLink;
+    form.target = targetName;
+    form.style.display = "none";
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
+    window.setTimeout(() => {
+      popup.location.href = redirectLink;
+    }, 800);
+  }
+
+  async function handleRedirectClick() {
+    if (!authActionLink) {
+      window.open(redirectLink, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    try {
+      const response = await fetch(authActionLink, {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Authentication request failed with status ${response.status}`);
+      }
+
+      window.open(redirectLink, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.warn("Falling back to form-based service authentication", error);
+      submitAuthFormAndRedirect();
+    }
+  }
+
   useEffect(() => {
     let isMounted = true;
 
@@ -155,10 +219,15 @@ function ServiceRedirectButton({
         service,
         additionalExposedPathArgs
       );
+      const interpolatedAuthActionArgs = await interpolateVariables(
+        service,
+        authActionPathArgs
+      );
 
       if (isMounted) {
-        setRedirectLink(
-          `${endpoint}/system/services/${service.name}/exposed/${interpolatedArgs}`
+        setRedirectLink(buildExposedUrl(targetExposedPath ?? interpolatedArgs));
+        setAuthActionLink(
+          interpolatedAuthActionArgs ? buildExposedUrl(interpolatedAuthActionArgs) : ""
         );
       }
     };
@@ -184,16 +253,17 @@ function ServiceRedirectButton({
     return () => {
       isMounted = false;
     };
-  }, [service, endpoint, additionalExposedPathArgs, healthcheckPath]);
+  }, [service, endpoint, additionalExposedPathArgs, authActionPathArgs, targetExposedPath, healthcheckPath]);
 
   return isAlive && redirectLink ? (
-    <Link
+    <button
+      type="button"
       className={`${className ?? ""}`}
-      to={redirectLink}
-      target="_blank"
+      onClick={handleRedirectClick}
+      style={{ background: "none", border: 0, cursor: "pointer", padding: 0 }}
     >
       <ExternalLink />
-    </Link>
+    </button>
   ) : (
     <Loader2 className={`animate-spin ${className ?? ""}`} color={OscarColors.DarkGrayText} />
   );

@@ -29,7 +29,8 @@ function FileBrowsersView() {
         deployedServiceEndpoint={authData.endpoint}
         filteredServices={fileBrowserServices}
         DeployInstancePopover={FileBrowserFormPopover}
-        additionalExposedPathArgs="?jwt={{jwt.service.token}}"
+        authActionPathArgs="api/auth/renew?jwt={{jwt.service.token}}"
+        targetExposedPath="files/"
       />
     </div>
   );
