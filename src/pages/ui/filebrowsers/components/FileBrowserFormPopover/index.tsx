@@ -205,7 +205,7 @@ function FileBrowserFormPopover() {
           variables: {
             ...service.environment.variables,
             FILEBROWSER_SOURCE_PATH: sourcePath,
-            FILEBROWSER_JWT_SUB: "oscar-dashboard",
+            FILEBROWSER_JWT_SUB: "user",
           },
           secrets: {
             ...service.environment.secrets,

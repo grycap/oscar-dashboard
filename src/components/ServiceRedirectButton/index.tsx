@@ -97,7 +97,7 @@ function ServiceRedirectButton({
 
     const token = await signJwt(
       {
-        sub: service.environment.variables.FILEBROWSER_JWT_SUB ?? "oscar-dashboard",
+        sub: service.environment.variables.FILEBROWSER_JWT_SUB ?? "user",
         groups: ["admin"],
       },
       secret,
