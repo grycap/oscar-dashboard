@@ -88,7 +88,7 @@ export async function exposedServiceIsAlive(url: string, delay = 6000, attempts 
       });
       if (response.ok) {
         return true;
-      } else if (response.status === 405) {
+      } else if (response.status !== 503) {
         const response = await fetch(url, { 
           method: 'GET',
           mode: 'cors',
