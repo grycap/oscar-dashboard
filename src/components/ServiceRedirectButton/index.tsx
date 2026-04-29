@@ -4,6 +4,7 @@ import { exposedServiceIsAlive, isVersionLower } from "@/lib/utils";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
+import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
 
 
 function ServiceRedirectButton({
@@ -237,6 +238,22 @@ function ServiceRedirectButton({
         if (isMounted) setIsAlive(true);
         return;
       }
+
+      if (service.deployment?.state === "ready") {
+        if (isMounted) setIsAlive(true);
+        return;
+      }
+
+      try {
+        const deploymentStatus = await getDeploymentStatusApi(service.name);
+        if (deploymentStatus.state === "ready") {
+          if (isMounted) setIsAlive(true);
+          return;
+        }
+      } catch (error) {
+        console.warn(`Deployment status check failed for ${service.name}:`, error);
+      }
+
       try {
         const status = await exposedServiceIsAlive(healthcheckLink, 10000, 20);
         if (isMounted) { 
