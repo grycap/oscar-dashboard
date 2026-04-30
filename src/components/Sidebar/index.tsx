@@ -1,5 +1,6 @@
 import OscarLogo from "@/assets/oscar-big.png";
 import {
+  Activity,
   BarChart2,
   Boxes,
   ChartPie,
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
-import { addItemToPosition, isVersionLower } from "@/lib/utils";
+import { isVersionLower } from "@/lib/utils";
 import env from "@/env";
 
 function AppSidebar() {
@@ -83,9 +84,19 @@ function AppSidebar() {
       path: "/hub",
     },
     {
+      title: "Quotas",
+      icon: <ChartPie size={20} />,
+      path: "/quotas",
+    },
+    {
       title: "Status",
       icon: <BarChart2  size={20} />,
       path: "/status",
+    },
+    {
+      title: "Metrics",
+      icon: <Activity size={20} />,
+      path: "/metrics",
     },
     {
       title: "Info",
@@ -93,16 +104,6 @@ function AppSidebar() {
       path: "/info",
     },
   ];
-
-  // Only show quotas if the user is oscar
-  if (authContext.authData.user === "oscar") {
-    items = addItemToPosition(items, 
-      {
-        title: "Quotas",
-        icon: <ChartPie size={20} />,
-        path: "/quotas",
-      }, 6);
-  }
   
   function buildLogoutRedirectUrl(token: string): string {
     const tokenBody = JSON.parse(atob(token.split('.')[1]));
