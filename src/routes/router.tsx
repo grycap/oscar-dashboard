@@ -14,12 +14,13 @@ import { ServicesProvider } from "@/pages/ui/services/context/ServicesContext";
 import JunoView from "@/pages/ui/juno";
 import FlowsView from "@/pages/ui/flows";
 import TerminalView from "@/pages/ui/terminals";
+import FileBrowsersView from "@/pages/ui/filebrowsers";
 // Add the dashboard route
 import Cluster from "@/pages/ui/cluster_info"
 import HubView from "@/pages/ui/hub";
 import Quotas from "@/pages/ui/quotas";
-import AdminRoute from "@/components/AdminRoute/AdminRoute";
 import UploadFromPresignedURL from "@/pages/UploadFromPresignedURL";
+import MetricsView from "@/pages/ui/metrics";
 
 function AppRouter() {
   return (
@@ -46,14 +47,11 @@ function AppRouter() {
           <Route path="notebooks" element={<JunoView />} />
           <Route path="flows" element={<FlowsView />} />
           <Route path="terminals" element={<TerminalView />} />
+          <Route path="filebrowsers" element={<FileBrowsersView />} />
           <Route path="status" element={<Cluster />} />
+          <Route path="metrics" element={<MetricsView />} />
           <Route path="hub" element={<HubView />} />
-          <Route path="quotas" element={
-            <AdminRoute>
-              <Quotas />
-            </AdminRoute>
-            }
-          />
+          <Route path="quotas" element={<Quotas />} />
           
           
         </Route>

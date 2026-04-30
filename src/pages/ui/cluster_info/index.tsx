@@ -31,8 +31,6 @@ import { useLocation } from "react-router-dom";
 import getStatusApi from "@/api/status/getStatusApi";
 import { ClusterStatus } from "@/models/clusterStatus";
 import { useAuth } from "@/contexts/AuthContext";
-import { ClusterUserQuota } from "@/models/clusterUserQuota";
-import getUserQuotaApi from "@/api/quotas/getQuotaApi";
 import ExpandCard from "@/components/ExpandCard";
 import ClusterUseGraph from "./components/ClusterUseGraph";
 
@@ -87,7 +85,6 @@ const Cluster = () => {
 
   // access the authentication context
   const [clusterStatusData, setClusterStatusData] = useState<ClusterStatus | null>(null);
-  const [userQuotaData, setUserQuotaData] = useState<ClusterUserQuota | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -98,7 +95,6 @@ const Cluster = () => {
     try {
     setLoading(true);
     setClusterStatusData(await getStatusApi());
-    authData.egiSession && setUserQuotaData(await getUserQuotaApi());
     setLoading(false);
     } catch(err) {
       console.error("Error fetching status:", err);
@@ -141,67 +137,6 @@ const Cluster = () => {
       </div>
       :
       <div className="w-full max-w-full mx-auto px-4 pt-6 pb-6 space-y-6">
-        {/* User quota info block */}
-        {authData.user && authData.user !== "oscar" && userQuotaData && (
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>User Quota</CardTitle>
-            <CardDescription className="text-sm text-gray-500">
-              Summary of your resource usage and quota limits.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 items-stretch">
-            
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="border rounded-lg p-4 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <Cpu className="text-black" size={24} />
-                      <p className="text-lg font-semibold">
-                        Max provided CPU:{" "}
-                        <span className={`text-xl font-bold`}>
-                           {formatCores(userQuotaData?.resources.cpu.max ?? 0)}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-start">
-                    <h2 className="text-lg font-semibold">{`CPU used ${formatCores(userQuotaData?.resources.cpu.used ?? 0)}`}</h2>
-                    <div className="flex flex-col h-full justify-center">
-                      <DonutChart percentage={Math.round((userQuotaData?.resources.cpu.used ?? 0) / (userQuotaData?.resources.cpu.max ?? 1) * 100)} dangerThreshold={80} />
-                      <p className="text-center font-bold text-sm mt-2">
-                        {Number(((userQuotaData?.resources.cpu.used ?? 0) / (userQuotaData?.resources.cpu.max ?? 1) * 100).toFixed(1))}% Used
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="border rounded-lg p-4 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <MemoryStick className="text-black" size={24} />
-                      <p className="text-lg font-semibold">
-                        Max provided memory:{" "}
-                        <span className={`text-xl font-bold`}>
-                           {formatBytes(userQuotaData?.resources.memory.max ?? 0)}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-start">
-                    <h2 className="text-lg font-semibold">{`Memory used ${formatBytes(userQuotaData?.resources.memory.used ?? 0)}`}</h2>
-                    <div className="flex flex-col h-full justify-center">
-                      <DonutChart percentage={Math.round((userQuotaData?.resources.memory.used ?? 0) / (userQuotaData?.resources.memory.max ?? 1) * 100)} dangerThreshold={80} />
-                      <p className="text-center font-bold text-sm mt-2">
-                        {Number(((userQuotaData?.resources.memory.used ?? 0) / (userQuotaData?.resources.memory.max ?? 1) * 100).toFixed(1))}% Used
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-          </CardContent>
-        </Card>
-        )}
-
         {/* Cluster general info block */}
         <Card className="w-full">
           <CardHeader>
