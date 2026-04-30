@@ -148,7 +148,7 @@ function TerminalFormPopover() {
           return;
         }
 
-        setVolumes(nextVolumes.managed_volume ?? []);
+        setVolumes(nextVolumes);
       } catch (error) {
         if (cancelled) {
           return;

@@ -4,6 +4,10 @@ import { ClusterUserQuota } from "@/models/clusterUserQuota";
 import axios from "axios";
 
 function parseQuotaResources(data: ClusterUserQuota): ClusterUserQuota {
+  if (!data.resources) {
+    return data;
+  }
+
   const { cpu, memory } = data.resources;
   return {
     ...data,

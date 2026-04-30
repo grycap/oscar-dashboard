@@ -136,11 +136,6 @@ export enum Bucket_visibility {
   public = "public",
 }
 
-export interface Volumes {
-  volume_limits: VolumeLimits;
-  managed_volume: ManagedVolume[];
-}
-
 export interface VolumeStatus {
   phase?: string;
   message?: string;
@@ -150,13 +145,6 @@ export interface VolumeStatus {
 export interface VolumeAttachmentReference {
   service_name: string;
   mount_path: string;
-}
-
-export interface VolumeLimits {
-  disk_available: number;
-  max_volumes: string;
-  max_disk_per_volume: string;
-  min_disk_per_volume: string;
 }
 
 export interface ManagedVolume {
