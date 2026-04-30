@@ -8,7 +8,7 @@ export default function ResponsiveOwnerField({ owner, sub = owner, copy = true }
   const isCurrentUser = sub === authData.egiSession?.sub || isUserOscar(authData, {owner: sub});
   return (
     <div
-      className={`inline-grid max-w-full grid-cols-[minmax(0,auto)_auto] items-center gap-1 no-underline ${copy && 'hover:underline'} underline-offset-2 cursor-pointer`}
+      className={`grid grid-cols-[auto_1fr] items-center gap-1 no-underline ${copy && 'hover:underline'} underline-offset-2 cursor-pointer`}
       onClick={() => { if (copy) { navigator.clipboard.writeText(sub ? sub : "oscar"); alert.success("Owner copied to clipboard"); } }}
     >
       <span className="min-w-0 truncate">
