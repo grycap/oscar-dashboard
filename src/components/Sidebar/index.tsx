@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
-import { addItemToPosition, isVersionLower } from "@/lib/utils";
+import { isVersionLower } from "@/lib/utils";
 import env from "@/env";
 
 function AppSidebar() {
@@ -40,11 +40,6 @@ function AppSidebar() {
   const location = useLocation();
 
   let items = [
-    {
-      title: "Hub",
-      icon: <Boxes size={20} />,
-      path: "/hub",
-    },
     {
       title: "Services",
       icon: <Codesandbox size={20} />,
@@ -77,6 +72,16 @@ function AppSidebar() {
       path: "/terminals",
     },
     {
+      title: "Hub",
+      icon: <Boxes size={20} />,
+      path: "/hub",
+    },
+    {
+      title: "Quotas",
+      icon: <ChartPie size={20} />,
+      path: "/quotas",
+    },
+    {
       title: "Status",
       icon: <BarChart2  size={20} />,
       path: "/status",
@@ -87,16 +92,6 @@ function AppSidebar() {
       path: "/info",
     },
   ];
-
-  // Show quotas for the OSCAR admin and OIDC users with personal quota support.
-  if (authContext.authData.user === "oscar" || authContext.authData.egiSession) {
-    const statusIndex = items.findIndex((item) => item.path === "/status");
-    items = addItemToPosition(items, {
-      title: "Quotas",
-      icon: <ChartPie size={20} />,
-      path: "/quotas",
-    }, statusIndex + 1);
-  }
   
   function buildLogoutRedirectUrl(token: string): string {
     const tokenBody = JSON.parse(atob(token.split('.')[1]));
