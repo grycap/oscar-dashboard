@@ -6,6 +6,7 @@ import {
   ChartPie,
   Codesandbox,
   Database,
+  FolderOpen,
   HardDrive,
   Info,
   LogOut,
@@ -71,6 +72,11 @@ function AppSidebar() {
       title: "Terminals",
       icon: <Terminal size={20} />,
       path: "/terminals",
+    },
+    {
+      title: "File Browsers",
+      icon: <FolderOpen size={20} />,
+      path: "/filebrowsers",
     },
     {
       title: "Hub",
