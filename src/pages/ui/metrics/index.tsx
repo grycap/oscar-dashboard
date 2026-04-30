@@ -552,7 +552,7 @@ function MetricsView() {
               </div>
 
               {showCustomRange && (
-                <div className="mt-4 grid gap-4 border-t border-slate-200 pt-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_220px] xl:items-end">
+                <div className="mt-4 grid gap-4 border-t border-slate-200 pt-4 md:grid-cols-[auto_auto_220px] xl:grid-cols-[auto_auto_220px_1fr] xl:items-end">
                   <Input
                     label="Start"
                     type="datetime-local"
