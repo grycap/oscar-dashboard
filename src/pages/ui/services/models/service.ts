@@ -10,6 +10,7 @@ export enum ServiceFilterBy {
   Name = "Name",
   Image = "Image",
   Owner = "Owner",
+  Visibility = "Visibility",
   //Type = "Type",
 }
 
@@ -17,6 +18,7 @@ export const ServiceFilterByKey: Record<ServiceFilterBy, keyof Service> = {
   [ServiceFilterBy.Name]: "name",
   [ServiceFilterBy.Image]: "image",
   [ServiceFilterBy.Owner]: "owner",
+  [ServiceFilterBy.Visibility]: "visibility",
   //[ServiceFilterBy.Type]: "",
 };
 
@@ -136,6 +138,12 @@ export enum Bucket_visibility {
   public = "public",
 }
 
+export enum ServiceVisibility {
+  private = "private",
+  restricted = "restricted",
+  public = "public",
+}
+
 export interface VolumeStatus {
   phase?: string;
   message?: string;
@@ -174,6 +182,7 @@ export interface ServiceVolumeConfig {
 
 export interface Service {
   allowed_users: string[];
+  visibility?: ServiceVisibility;
   name: string;
   cluster_id: string;
   memory: string;

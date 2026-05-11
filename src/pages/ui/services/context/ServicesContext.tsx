@@ -12,6 +12,7 @@ import {
   ServiceFilter,
   ServiceFilterBy,
   ServiceTab,
+  ServiceVisibility,
 } from "../models/service";
 import getServicesApi from "@/api/services/getServicesApi";
 import { useLocation } from "react-router-dom";
@@ -71,6 +72,7 @@ export const serviceSchema = z.object({
   cpu: z.string().min(1, "CPU cores is required"),
   memory: z.string().min(1, "Memory is required"),
   script: z.string().min(1, "Script is required"),
+  visibility: z.nativeEnum(ServiceVisibility).optional(),
 });
 
 type SchemaKeys = keyof typeof serviceSchema.shape;

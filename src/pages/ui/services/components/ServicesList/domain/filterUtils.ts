@@ -3,6 +3,7 @@ import {
   Service,
   ServiceFilter,
   ServiceFilterByKey,
+  ServiceVisibility,
 } from "../../../models/service";
 
 interface Props {
@@ -28,7 +29,11 @@ function handleFilterServices({ services, filter, authData }: Props) {
       }
     }
 
-    const param = service[ServiceFilterByKey[filter.type]] as string;
+    const key = ServiceFilterByKey[filter.type];
+    const param =
+      key === "visibility"
+        ? service.visibility ?? ServiceVisibility.private
+        : service[key] as string;
 
     return param.toLowerCase().includes(filter.value.toLowerCase());
   });

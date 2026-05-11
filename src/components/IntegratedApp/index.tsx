@@ -86,11 +86,18 @@ function IntegratedApp({
 
       const failedServices = results
         .filter((result) => result.status === "rejected")
-        .map((result) => (result as {
+        .map((result) => {
+          const rejectedResult = result as {
           status: string;
           service: Service;
-          error: any;
-        }).service);
+          error: unknown;
+          };
+
+          return {
+            service: rejectedResult.service,
+            message: errorMessage(rejectedResult.error),
+          };
+        });
       
       await handleGetServices();
 
@@ -100,9 +107,11 @@ function IntegratedApp({
 
       if (failedServices.length > 0) {
         alert.error(
-          `Error deleting the following services: ${failedServices
-            .map((service) => service.name)
-            .join(", ")}`
+          failedServices.length === 1
+            ? failedServices[0].message
+            : failedServices
+              .map(({ service, message }) => `${service.name}: ${message}`)
+              .join("\n")
         );
       }
 
