@@ -15,9 +15,9 @@ import {
   ServiceVisibility,
 } from "../models/service";
 import getServicesApi from "@/api/services/getServicesApi";
+import getServiceApi from "@/api/services/getServiceApi";
 import { useLocation } from "react-router-dom";
 import { defaultService } from "../components/ServiceForm/utils/initialData";
-import useUpdate from "@/hooks/useUpdate";
 import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { ServiceViewMode } from "../components/Topbar";
 import { z } from "zod";
@@ -184,12 +184,15 @@ export const ServicesProvider = ({
 
   async function handleGetServices() {
     setServicesAreLoading(true);
-    const response = await getServicesApi();
-    setServicesAreLoading(false);
-
-    setServices(response);
-
-    handleFormService(response);
+    try {
+      const response = await getServicesApi();
+      setServices(response);
+      if (serviceId && serviceId !== "create") {
+        await handleFormService();
+      }
+    } finally {
+      setServicesAreLoading(false);
+    }
   }
 
   async function getDefaultService() {
@@ -206,17 +209,25 @@ export const ServicesProvider = ({
     } as Service;
   }
 
-  async function handleFormService(services: Service[]) {
+  async function handleFormService() {
+    setErrors({});
+
     if (!serviceId || serviceId === "create") {
       const defaultService = await getDefaultService();
       setFormService(defaultService);
+      setErrors({});
       return;
     }
 
-    if (!services) return;
-    const selectedService = services.find((s) => s.name === serviceId);
-    if (!selectedService) return;
-    setFormService(selectedService);
+    setFormService({} as Service);
+
+    try {
+      const selectedService = await getServiceApi(serviceId);
+      setFormService(selectedService);
+      setErrors({});
+    } catch (error) {
+      alert.error(`Error getting service: ${errorMessage(error)}`);
+    }
   }
 
   useEffect(() => {
@@ -224,12 +235,12 @@ export const ServicesProvider = ({
   }, []);
 
   useEffect(() => {
+    handleFormService();
+  }, [serviceId]);
+
+  useEffect(() => {
     localStorage.setItem("eagerLoadDeployment", String(eagerLoadDeployment));
   }, [eagerLoadDeployment]);
-
-  useUpdate(() => {
-    handleFormService(services);
-  }, [serviceId]);
 
   return (
     <ServicesContext.Provider
