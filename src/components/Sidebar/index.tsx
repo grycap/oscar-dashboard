@@ -41,7 +41,7 @@ function AppSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
 
-  let items = [
+  const items = [
     {
       title: "Services",
       icon: <Codesandbox size={20} />,
