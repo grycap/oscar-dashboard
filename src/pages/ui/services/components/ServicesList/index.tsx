@@ -22,6 +22,7 @@ import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
 import { DeploymentStatus } from "../../models/deployment";
 import ServiceRedirectButton from "@/components/ServiceRedirectButton";
 import { isVersionLower, shortenFullname } from "@/lib/utils";
+import lifecycleServiceApi, { ServiceLifecycleAction } from "@/api/services/lifecycleServiceApi";
 
 interface DeploymentStatusCellProps {
   initialDeployment?: DeploymentStatus;
@@ -89,6 +90,7 @@ function ServicesList() {
     useServicesContext();
   const { authData, clusterInfo } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
+  const [lifecycleServiceName, setLifecycleServiceName] = useState<string | null>(null);
   const navigate = useNavigate();
   const buttonRef = useRef<Map<string, HTMLButtonElement>>(new Map())
 
@@ -153,6 +155,25 @@ function ServicesList() {
       }
 
       setServicesToDelete([]);
+    }
+  }
+
+  async function handleLifecycleService(service: Service, action: ServiceLifecycleAction) {
+    setLifecycleServiceName(service.name);
+    try {
+      const deployment = await lifecycleServiceApi(service.name, action);
+      setServices((currentServices) =>
+        currentServices.map((currentService) =>
+          currentService.name === service.name
+            ? { ...currentService, deployment }
+            : currentService
+        )
+      );
+      alert.success(`Service ${action} completed successfully`);
+    } catch (error) {
+      alert.error(`Error running ${action} on service: ${errorMessage(error)}`);
+    } finally {
+      setLifecycleServiceName(null);
     }
   }
 
@@ -247,6 +268,8 @@ function ServicesList() {
                       setFormService(item);
                       navigate(`/ui/services/${item.name}/logs`);
                     }}
+                    handleLifecycleService={(action) => handleLifecycleService(item, action)}
+                    lifecycleIsLoading={lifecycleServiceName === item.name}
                   />
                 ),
               },

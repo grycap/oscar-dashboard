@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Clock3,
   OctagonAlert,
+  PauseCircle,
   XCircle,
 } from "lucide-react";
 import {
@@ -47,6 +48,12 @@ export function getDeploymentStatusMeta(
         label: "Failed",
         variant: "destructive",
         icon: <XCircle className="mr-1 h-3.5 w-3.5" />,
+      };
+    case "stopped":
+      return {
+        label: "Stopped",
+        variant: "outline",
+        icon: <PauseCircle className="mr-1 h-3.5 w-3.5" />,
       };
     case "unavailable":
     default:
