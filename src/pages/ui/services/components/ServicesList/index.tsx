@@ -28,6 +28,7 @@ interface DeploymentStatusCellProps {
   initialDeployment?: DeploymentStatus;
   serviceName: string;
   onNavigate: () => void;
+  onDeploymentChange: (deployment: DeploymentStatus) => void;
   eagerLoad?: boolean;
 }
 
@@ -37,7 +38,7 @@ const visibilityBadgeColors = {
   [ServiceVisibility.public]: "bg-green-100 text-green-900 border-green-200",
 };
 
-function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eagerLoad }: DeploymentStatusCellProps) {
+function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, onDeploymentChange, eagerLoad }: DeploymentStatusCellProps) {
   const [deployment, setDeployment] = useState<DeploymentStatus | undefined>(initialDeployment);
   const [loading, setLoading] = useState(false);
 
@@ -46,6 +47,7 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eage
     try {
       const result = await getDeploymentStatusApi(serviceName);
       setDeployment(result);
+      onDeploymentChange(result);
     } catch {
       // leave existing state on error
     } finally {
@@ -58,6 +60,10 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eage
       fetchDeployment();
     }
   }, [eagerLoad]);
+
+  useEffect(() => {
+    setDeployment(initialDeployment);
+  }, [initialDeployment]);
 
   return (
     <div
@@ -93,6 +99,16 @@ function ServicesList() {
   const [lifecycleServiceName, setLifecycleServiceName] = useState<string | null>(null);
   const navigate = useNavigate();
   const buttonRef = useRef<Map<string, HTMLButtonElement>>(new Map())
+
+  function updateServiceDeployment(serviceName: string, deployment: DeploymentStatus) {
+    setServices((currentServices) =>
+      currentServices.map((currentService) =>
+        currentService.name === serviceName
+          ? { ...currentService, deployment }
+          : currentService
+      )
+    );
+  }
 
   async function handleGetServices() {
     try {
@@ -162,13 +178,7 @@ function ServicesList() {
     setLifecycleServiceName(service.name);
     try {
       const deployment = await lifecycleServiceApi(service.name, action);
-      setServices((currentServices) =>
-        currentServices.map((currentService) =>
-          currentService.name === service.name
-            ? { ...currentService, deployment }
-            : currentService
-        )
-      );
+      updateServiceDeployment(service.name, deployment);
       alert.success(`Service ${action} completed successfully`);
     } catch (error) {
       alert.error(`Error running ${action} on service: ${errorMessage(error)}`);
@@ -224,6 +234,9 @@ function ServicesList() {
                     onNavigate={() => {
                       setFormService(row);
                       navigate(`/ui/services/${row.name}/deployment`);
+                    }}
+                    onDeploymentChange={(deployment) => {
+                      updateServiceDeployment(row.name, deployment);
                     }}
                   />
                 ),
