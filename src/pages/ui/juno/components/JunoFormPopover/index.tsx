@@ -105,7 +105,7 @@ function JunoFormPopover() {
       const fdlResponse = await fetch(fdlUrl, fetchFromGitHubOptions);
       const fdlText = await fdlResponse.text();
       const scriptUrl =
-        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/fix-persistent-jupyter-session/script.sh";
+        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/script.sh";
       const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
       const scriptText = await scriptResponse.text();
 
