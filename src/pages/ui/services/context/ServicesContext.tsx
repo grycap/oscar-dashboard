@@ -87,7 +87,9 @@ export const ServicesProvider = ({
   const [services, setServices] = useState([] as Service[]);
   const [servicesAreLoading, setServicesAreLoading] = useState(false);
   const [eagerLoadDeployment, setEagerLoadDeployment] = useState(() => {
-    return localStorage.getItem("eagerLoadDeployment") === "true";
+    const savedValue = localStorage.getItem("eagerLoadDeployment");
+    if (savedValue === null) return true;
+    return savedValue === "true";
   });
   const [serviceLogs, setServiceLogs] = useState<{next_page: string | null, jobs: Record<string, Log>}>({next_page: null, jobs: {}});
   const [logsAreLoading, setLogsAreLoading] = useState(true);
