@@ -249,7 +249,7 @@ export default function BucketContent() {
               Type: item.Type,
               Key: item.Key,
               Size: item.Type === "file" ? bytesSizeToHumanReadable(item.Key.Size ?? 0) : undefined,
-              LastModifTime: item.Type === "file" ? item.Key.LastModified?.toLocaleString() : undefined,
+              LastModifTime: item.Type === "file" ? item.Key.LastModified : undefined,
               BucketName: item.BucketName
           }})}
           onRowClick={(item) => {
@@ -295,7 +295,7 @@ export default function BucketContent() {
               header: "Last Modified Time",
               accessor: (item) => {
                 if (item.Type === "folder") { return ''}
-                return item.LastModifTime;
+                return item.LastModifTime?.toLocaleString();
               },
               sortBy: "LastModifTime"
             },
