@@ -7,7 +7,7 @@ import DeleteDialog from "@/components/DeleteDialog";
 import { Service } from "../../models/service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2 } from "lucide-react";
+import { ArrowDownToLine, LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import { Link, useNavigate } from "react-router-dom";
 import GenericTable, { ColumnDef } from "@/components/Table";
@@ -60,18 +60,27 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eage
       }}
     >
       {deployment && !loading ? (
-        <>
-        <div onClick={() => {
+        <div className="flex flex-row items-center gap-1 bg-gray-300 rounded-full pr-2">
+        <div className="flex items-center" onClick={() => {
           onNavigate();
         }}>
           <DeploymentStatusBadge deployment={deployment} showTooltip className="cursor-pointer" />
         </div>
-          <RefreshCw className="h-3 w-3 opacity-40 hover:opacity-100" />
-        </>
+          <RefreshCw className="h-3 w-3 text-gray-700 opacity-90 hover:text-gray-900 hover:opacity-100" />
+        </div>
       ) : (
         <Badge variant="default" className="cursor-pointer">
-          <RefreshCw className={`${loading ? "animate-spin" : ""} h-3 w-3 mr-1`} />
-          Fetch
+          {!loading ? (
+            <>
+            <ArrowDownToLine className={`h-3 w-3 mr-1`} />
+            Get Status
+            </>
+          ) : (
+            <>
+            <RefreshCw className={`animate-spin h-3 w-3 mr-1`} />
+            Loading...
+            </>
+          )}
         </Badge>
       )}
     </div>
