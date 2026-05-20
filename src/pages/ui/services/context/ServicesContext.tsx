@@ -103,6 +103,9 @@ export const ServicesProvider = ({
     value: "",
     type: ServiceFilterBy.Name,
     onlyOwned: false,
+    onlyPrivate: false,
+    onlyPublic: false,
+    onlyRestricted: false,
   } as ServiceFilter);
 
   //Active tab in create/update mode

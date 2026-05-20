@@ -186,7 +186,7 @@ function ServiceGeneralTab() {
                   {Object.values(ServiceVisibility).map((value) => {
                     return (
                       <SelectItem key={value} value={value}>
-                        {value}
+                        {value.toUpperCase()}
                       </SelectItem>
                     );
                   })}
@@ -219,16 +219,6 @@ function ServiceGeneralTab() {
               </div>
             )}
           </div>
-
-          {serviceIsRestricted && (
-            <div className="flex flex-row gap-2 items-center">
-              <strong>Allowed users:</strong>
-              <AllowedUsersPopover
-                allowed_users={formService.allowed_users ?? []}
-                setAllowedUsersInExternalVar={setAllowedUsers}
-              />
-            </div>
-          )}
 
           {formMode === ServiceViewMode.Update && (
             <div
@@ -274,8 +264,17 @@ function ServiceGeneralTab() {
 
               <div className="flex flex-row gap-2 items-center">
                 <strong>Visibility:</strong>
-                {visibility}
+                {visibility?.toUpperCase()}
               </div>
+              {serviceIsRestricted && (
+                <div className="flex flex-row gap-2 items-center">
+                  <strong>Allowed users:</strong>
+                  <AllowedUsersPopover
+                    allowed_users={formService.allowed_users ?? []}
+                    setAllowedUsersInExternalVar={setAllowedUsers}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -4,6 +4,9 @@ export type ServiceFilter = {
   value: string;
   type: ServiceFilterBy;
   onlyOwned: boolean;
+  onlyPrivate: boolean;
+  onlyPublic: boolean;
+  onlyRestricted: boolean;
 };
 
 export enum ServiceFilterBy {
