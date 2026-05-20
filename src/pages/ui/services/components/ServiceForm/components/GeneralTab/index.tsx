@@ -1,6 +1,10 @@
 import { Input } from "@/components/ui/input";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
-import { LOG_LEVEL, Service } from "@/pages/ui/services/models/service";
+import {
+  LOG_LEVEL,
+  Service,
+  ServiceVisibility,
+} from "@/pages/ui/services/models/service";
 import {
   Select,
   SelectContent,
@@ -49,6 +53,9 @@ function ServiceGeneralTab() {
     }));
   };
 
+  const visibility = formService?.visibility ?? ServiceVisibility.private;
+  const serviceIsRestricted = visibility === ServiceVisibility.restricted;
+
   return (
     <div
       style={{
@@ -92,7 +99,7 @@ function ServiceGeneralTab() {
             </div>
           </div>
           
-          <div className="grid grid-cols-[auto_auto_1fr] gap-5 items-end w-full">
+          <div className="grid grid-cols-[auto_auto_auto_1fr] gap-5 items-end w-full">
             <div className="min-w-[154px]">
               {voGroupsIsEmpthy() ?
                <></>
@@ -149,6 +156,37 @@ function ServiceGeneralTab() {
                     return (
                       <SelectItem key={value} value={value}>
                         {value}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-[152px]">
+              <Label>Visibility</Label>
+              <Select
+                value={visibility}
+                onValueChange={(value: ServiceVisibility) => {
+                  setFormService((service: Service) => {
+                    return {
+                      ...service,
+                      visibility: value,
+                      allowed_users:
+                        value === ServiceVisibility.restricted
+                          ? service.allowed_users
+                          : [],
+                    };
+                  });
+                }}
+              >
+                <SelectTrigger id="visibility-select-trigger">
+                  <SelectValue placeholder="Visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(ServiceVisibility).map((value) => {
+                    return (
+                      <SelectItem key={value} value={value}>
+                        {value.toUpperCase()}
                       </SelectItem>
                     );
                   })}
@@ -225,9 +263,18 @@ function ServiceGeneralTab() {
               </div>
 
               <div className="flex flex-row gap-2 items-center">
-                <strong>Allowed users:</strong>
-                  <AllowedUsersPopover allowed_users={formService.allowed_users} setAllowedUsersInExternalVar={setAllowedUsers}/>
+                <strong>Visibility:</strong>
+                {visibility?.toUpperCase()}
               </div>
+              {serviceIsRestricted && (
+                <div className="flex flex-row gap-2 items-center">
+                  <strong>Allowed users:</strong>
+                  <AllowedUsersPopover
+                    allowed_users={formService.allowed_users ?? []}
+                    setAllowedUsersInExternalVar={setAllowedUsers}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

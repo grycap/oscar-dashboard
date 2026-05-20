@@ -1,4 +1,4 @@
-import { Service, LOG_LEVEL } from "../../../models/service";
+import { Service, LOG_LEVEL, ServiceVisibility } from "../../../models/service";
 
 export const defaultService: Service = {
   name: "",
@@ -46,6 +46,7 @@ export const defaultService: Service = {
   },
   interlink_node_name: "",
   allowed_users: [],
+  visibility: ServiceVisibility.private,
   expose: {
     min_scale: "",
     max_scale: "",
