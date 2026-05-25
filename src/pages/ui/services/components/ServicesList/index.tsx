@@ -200,7 +200,15 @@ function ServicesList() {
             data={filteredServices}
             idKey="name"
             columns={[
-              { header: "Name", accessor: (row) => (<Link to={`/ui/services/${row.name}/settings`}>{row.name}</Link>), sortBy: "name" },
+              { header: "Name", accessor: (row) => (
+                  < Link 
+                    to={`/ui/services/${row.name}/settings`} 
+                    onClick={() => {
+                      setFormService(row);
+                    }}>
+                      {row.name}
+                    </Link>
+                  ), sortBy: "name" },
               // CHANGE ON NEW RELEASE
               ...(clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") ? [{
                 header: "Deployment",

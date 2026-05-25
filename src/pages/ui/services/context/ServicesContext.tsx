@@ -98,7 +98,7 @@ export const ServicesProvider = ({
   const [showFDLModal, setShowFDLModal] = useState(false);
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
-  const [_, serviceId] = pathnames;
+  const [section, serviceId] = pathnames;
 
   // Filter and order TABLE rows
   const [filter, setFilter] = useState({
@@ -187,12 +187,13 @@ export const ServicesProvider = ({
     }
   }
 
-  async function handleGetServices() {
+  async function handleGetServices(options?: { syncSelectedService?: boolean }) {
+    const shouldSyncSelectedService = options?.syncSelectedService ?? true;
     setServicesAreLoading(true);
     try {
       const response = await getServicesApi();
       setServices(response);
-      if (serviceId && serviceId !== "create") {
+      if (shouldSyncSelectedService && serviceId && serviceId !== "create") {
         await handleFormService();
       }
     } finally {
@@ -215,6 +216,10 @@ export const ServicesProvider = ({
   }
 
   async function handleFormService() {
+    if (section !== "services") {
+      return;
+    }
+
     setErrors({});
 
     if (!serviceId || serviceId === "create") {
@@ -223,8 +228,6 @@ export const ServicesProvider = ({
       setErrors({});
       return;
     }
-
-    setFormService({} as Service);
 
     try {
       const selectedService = await getServiceApi(serviceId);
@@ -236,12 +239,12 @@ export const ServicesProvider = ({
   }
 
   useEffect(() => {
-    handleGetServices();
+    handleGetServices({ syncSelectedService: false });
   }, []);
 
   useEffect(() => {
     handleFormService();
-  }, [serviceId]);
+  }, [section, serviceId]);
 
   useEffect(() => {
     localStorage.setItem("eagerLoadDeployment", String(eagerLoadDeployment));
