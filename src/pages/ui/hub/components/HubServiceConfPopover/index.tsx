@@ -35,7 +35,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
   const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
-  const buckets = useGetPrivateBuckets();
+  const buckets = useGetPrivateBuckets(isOpen);
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
 	const asyncService = roCrateServiceDef.type.some(t => t.toLowerCase() === "asynchronous");
@@ -90,6 +90,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
     token: "",
     enviromentVars: {} as Record<string, string>,
     enviromentSecrets: {} as Record<string, string>,
+    nodePort: "",
   });
   const [newVolume, setNewVolume] = useState(false);
   const [volumes, setVolumes] = useState<ManagedVolume[]>([]);
@@ -119,6 +120,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
     token: false,
     enviromentVars: {} as Record<string, boolean>,
     enviromentSecrets: {} as Record<string, boolean>,
+    nodePort: false,
   });
 
   useEffect(() => {
@@ -143,6 +145,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       token: genRandomString(128),
       enviromentVars: service.environment?.variables || {},
       enviromentSecrets: service.environment?.secrets || {},
+      nodePort: service.expose?.nodePort || "",
     }));
     setNewBucket(false);
     setVolumes([]);
@@ -158,6 +161,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       token: false,
       enviromentVars: {} as Record<string, boolean>,
       enviromentSecrets: {} as Record<string, boolean>,
+      nodePort: false,
     });
 
     let cancelled = false;
@@ -219,6 +223,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       token: !formData.token,
       enviromentVars: Object.fromEntries(Object.entries(formData.enviromentVars).map(([key, value]) => [key, !value || value.length === 0])),
       enviromentSecrets: Object.fromEntries(Object.entries(formData.enviromentSecrets).map(([key, value]) => [key, !value || value.length === 0])),
+      nodePort: !formData.nodePort,
     };
 
     setErrors(newErrors);
@@ -417,6 +422,22 @@ return (
                   </SelectContent>
                 </Select>
             </div>
+            {service?.expose?.nodePort && (
+              <div>
+                <Label htmlFor="nodePort">Node Port</Label>
+                <Input
+                  id="nodePort"
+                  type="number"
+                  placeholder="Enter Node Port"
+                  value={formData.nodePort}
+                  className={errors.nodePort ? "border-red-500 focus:border-red-500" : ""}
+                  onChange={(e) => {
+                    setFormData({ ...formData, nodePort: e.target.value });
+                    if (errors.nodePort) setErrors({ ...errors, nodePort: false });
+                  }}
+                />
+              </div>
+            )}
 						{(asyncService || mountBucket) && 
             <div>
               <Label>Bucket</Label>
@@ -584,55 +605,69 @@ return (
               </div>
             </div>
             }
-            {formData?.enviromentVars && Object.entries(formData.enviromentVars).map(([key, value]) => (
-            <div key={`var-${key}`}>
-              <Label>{key}</Label>
-              <Input
-                disabled={ifEndpointService(key, value, formData.name) !== value}
-                type="input"
-                value={ifEndpointService(key, value, formData.name)}
-                style={{ width: "100%",
-                  fontWeight: "normal",
-                }}
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    enviromentVars: {
-                      ...prev.enviromentVars,
-                      [key]: e.target.value,
-                    },
-                  }));
-                  if (errors.enviromentVars && errors.enviromentVars[key]) setErrors({ ...errors, enviromentVars: { ...errors.enviromentVars, [key]: false } });
-                }}
-                placeholder={`Enter ${key}`}
-                className={errors.enviromentVars[key] ? "border-red-500 focus:border-red-500" : ""}
-              />
-            </div>
-            ))}
-            {formData?.enviromentSecrets && Object.entries(formData.enviromentSecrets).map(([key, value]) => (
-            <div key={`secret-${key}`}>
-              <Label>{key}</Label>
-              <Input
-                type="password"
-                value={value}
-                style={{ width: "100%",
-                  fontWeight: "normal",
+            {Object.keys(formData?.enviromentVars ?? {}).length > 0 && (
+            <div>
+              <Label>Environment Variables</Label>
+              <hr className="mb-2"/>
+
+              {Object.entries(formData.enviromentVars).map(([key, value]) => (
+              <div key={`var-${key}`}>
+                <Label>{key}</Label>
+                <Input
+                  disabled={ifEndpointService(key, value, formData.name) !== value}
+                  type="input"
+                  value={ifEndpointService(key, value, formData.name)}
+                  style={{ width: "100%",
+                    fontWeight: "normal",
                   }}
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    enviromentSecrets: {
-                      ...prev.enviromentSecrets,
-                      [key]: e.target.value,
-                    },
-                  }));
-                  if (errors.enviromentSecrets && errors.enviromentSecrets[key]) setErrors({ ...errors, enviromentSecrets: { ...errors.enviromentSecrets, [key]: false } });
-                }}
-                placeholder={`Enter ${key}`}
-                className={errors.enviromentSecrets[key] ? "border-red-500 focus:border-red-500" : ""}
-              />
+                  onChange={(e) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      enviromentVars: {
+                        ...prev.enviromentVars,
+                        [key]: e.target.value,
+                      },
+                    }));
+                    if (errors.enviromentVars && errors.enviromentVars[key]) setErrors({ ...errors, enviromentVars: { ...errors.enviromentVars, [key]: false } });
+                  }}
+                  placeholder={`Enter ${key}`}
+                  className={errors.enviromentVars[key] ? "border-red-500 focus:border-red-500" : ""}
+                />
+              </div>
+              ))}
             </div>
-            ))}
+            )}
+            {Object.keys(formData?.enviromentSecrets ?? {}).length > 0 && (
+            <div>
+              <Label>Environment Secrets</Label>
+              <hr className="mb-2"/>
+              
+              {Object.entries(formData.enviromentSecrets).map(([key, value]) => (
+              <div key={`secret-${key}`}>
+                <Label>{key}</Label>
+                <Input
+                  type="password"
+                  value={value}
+                  style={{ width: "100%",
+                    fontWeight: "normal",
+                    }}
+                  onChange={(e) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      enviromentSecrets: {
+                        ...prev.enviromentSecrets,
+                        [key]: e.target.value,
+                      },
+                    }));
+                    if (errors.enviromentSecrets && errors.enviromentSecrets[key]) setErrors({ ...errors, enviromentSecrets: { ...errors.enviromentSecrets, [key]: false } });
+                  }}
+                  placeholder={`Enter ${key}`}
+                  className={errors.enviromentSecrets[key] ? "border-red-500 focus:border-red-500" : ""}
+                />
+              </div>
+              ))}
+            </div>
+            )}
           </div>
         <DialogFooter>
           <RequestButton className="grid grid-cols-[auto] sm:grid-cols-1 gap-2" variant={"mainGreen"} request={handleDeploy}>

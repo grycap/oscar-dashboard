@@ -2,10 +2,14 @@ import getBucketsApi from "@/api/buckets/getBucketsApi";
 import { Bucket, Bucket_visibility } from "@/pages/ui/services/models/service";
 import { useEffect, useState } from "react";
 
-function useGetPrivateBuckets() {
+function useGetPrivateBuckets(enabled: boolean = true) {
   const [ buckets, setBuckets ] = useState<Bucket[]>([]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const fetchBuckets = async () => {
       const bucketsData = await getBucketsApi();
       const filteredBuckets = bucketsData.filter(bucket => (
@@ -14,7 +18,7 @@ function useGetPrivateBuckets() {
       setBuckets(filteredBuckets);
     };
     fetchBuckets();
-  }, []);
+  }, [enabled]);
 
   return buckets;
 }
