@@ -223,7 +223,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       token: !formData.token,
       enviromentVars: Object.fromEntries(Object.entries(formData.enviromentVars).map(([key, value]) => [key, !value || value.length === 0])),
       enviromentSecrets: Object.fromEntries(Object.entries(formData.enviromentSecrets).map(([key, value]) => [key, !value || value.length === 0])),
-      nodePort: !formData.nodePort,
+      nodePort: !!service?.expose?.nodePort && !formData.nodePort,
     };
 
     setErrors(newErrors);
