@@ -1,5 +1,5 @@
 import YAML from "yaml";
-import { Service } from "../../../models/service";
+import { Service, ServiceVisibility } from "../../../models/service";
 import { alert } from "@/lib/alert";
 import { errorMessage } from "@/lib/error";
 
@@ -15,6 +15,11 @@ const yamlToServices = (fdlString: string, scriptString: string) => {
         serviceParams.script = scriptContent;
         serviceParams.storage_providers = obj.storage_providers || {};
         serviceParams.clusters = obj.clusters || {};
+        serviceParams.visibility = serviceParams.visibility ?? ServiceVisibility.private;
+        serviceParams.allowed_users =
+          serviceParams.visibility === ServiceVisibility.restricted
+            ? serviceParams.allowed_users ?? []
+            : [];
         services.push(serviceParams);
       });
     }

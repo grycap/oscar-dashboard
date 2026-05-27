@@ -12,11 +12,12 @@ import {
   ServiceFilter,
   ServiceFilterBy,
   ServiceTab,
+  ServiceVisibility,
 } from "../models/service";
 import getServicesApi from "@/api/services/getServicesApi";
+import getServiceApi from "@/api/services/getServiceApi";
 import { useLocation } from "react-router-dom";
 import { defaultService } from "../components/ServiceForm/utils/initialData";
-import useUpdate from "@/hooks/useUpdate";
 import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { ServiceViewMode } from "../components/Topbar";
 import { z } from "zod";
@@ -71,6 +72,7 @@ export const serviceSchema = z.object({
   cpu: z.string().min(1, "CPU cores is required"),
   memory: z.string().min(1, "Memory is required"),
   script: z.string().min(1, "Script is required"),
+  visibility: z.nativeEnum(ServiceVisibility).optional(),
 });
 
 type SchemaKeys = keyof typeof serviceSchema.shape;
@@ -96,13 +98,16 @@ export const ServicesProvider = ({
   const [showFDLModal, setShowFDLModal] = useState(false);
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
-  const [_, serviceId] = pathnames;
+  const [section, serviceId] = pathnames;
 
   // Filter and order TABLE rows
   const [filter, setFilter] = useState({
     value: "",
     type: ServiceFilterBy.Name,
     onlyOwned: false,
+    onlyPrivate: false,
+    onlyPublic: false,
+    onlyRestricted: false,
   } as ServiceFilter);
 
   //Active tab in create/update mode
@@ -182,14 +187,18 @@ export const ServicesProvider = ({
     }
   }
 
-  async function handleGetServices() {
+  async function handleGetServices(options?: { syncSelectedService?: boolean }) {
+    const shouldSyncSelectedService = options?.syncSelectedService ?? true;
     setServicesAreLoading(true);
-    const response = await getServicesApi();
-    setServicesAreLoading(false);
-
-    setServices(response);
-
-    handleFormService(response);
+    try {
+      const response = await getServicesApi();
+      setServices(response);
+      if (shouldSyncSelectedService && serviceId && serviceId !== "create") {
+        await handleFormService();
+      }
+    } finally {
+      setServicesAreLoading(false);
+    }
   }
 
   async function getDefaultService() {
@@ -206,30 +215,40 @@ export const ServicesProvider = ({
     } as Service;
   }
 
-  async function handleFormService(services: Service[]) {
-    if (!serviceId || serviceId === "create") {
-      const defaultService = await getDefaultService();
-      setFormService(defaultService);
+  async function handleFormService() {
+    if (section !== "services") {
       return;
     }
 
-    if (!services) return;
-    const selectedService = services.find((s) => s.name === serviceId);
-    if (!selectedService) return;
-    setFormService(selectedService);
+    setErrors({});
+
+    if (!serviceId || serviceId === "create") {
+      const defaultService = await getDefaultService();
+      setFormService(defaultService);
+      setErrors({});
+      return;
+    }
+
+    try {
+      const selectedService = await getServiceApi(serviceId);
+      setFormService(selectedService);
+      setErrors({});
+    } catch (error) {
+      alert.error(`Error getting service: ${errorMessage(error)}`);
+    }
   }
 
   useEffect(() => {
-    handleGetServices();
+    handleGetServices({ syncSelectedService: false });
   }, []);
+
+  useEffect(() => {
+    handleFormService();
+  }, [section, serviceId]);
 
   useEffect(() => {
     localStorage.setItem("eagerLoadDeployment", String(eagerLoadDeployment));
   }, [eagerLoadDeployment]);
-
-  useUpdate(() => {
-    handleFormService(services);
-  }, [serviceId]);
 
   return (
     <ServicesContext.Provider

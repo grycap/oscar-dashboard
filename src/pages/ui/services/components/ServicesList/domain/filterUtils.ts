@@ -11,6 +11,19 @@ interface Props {
   authData: AuthData;
 }
 
+function handleServiceVisibilityFilter(services: Service, filter: ServiceFilter) {
+  if (filter.onlyPrivate && services.visibility !== "private") {
+    return false;
+  }
+  if (filter.onlyPublic && services.visibility !== "public") {
+    return false;
+  }
+  if (filter.onlyRestricted && services.visibility !== "restricted") {
+    return false;
+  }
+  return true;
+}
+
 function handleFilterServices({ services, filter, authData }: Props) {
   return services.filter((service) => {
     if (filter.onlyOwned) {
@@ -23,9 +36,12 @@ function handleFilterServices({ services, filter, authData }: Props) {
         );
       }
 
-      if (!service.owner.includes(egiUserId)) {
+      if (!service.owner.includes(egiUserId) && handleServiceVisibilityFilter(service, filter)) {
         return false;
       }
+    }
+    if (!handleServiceVisibilityFilter(service, filter)) {
+      return false;
     }
 
     const param = service[ServiceFilterByKey[filter.type]] as string;

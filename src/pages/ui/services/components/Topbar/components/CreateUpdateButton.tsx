@@ -5,7 +5,7 @@ import createServiceApi from "@/api/services/createServiceApi";
 import { alert } from "@/lib/alert";
 import updateServiceApi from "@/api/services/updateServiceApi";
 import { useMemo } from "react";
-import { Service } from "../../../models/service";
+import { Service, ServiceVisibility } from "../../../models/service";
 import getServicesApi from "@/api/services/getServicesApi";
 import { useNavigate } from "react-router-dom";
 import RequestButton from "@/components/RequestButton";
@@ -20,6 +20,8 @@ export function CreateUpdateServiceButton({ isInCreateMode }: Props) {
   const { setErrors } = formFunctions;
 
   const createServiceModel = useMemo(() => {
+    const visibility = formService.visibility ?? ServiceVisibility.private;
+
     return {
       cpu: formService.cpu,
       image: formService.image,
@@ -33,6 +35,11 @@ export function CreateUpdateServiceButton({ isInCreateMode }: Props) {
       output: formService.output,
       script: formService.script,
       environment: formService.environment,
+      visibility,
+      allowed_users:
+        visibility === ServiceVisibility.restricted
+          ? formService.allowed_users
+          : [],
       valid: true,
     };
   }, [formService]);
@@ -57,12 +64,21 @@ export function CreateUpdateServiceButton({ isInCreateMode }: Props) {
       return;
     }
     try {
+      const serviceToUpdate = {
+        ...formService,
+        visibility: formService.visibility ?? ServiceVisibility.private,
+        allowed_users:
+          formService.visibility === ServiceVisibility.restricted
+            ? formService.allowed_users
+            : [],
+      };
+
       if (isInCreateMode) {
         await createServiceApi(createServiceModel as unknown as Service);
         alert.success("Service created successfully");
         navigate(`/ui/services/${createServiceModel.name}/settings`);
       } else {
-        await updateServiceApi(formService);
+        await updateServiceApi(serviceToUpdate);
         alert.success("Service updated successfully");
       }
 

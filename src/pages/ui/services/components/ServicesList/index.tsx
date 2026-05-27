@@ -4,7 +4,7 @@ import getServicesApi from "@/api/services/getServicesApi";
 import deleteServiceApi from "@/api/services/deleteServiceApi";
 import { alert } from "@/lib/alert";
 import DeleteDialog from "@/components/DeleteDialog";
-import { Service } from "../../models/service";
+import { Service, ServiceVisibility } from "../../models/service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowDownToLine, LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2 } from "lucide-react";
@@ -29,6 +29,12 @@ interface DeploymentStatusCellProps {
   onNavigate: () => void;
   eagerLoad?: boolean;
 }
+
+const visibilityBadgeColors = {
+  [ServiceVisibility.private]: "bg-slate-100 text-slate-800 border-slate-200",
+  [ServiceVisibility.restricted]: "bg-amber-100 text-amber-900 border-amber-200",
+  [ServiceVisibility.public]: "bg-green-100 text-green-900 border-green-200",
+};
 
 function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eagerLoad }: DeploymentStatusCellProps) {
   const [deployment, setDeployment] = useState<DeploymentStatus | undefined>(initialDeployment);
@@ -122,11 +128,18 @@ function ServicesList() {
 
       const failedServices = results
         .filter((result) => result.status === "rejected")
-        .map((result) => (result as {
+        .map((result) => {
+          const rejectedResult = result as {
           status: string;
           service: Service;
           error: unknown;
-        }).service);
+          };
+
+          return {
+            service: rejectedResult.service,
+            message: errorMessage(rejectedResult.error),
+          };
+        });
       
       await handleGetServices();
 
@@ -136,9 +149,11 @@ function ServicesList() {
 
       if (failedServices.length > 0) {
         alert.error(
-          `Error deleting the following services: ${failedServices
-            .map((service) => service.name)
-            .join(", ")}`
+          failedServices.length === 1
+            ? failedServices[0].message
+            : failedServices
+              .map(({ service, message }) => `${service.name}: ${message}`)
+              .join("\n")
         );
       }
 
@@ -185,7 +200,15 @@ function ServicesList() {
             data={filteredServices}
             idKey="name"
             columns={[
-              { header: "Name", accessor: (row) => (<Link to={`/ui/services/${row.name}/settings`}>{row.name}</Link>), sortBy: "name" },
+              { header: "Name", accessor: (row) => (
+                  < Link 
+                    to={`/ui/services/${row.name}/settings`} 
+                    onClick={() => {
+                      setFormService(row);
+                    }}>
+                      {row.name}
+                    </Link>
+                  ), sortBy: "name" },
               // CHANGE ON NEW RELEASE
               ...(clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") ? [{
                 header: "Deployment",
@@ -203,6 +226,22 @@ function ServicesList() {
                 sortBy: "deployment",
               }] as ColumnDef<Service>[] : []),
               { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.labels["owner_name"] ? shortenFullname(row.labels["owner_name"].replace("_", " ")) : row.owner} sub={row.owner} />), sortBy: "owner" },
+              {
+                header: "Visibility",
+                accessor: (row) => {
+                  const visibility = row.visibility ?? ServiceVisibility.private;
+
+                  return (
+                    <Badge
+                      variant="outline"
+                      className={visibilityBadgeColors[visibility]}
+                    >
+                      {visibility.toUpperCase()}
+                    </Badge>
+                  );
+                },
+                sortBy: "visibility",
+              },
               { header: "Image", accessor: "image", sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
               { header: "Memory", accessor: "memory", sortBy: "memory" },
