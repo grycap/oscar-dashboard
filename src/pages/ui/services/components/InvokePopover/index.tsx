@@ -20,6 +20,7 @@ import {
   ArrowRight,
   Terminal,
   Download,
+  FileWarningIcon,
 } from "lucide-react";
 import {
   Select,
@@ -42,8 +43,11 @@ import {
 } from "@/lib/utils";
 import { getMimeTypeFromPath } from "@/lib/mimeType";
 import { errorMessage } from "@/lib/error";
+import { getEditableLanguage } from "@/lib/mimeType";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type View = "upload" | "editor" | "response";
+type RequestFileType = "text" | "image" | "binary";
 type ResponseType = "text" | "image" | "file" | "zip";
 type ZipPreviewType = "text" | "image" | "pdf" | "other";
 
@@ -66,7 +70,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
-  const [fileType, setFileType] = useState<"text" | "image" | null>(null);
+  const [fileType, setFileType] = useState<RequestFileType | null>(null);
   const [currentView, setCurrentView] = useState<View>("upload");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<string>("plaintext");
@@ -105,38 +109,42 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
     return "other";
   };
 
+  function fileFormatWarrgingView() {
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <Alert variant="destructive" className="max-w-md bg-orange-50 text-orange-400">
+          <div className="flex flex-col items-center text-center">
+          <FileWarningIcon className="h-6 w-6 mb-2" />
+          <AlertDescription className="mt-1 text-sm">
+            This file will be sent as-is. Preview and editing are not available for this file type.
+          </AlertDescription>
+          </div>
+        </Alert>
+      </div>
+    );
+  }
+
   const handleFileUpload = (uploadedFile: File) => {
     setFile(uploadedFile);
+    setFileContent("");
 
-    if (uploadedFile.type === "application/json") {
+    const editableLanguage = getEditableLanguage(uploadedFile);
+
+    if (editableLanguage) {
       setFileType("text");
-      setSelectedLanguage("json");
-    } else if (
-      uploadedFile.type === "application/x-yaml" ||
-      uploadedFile.type === "text/yaml" ||
-      uploadedFile.name.endsWith(".yaml") ||
-      uploadedFile.name.endsWith(".yml")||
-      uploadedFile.name.endsWith(".npy") ||
-      uploadedFile.name.endsWith(".gzip") ||
-      uploadedFile.name.endsWith(".tar") ||
-      uploadedFile.name.endsWith(".rar") ||
-      uploadedFile.name.endsWith(".tar.gz") ||
-      uploadedFile.name.endsWith(".7z")
-    ) {
-      setFileType("text");
-      setSelectedLanguage("yaml");
+      setSelectedLanguage(editableLanguage);
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFileContent(e.target?.result as string);
+      };
+      reader.readAsText(uploadedFile);
+      return;
     } else if (uploadedFile.type.startsWith("image/")) {
       setFileType("image");
     } else {
-      alert.error("File type not supported");
-      return;
+      setFileType("binary");
     }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setFileContent(e.target?.result as string);
-    };
-    reader.readAsText(uploadedFile);
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -158,9 +166,16 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   };
 
   const invokeService = async () => {
-    const modifiedFile = new File([fileType === "image" ? file! : fileContent], file?.name ?? "file.txt", {
-      type: file?.type ?? "text/plain",
-    });
+    if (!file && fileType !== "text" && fileContent === "") {
+      return;
+    }
+
+    const modifiedFile = fileType === "text" || !file
+      ? new File([fileContent], file?.name ?? "file.txt", {
+        type: file?.type ?? "text/plain",
+      })
+      : file!;
+
     if (modifiedFile.size === 0) {return;}
     try {
       const token = authData.token ?? currentService?.token;
@@ -254,7 +269,6 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
               e.target.files && handleFileUpload(e.target.files[0])
             }
             className="hidden"
-            accept="image/*,.json,.yaml,.yml"
           />
           <div className="grid grid-cols-1 grid-rows-[1fr_auto] gap-2">
             <div className="h-full my-auto border-2 border-dashed cursor-pointer border-gray-300 rounded-lg p-8 text-center flex flex-col items-center justify-center gap-4"
@@ -272,7 +286,8 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
                 onClick={() => {
                   setCurrentView("editor");
                   setFile(null);
-                  setFileType(null);
+                  setFileType("text");
+                  setSelectedLanguage("plaintext");
                 }}
               >
                 Or use the code editor
@@ -318,6 +333,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
               />
             </div>
           )}
+          {fileType === "binary" && fileFormatWarrgingView()}
         </div>
       )}
     </div>
@@ -563,8 +579,16 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="plaintext">Plain Text</SelectItem>
+            <SelectItem value="markdown">Markdown</SelectItem>
             <SelectItem value="yaml">YAML</SelectItem>
             <SelectItem value="json">JSON</SelectItem>
+            <SelectItem value="xml">XML</SelectItem>
+            <SelectItem value="python">Python</SelectItem>
+            <SelectItem value="javascript">JavaScript</SelectItem>
+            <SelectItem value="typescript">TypeScript</SelectItem>
+            <SelectItem value="shell">Shell</SelectItem>
+            <SelectItem value="html">HTML</SelectItem>
+            <SelectItem value="css">CSS</SelectItem>
           </SelectContent>
         </Select>
       </div>
