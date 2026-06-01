@@ -32,14 +32,23 @@ import {
 } from "@/components/ui/sidebar";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
-import { isVersionLower } from "@/lib/utils";
 import env from "@/env";
 
 function AppSidebar() {
   const authContext = useAuth();
-  const {clusterInfo} = useAuth();
   const { open } = useSidebar();
   const location = useLocation();
+
+  /*
+      },
+    // CHANGE ON NEW RELEASE Example
+    ...(clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") ? [{
+      title: "Volumes",
+      icon: <HardDrive size={20} />,
+      path: "/volumes",
+    }] : []),
+    {
+  */
 
   const items = [
     {
@@ -52,12 +61,11 @@ function AppSidebar() {
       icon: <Database size={20} />,
       path: "/minio",
     },
-    // CHANGE ON NEW RELEASE
-    ...(clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") ? [{
+    {
       title: "Volumes",
       icon: <HardDrive size={20} />,
       path: "/volumes",
-    }] : []),
+    },
     {
       title: "Notebooks",
       icon: <Notebook size={20} />,
