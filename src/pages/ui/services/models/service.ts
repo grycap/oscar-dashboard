@@ -225,10 +225,24 @@ export interface Service {
   expose: {
     min_scale: string,
     max_scale: string,
-    api_port: string,
+    api_port: number[],
     cpu_threshold: string,
     rewrite_target: boolean,
-    nodePort: string,
+    nodePort: number[],
+    default_command: boolean,
+    set_auth: boolean
+    health_path: string;
+  };
+}
+
+export interface TmpService extends Omit<Service, "expose"> {
+  expose: {
+    min_scale: string,
+    max_scale: string,
+    api_port: number[] | number,
+    cpu_threshold: string,
+    rewrite_target: boolean,
+    nodePort: number[] | number,
     default_command: boolean,
     set_auth: boolean
     health_path: string;
