@@ -22,12 +22,14 @@ import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
 import { DeploymentStatus } from "../../models/deployment";
 import ServiceRedirectButton from "@/components/ServiceRedirectButton";
 import { isVersionLower, shortenFullname } from "@/lib/utils";
+import lifecycleServiceApi, { ServiceLifecycleAction } from "@/api/services/lifecycleServiceApi";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface DeploymentStatusCellProps {
   initialDeployment?: DeploymentStatus;
   serviceName: string;
   onNavigate: () => void;
+  onDeploymentChange: (deployment: DeploymentStatus) => void;
   eagerLoad?: boolean;
 }
 
@@ -37,7 +39,7 @@ const visibilityBadgeColors = {
   [ServiceVisibility.public]: "bg-green-100 text-green-900 border-green-200",
 };
 
-function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eagerLoad }: DeploymentStatusCellProps) {
+function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, onDeploymentChange, eagerLoad }: DeploymentStatusCellProps) {
   const [deployment, setDeployment] = useState<DeploymentStatus | undefined>(initialDeployment);
   const [loading, setLoading] = useState(false);
 
@@ -46,6 +48,7 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eage
     try {
       const result = await getDeploymentStatusApi(serviceName);
       setDeployment(result);
+      onDeploymentChange(result);
     } catch {
       // leave existing state on error
     } finally {
@@ -58,6 +61,10 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eage
       fetchDeployment();
     }
   }, [eagerLoad]);
+
+  useEffect(() => {
+    setDeployment(initialDeployment);
+  }, [initialDeployment]);
 
   return (
     <div
@@ -99,8 +106,19 @@ function ServicesList() {
     useServicesContext();
   const { authData, clusterInfo } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
+  const [lifecycleServiceName, setLifecycleServiceName] = useState<string | null>(null);
   const navigate = useNavigate();
   const buttonRef = useRef<Map<string, HTMLButtonElement>>(new Map())
+
+  function updateServiceDeployment(serviceName: string, deployment: DeploymentStatus) {
+    setServices((currentServices) =>
+      currentServices.map((currentService) =>
+        currentService.name === serviceName
+          ? { ...currentService, deployment }
+          : currentService
+      )
+    );
+  }
 
   async function handleGetServices() {
     try {
@@ -166,6 +184,19 @@ function ServicesList() {
     }
   }
 
+  async function handleLifecycleService(service: Service, action: ServiceLifecycleAction) {
+    setLifecycleServiceName(service.name);
+    try {
+      const deployment = await lifecycleServiceApi(service.name, action);
+      updateServiceDeployment(service.name, deployment);
+      alert.success(`Service ${action} completed successfully`);
+    } catch (error) {
+      alert.error(`Error running ${action} on service: ${errorMessage(error)}`);
+    } finally {
+      setLifecycleServiceName(null);
+    }
+  }
+
   const filteredServices = useMemo(() => {
     const filteredServices = handleFilterServices({
       filter,
@@ -222,6 +253,9 @@ function ServicesList() {
                       setFormService(row);
                       navigate(`/ui/services/${row.name}/deployment`);
                     }}
+                    onDeploymentChange={(deployment) => {
+                      updateServiceDeployment(row.name, deployment);
+                    }}
                   />
                 ),
                 sortBy: "deployment",
@@ -265,6 +299,8 @@ function ServicesList() {
                       setFormService(item);
                       navigate(`/ui/services/${item.name}/logs`);
                     }}
+                    handleLifecycleService={(action) => handleLifecycleService(item, action)}
+                    lifecycleIsLoading={lifecycleServiceName === item.name}
                   />
                 ),
               },
