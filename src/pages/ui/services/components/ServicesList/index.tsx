@@ -307,34 +307,40 @@ function ServicesList() {
               {
                 button: (item) => (
                   <>
+                    {item.expose.max_scale != "0" && item?.expose?.nodePort?.length > 0 && 
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Ports">
+                            <WrapText />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="min-w-40">
+                          {item.expose.nodePort.map((port, index) => (
+                            <DropdownMenuItem key={index} onClick={() => {window.open(`${authData.endpoint}:${port}`, "_blank", "noopener,noreferrer");}}>
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              <div className="flex flex-row leading-tight items-center">
+                                <span className="uppercase tracking-wide text-muted-foreground mr-1">Port</span>
+                                <span className="text-sm font-semibold">{port}</span>
+                              </div>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>      
+                    }
+                  </>
+                )
+              },
+              {
+                button: (item) => (
+                  <>
                   {item.expose.max_scale != "0" ?
-                (item?.expose?.nodePort?.length > 0 ?
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Redirect">
-                          <WrapText />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="min-w-40">
-                        {item.expose.nodePort.map((port, index) => (
-                          <DropdownMenuItem key={index} onClick={() => {window.open(`${authData.endpoint}:${port}`, "_blank", "noopener,noreferrer");}}>
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            <div className="flex flex-row leading-tight items-center">
-                              <span className="text-[11px] uppercase tracking-wide text-muted-foreground mr-1">Port</span>
-                              <span className="font-mono text-sm font-semibold">{port}</span>
-                            </div>
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  :
                     <ServiceRedirectButton 
                       className="flex items-center justify-center ml-2 mr-2 "
                       service={item}
                       endpoint={authData.endpoint}
                       healthcheckPath={item.expose.health_path}
                     />
-                  ) :
+                   :
                     <InvokePopover
                       service={item}
                       triggerRenderer={
