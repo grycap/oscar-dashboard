@@ -101,7 +101,7 @@ function JunoFormPopover() {
 
     try {
       const fdlUrl =
-        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/feat-notebook-select-image/juno.yaml";
+        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/juno.yaml";
       const fdlResponse = await fetch(fdlUrl, fetchFromGitHubOptions);
       const fdlText = await fdlResponse.text();
       const scriptUrl =
