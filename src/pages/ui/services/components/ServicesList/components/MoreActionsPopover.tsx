@@ -33,7 +33,7 @@ export default function MoreActionsPopover({
   handleLifecycleService,
   lifecycleIsLoading = false,
 }: Props) {
-  const isExposedService = Number(service.expose?.api_port ?? 0) > 0;
+  const isExposedService = service.expose?.api_port?.length > 0 || service.expose?.nodePort?.length > 0;
   const isStopped = service.deployment?.state === "stopped";
 
   return (
@@ -79,13 +79,15 @@ export default function MoreActionsPopover({
               )}
               <span>{isStopped ? "Start" : "Stop"}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={lifecycleIsLoading}
-              onClick={() => handleLifecycleService("restart")}
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              <span>Restart</span>
-            </DropdownMenuItem>
+            {!isStopped && 
+              <DropdownMenuItem
+                disabled={lifecycleIsLoading}
+                onClick={() => handleLifecycleService("restart")}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                <span>Restart</span>
+              </DropdownMenuItem>
+            }
           </>
         )}
         <DropdownMenuItem 
