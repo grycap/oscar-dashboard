@@ -7,7 +7,7 @@ import DeleteDialog from "@/components/DeleteDialog";
 import { Service, ServiceVisibility } from "../../models/service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2 } from "lucide-react";
+import { ArrowDownToLine, ExternalLink, LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2, WrapText } from "lucide-react";
 import OscarColors from "@/styles";
 import { Link, useNavigate } from "react-router-dom";
 import GenericTable, { ColumnDef } from "@/components/Table";
@@ -23,6 +23,7 @@ import { DeploymentStatus } from "../../models/deployment";
 import ServiceRedirectButton from "@/components/ServiceRedirectButton";
 import { isVersionLower, shortenFullname } from "@/lib/utils";
 import lifecycleServiceApi, { ServiceLifecycleAction } from "@/api/services/lifecycleServiceApi";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface DeploymentStatusCellProps {
   initialDeployment?: DeploymentStatus;
@@ -73,18 +74,27 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, onDe
       }}
     >
       {deployment && !loading ? (
-        <>
-        <div onClick={() => {
+        <div className="flex flex-row items-center gap-1 bg-gray-300 rounded-full pr-2">
+        <div className="flex items-center" onClick={() => {
           onNavigate();
         }}>
           <DeploymentStatusBadge deployment={deployment} showTooltip className="cursor-pointer" />
         </div>
-          <RefreshCw className="h-3 w-3 opacity-40 hover:opacity-100" />
-        </>
+          <RefreshCw className="h-3 w-3 text-gray-700 opacity-90 hover:text-gray-900 hover:opacity-100" />
+        </div>
       ) : (
         <Badge variant="default" className="cursor-pointer">
-          <RefreshCw className={`${loading ? "animate-spin" : ""} h-3 w-3 mr-1`} />
-          Fetch
+          {!loading ? (
+            <>
+            <ArrowDownToLine className={`h-3 w-3 mr-1`} />
+            Get Status
+            </>
+          ) : (
+            <>
+            <RefreshCw className={`animate-spin h-3 w-3 mr-1`} />
+            Loading...
+            </>
+          )}
         </Badge>
       )}
     </div>
@@ -222,7 +232,15 @@ function ServicesList() {
             data={filteredServices}
             idKey="name"
             columns={[
-              { header: "Name", accessor: (row) => (<Link to={`/ui/services/${row.name}/settings`}>{row.name}</Link>), sortBy: "name" },
+              { header: "Name", accessor: (row) => (
+                  < Link 
+                    to={`/ui/services/${row.name}/settings`} 
+                    onClick={() => {
+                      setFormService(row);
+                    }}>
+                      {row.name}
+                    </Link>
+                  ), sortBy: "name" },
               // CHANGE ON NEW RELEASE
               ...(clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") ? [{
                 header: "Deployment",
@@ -290,13 +308,33 @@ function ServicesList() {
                 button: (item) => (
                   <>
                   {item.expose.max_scale != "0" ?
+                (item?.expose?.nodePort?.length > 0 ?
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Redirect">
+                          <WrapText />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="min-w-40">
+                        {item.expose.nodePort.map((port, index) => (
+                          <DropdownMenuItem key={index} onClick={() => {window.open(`${authData.endpoint}:${port}`, "_blank", "noopener,noreferrer");}}>
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            <div className="flex flex-row leading-tight items-center">
+                              <span className="text-[11px] uppercase tracking-wide text-muted-foreground mr-1">Port</span>
+                              <span className="font-mono text-sm font-semibold">{port}</span>
+                            </div>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  :
                     <ServiceRedirectButton 
                       className="flex items-center justify-center ml-2 mr-2 "
                       service={item}
                       endpoint={authData.endpoint}
                       healthcheckPath={item.expose.health_path}
                     />
-                    :
+                  ) :
                     <InvokePopover
                       service={item}
                       triggerRenderer={

@@ -3,13 +3,25 @@ import {
   Service,
   ServiceFilter,
   ServiceFilterByKey,
-  ServiceVisibility,
 } from "../../../models/service";
 
 interface Props {
   services: Service[];
   filter: ServiceFilter;
   authData: AuthData;
+}
+
+function handleServiceVisibilityFilter(services: Service, filter: ServiceFilter) {
+  if (filter.onlyPrivate && services.visibility !== "private") {
+    return false;
+  }
+  if (filter.onlyPublic && services.visibility !== "public") {
+    return false;
+  }
+  if (filter.onlyRestricted && services.visibility !== "restricted") {
+    return false;
+  }
+  return true;
 }
 
 function handleFilterServices({ services, filter, authData }: Props) {
@@ -24,16 +36,15 @@ function handleFilterServices({ services, filter, authData }: Props) {
         );
       }
 
-      if (!service.owner.includes(egiUserId)) {
+      if (!service.owner.includes(egiUserId) && handleServiceVisibilityFilter(service, filter)) {
         return false;
       }
     }
+    if (!handleServiceVisibilityFilter(service, filter)) {
+      return false;
+    }
 
-    const key = ServiceFilterByKey[filter.type];
-    const param =
-      key === "visibility"
-        ? service.visibility ?? ServiceVisibility.private
-        : service[key] as string;
+    const param = service[ServiceFilterByKey[filter.type]] as string;
 
     return param.toLowerCase().includes(filter.value.toLowerCase());
   });

@@ -89,20 +89,25 @@ export const ServicesProvider = ({
   const [services, setServices] = useState([] as Service[]);
   const [servicesAreLoading, setServicesAreLoading] = useState(false);
   const [eagerLoadDeployment, setEagerLoadDeployment] = useState(() => {
-    return localStorage.getItem("eagerLoadDeployment") === "true";
+    const savedValue = localStorage.getItem("eagerLoadDeployment");
+    if (savedValue === null) return true;
+    return savedValue === "true";
   });
   const [serviceLogs, setServiceLogs] = useState<{next_page: string | null, jobs: Record<string, Log>}>({next_page: null, jobs: {}});
   const [logsAreLoading, setLogsAreLoading] = useState(true);
   const [showFDLModal, setShowFDLModal] = useState(false);
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x && x !== "ui");
-  const [_, serviceId] = pathnames;
+  const [section, serviceId] = pathnames;
 
   // Filter and order TABLE rows
   const [filter, setFilter] = useState({
     value: "",
     type: ServiceFilterBy.Name,
     onlyOwned: false,
+    onlyPrivate: false,
+    onlyPublic: false,
+    onlyRestricted: false,
   } as ServiceFilter);
 
   //Active tab in create/update mode
@@ -182,12 +187,13 @@ export const ServicesProvider = ({
     }
   }
 
-  async function handleGetServices() {
+  async function handleGetServices(options?: { syncSelectedService?: boolean }) {
+    const shouldSyncSelectedService = options?.syncSelectedService ?? true;
     setServicesAreLoading(true);
     try {
       const response = await getServicesApi();
       setServices(response);
-      if (serviceId && serviceId !== "create") {
+      if (shouldSyncSelectedService && serviceId && serviceId !== "create") {
         await handleFormService();
       }
     } finally {
@@ -210,6 +216,10 @@ export const ServicesProvider = ({
   }
 
   async function handleFormService() {
+    if (section !== "services") {
+      return;
+    }
+
     setErrors({});
 
     if (!serviceId || serviceId === "create") {
@@ -218,8 +228,6 @@ export const ServicesProvider = ({
       setErrors({});
       return;
     }
-
-    setFormService({} as Service);
 
     try {
       const selectedService = await getServiceApi(serviceId);
@@ -231,12 +239,12 @@ export const ServicesProvider = ({
   }
 
   useEffect(() => {
-    handleGetServices();
+    handleGetServices({ syncSelectedService: false });
   }, []);
 
   useEffect(() => {
     handleFormService();
-  }, [serviceId]);
+  }, [section, serviceId]);
 
   useEffect(() => {
     localStorage.setItem("eagerLoadDeployment", String(eagerLoadDeployment));

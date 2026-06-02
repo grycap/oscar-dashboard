@@ -5,12 +5,26 @@ import { toast } from "sonner";
 class ToastAlert {
   constructor() {}
 
+  private formatMessage(message: React.ReactNode | string) {
+    if (typeof message === "string") {
+      return React.createElement(
+        "span",
+        {
+          className: "toast-message-scroll w-full",
+        },
+        message
+      );
+    }
+
+    return message;
+  }
+
   default(message: React.ReactNode | string) {
-    toast(message);
+    toast(this.formatMessage(message));
   }
 
   success(message: string) {
-    toast.success(message, {
+    toast.success(this.formatMessage(message), {
       style: {
         backgroundColor: "#17A34B",
         color: "white",
@@ -24,7 +38,7 @@ class ToastAlert {
       console.error(message);
     }
 
-    toast.error(message, {
+    toast.error(this.formatMessage(message), {
       style: {
         backgroundColor: OscarColors.Red,
         color: "white",
@@ -38,7 +52,7 @@ class ToastAlert {
       console.warn(messsage);
     }
 
-    toast.warning(messsage, {
+    toast.warning(this.formatMessage(messsage), {
       style: {
         backgroundColor: "orange",
         color: "white",

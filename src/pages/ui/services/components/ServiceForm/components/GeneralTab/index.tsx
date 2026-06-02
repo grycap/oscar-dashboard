@@ -29,6 +29,7 @@ import Annotations from "./components/Annotations";
 
 import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
 import { getAllowedVOs } from "@/lib/utils";
+import { useEffect } from "react";
 
 function ServiceGeneralTab() {
   const { formService, setFormService, formMode, formFunctions } =
@@ -43,8 +44,12 @@ function ServiceGeneralTab() {
     else {return false}
   } 
   
-  const memoryUnits = formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi";
-  const memory = formService?.memory?.replace(/[a-zA-Z]/g, "");
+  const selectedVo = formService?.vo ?? "";
+  const selectedLogLevel = formService?.log_level ?? LOG_LEVEL.INFO;
+  const memoryUnits =
+    (formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi" | "") ||
+    "Mi";
+  const memory = formService?.memory?.replace(/[a-zA-Z]/g, "") ?? "";
 
   const setAllowedUsers = (users: string[]) => {
     setFormService((prev) => ({
@@ -55,6 +60,10 @@ function ServiceGeneralTab() {
 
   const visibility = formService?.visibility ?? ServiceVisibility.private;
   const serviceIsRestricted = visibility === ServiceVisibility.restricted;
+
+  useEffect(() => {
+    if (!formService) return;
+  }, [formService]);
 
   return (
     <div
@@ -107,7 +116,7 @@ function ServiceGeneralTab() {
               <>
                 <Label>VO</Label>
                 <Select
-                  value={formService?.vo}
+                  value={selectedVo}
                   onValueChange={(value) => {
                     setFormService((service: Service) => {
                       return {
@@ -138,7 +147,7 @@ function ServiceGeneralTab() {
             <div className="min-w-[152px]">
               <Label>Log level</Label>
               <Select
-                value={formService?.log_level}
+                value={selectedLogLevel}
                 onValueChange={(value) => {
                   setFormService((service: Service) => {
                     return {
@@ -186,7 +195,7 @@ function ServiceGeneralTab() {
                   {Object.values(ServiceVisibility).map((value) => {
                     return (
                       <SelectItem key={value} value={value}>
-                        {value}
+                        {value.toUpperCase()}
                       </SelectItem>
                     );
                   })}
@@ -219,16 +228,6 @@ function ServiceGeneralTab() {
               </div>
             )}
           </div>
-
-          {serviceIsRestricted && (
-            <div className="flex flex-row gap-2 items-center">
-              <strong>Allowed users:</strong>
-              <AllowedUsersPopover
-                allowed_users={formService.allowed_users ?? []}
-                setAllowedUsersInExternalVar={setAllowedUsers}
-              />
-            </div>
-          )}
 
           {formMode === ServiceViewMode.Update && (
             <div
@@ -274,8 +273,17 @@ function ServiceGeneralTab() {
 
               <div className="flex flex-row gap-2 items-center">
                 <strong>Visibility:</strong>
-                {visibility}
+                {visibility?.toUpperCase()}
               </div>
+              {serviceIsRestricted && (
+                <div className="flex flex-row gap-2 items-center">
+                  <strong>Allowed users:</strong>
+                  <AllowedUsersPopover
+                    allowed_users={formService.allowed_users ?? []}
+                    setAllowedUsersInExternalVar={setAllowedUsers}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

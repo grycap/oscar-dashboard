@@ -55,12 +55,100 @@ function ServicesFilterBy() {
         </SelectTrigger>
         <SelectContent>
           {Object.values(ServiceFilterBy).map((value) => {
+            if (value === ServiceFilterBy.Visibility) {
+              return null; // We handle visibility with separate checkboxes, so we skip it in the dropdown
+            }
             return (
               <SelectItem key={value} value={value}>
                 {"By " + value.toLocaleLowerCase()}
               </SelectItem>
             );
           })}
+          <Divider />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "6px",
+            }}
+          >
+            <Checkbox
+              id="privateItems"
+              checked={filter.onlyPrivate}
+              onCheckedChange={(checked) => {
+                setFilter((prev) => ({
+                  ...prev,
+                  onlyPrivate: checked as boolean,
+                  onlyPublic: false,
+                  onlyRestricted: false,
+                }));
+              }}
+              style={{ fontSize: 16 }}
+            />
+            <label
+              htmlFor="privateItems"
+              style={{ fontSize: 14, marginTop: "1px" }}
+            >
+              Private Svc.
+            </label>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "6px",
+            }}
+          >
+            <Checkbox
+              id="publicItems"
+              checked={filter.onlyPublic}
+              onCheckedChange={(checked) => {
+                setFilter((prev) => ({
+                  ...prev,
+                  onlyPublic: checked as boolean,
+                  onlyPrivate: false,
+                  onlyRestricted: false,
+                }));
+              }}
+              style={{ fontSize: 16 }}
+            />
+            <label
+              htmlFor="publicItems"
+              style={{ fontSize: 14, marginTop: "1px" }}
+            >
+              Public Svc.
+            </label>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "6px",
+            }}
+          >
+            <Checkbox
+              id="restrictedItems"
+              checked={filter.onlyRestricted}
+              onCheckedChange={(checked) => {
+                setFilter((prev) => ({
+                  ...prev,
+                  onlyRestricted: checked as boolean,
+                  onlyPrivate: false,
+                  onlyPublic: false,
+                }));
+              }}
+              style={{ fontSize: 16 }}
+            />
+            <label
+              htmlFor="restrictedItems"
+              style={{ fontSize: 14, marginTop: "1px" }}
+            >
+              Restricted Svc.
+            </label>
+          </div>
           <Divider />
           <div
             style={{
