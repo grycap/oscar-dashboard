@@ -2,7 +2,7 @@ import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClusterUserQuota } from "@/models/clusterUserQuota";
-import { Cpu, HardDrive, Layers, MemoryStick, Pencil } from "lucide-react";
+import { Cpu, Database, GpuIcon, HardDrive, Layers, MemoryStick, Pencil } from "lucide-react";
 import QuotaMetricCard from "../QuotaMetricCard";
 import {
   formatBytes,
@@ -23,6 +23,8 @@ type QuotaSummaryProps = {
 function QuotaSummary({ quota, userId, adminMode, onEdit }: QuotaSummaryProps) {
   const cpuUsed = quota.resources?.cpu.used;
   const cpuMax = quota.resources?.cpu.max;
+  const gpuUsed = quota.resources?.gpu?.used ?? 0;
+  const gpuMax = quota.resources?.gpu?.max ?? 0;
   const memoryUsed = quota.resources?.memory.used;
   const memoryMax = quota.resources?.memory.max;
 
@@ -36,8 +38,8 @@ function QuotaSummary({ quota, userId, adminMode, onEdit }: QuotaSummaryProps) {
               <ResponsiveOwnerField owner={userId} copy />
             </CardTitle>
             {adminMode && quota.cluster_queue && (
-              <CardDescription className="mt-2">
-                ClusterQueue: <span className="font-medium text-slate-700 dark:text-slate-200">{quota.cluster_queue}</span>
+              <CardDescription className="mt-2 min-w-0 truncate">
+                ClusterQueue: <span className=" font-medium text-slate-700 dark:text-slate-200">{quota.cluster_queue}</span>
               </CardDescription>
             )}
           </div>
@@ -53,7 +55,7 @@ function QuotaSummary({ quota, userId, adminMode, onEdit }: QuotaSummaryProps) {
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 mb-4">
         {quota.resources && (
           <>
             <QuotaMetricCard
@@ -69,6 +71,13 @@ function QuotaSummary({ quota, userId, adminMode, onEdit }: QuotaSummaryProps) {
               max={formatBytes(memoryMax)}
               used={formatBytes(memoryUsed)}
               percentage={usagePercentage(memoryUsed, memoryMax)}
+            />
+            <QuotaMetricCard
+              icon={<GpuIcon size={18} />}
+              label="GPU limit"
+              max={`${formatCores(gpuMax)} cores`}
+              used={`${formatCores(gpuUsed)} cores`}
+              percentage={usagePercentage(gpuUsed, gpuMax)}
             />
           </>
         )}
@@ -99,6 +108,28 @@ function QuotaSummary({ quota, userId, adminMode, onEdit }: QuotaSummaryProps) {
               label="Min disk per volume"
               max={formatQuota(quota.volumes.min_disk_per_volume)}
             />
+          </>
+        )}
+        {quota.minio && (
+          <>
+            <QuotaMetricCard
+              icon={<Database size={18} />}
+              label="MinIO bucket limit"
+              max={quota.minio.buckets.max.toString()}
+              used={quota.minio.buckets.used.toString()}
+              percentage={usagePercentage(quota.minio.buckets.used, quota.minio.buckets.max)}
+            />
+            <QuotaMetricCard
+              icon={<Database size={18} />}
+              label="MinIO storage size limit per bucket"
+              max={formatQuota(quota.minio.storage_per_bucket.max)}
+            />
+            <QuotaMetricCard
+              icon={<Database size={18} />}
+              label="MinIO total storage used"
+              max={formatQuota(quota.minio.storage_total.used)}
+            />
+            
           </>
         )}
       </div>
