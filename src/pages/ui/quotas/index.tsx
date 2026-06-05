@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { errorMessage } from "@/lib/error";
 import { ClusterUserQuota } from "@/models/clusterUserQuota";
-import { Search } from "lucide-react";
+import { CircleAlert, LoaderPinwheel, MessageSquareWarningIcon, Search } from "lucide-react";
 import { useState } from "react";
 import EditPopover from "./components/EditPopover";
 import QuotaEmptyState from "./components/QuotaEmptyState";
-import QuotaLoadingState from "./components/QuotaLoadingState";
 import QuotaSummary from "./components/QuotaSummary";
+import OscarColors from "@/styles";
+import { ErrorAlert } from "@/components/ErrorAlert";
 
 type LoadQuotaOptions = {
   userId?: string;
@@ -95,14 +96,23 @@ function Quotas() {
   const userId = quota?.user_id || lastLoadedUid;
 
   return (
-    <div className="h-full w-full overflow-auto">
+    <div className="flex flex-col h-full w-full ">
       <GenericTopbar
         defaultHeader={{ title: "Quotas", linkTo: "/ui/quotas" }}
         refresher={topbarRefresher}
         secondaryRow={topbarActions}
       />
-
-      <div className="w-full max-w-full mx-auto px-4 pt-6 pb-6 space-y-6">
+      {error && (
+        <div className="flex items-center justify-center h-full">
+          <ErrorAlert description={"Quota could not be loaded"} variant="warning" icon={CircleAlert} />
+        </div>
+        )}
+      {!error && ((loading || (!quota && !adminMode))) ? 
+      <div className="flex items-center justify-center h-full">
+        <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+      </div>
+      :
+      <div className="w-full h-full mx-auto px-4 pt-6 pb-6 space-y-6">
         {!adminMode && !personalMode && (
           <Alert variant="destructive">
             <AlertTitle>Quotas unavailable</AlertTitle>
@@ -113,22 +123,10 @@ function Quotas() {
         )}
 
         {inputError && (
-          <Alert variant="destructive">
-            <AlertTitle>Missing user ID</AlertTitle>
-            <AlertDescription>{inputError}</AlertDescription>
-          </Alert>
+          <ErrorAlert title="Missing user ID" description={inputError} variant="warning" icon={MessageSquareWarningIcon} />
         )}
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertTitle>Quota could not be loaded</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {loading && !quota ? (
-          <QuotaLoadingState />
-        ) : quota ? (
+        {quota ? (
           <QuotaSummary
             quota={quota}
             userId={userId}
@@ -139,6 +137,7 @@ function Quotas() {
           <QuotaEmptyState hasSearched={hasSearched} adminMode={adminMode} />
         )}
       </div>
+      }
 
       {adminMode && quota && (
         <EditPopover
