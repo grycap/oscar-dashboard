@@ -2,11 +2,14 @@ import OscarLogo from "@/assets/oscar-big.png";
 import {
   Activity,
   BarChart2,
+  BookOpen,
   Boxes,
   ChartPie,
   Codesandbox,
   Database,
   FolderOpen,
+  Github,
+  Globe,
   HardDrive,
   Info,
   LogOut,
@@ -168,7 +171,13 @@ function AppSidebar() {
         >
           <AnimatePresence mode="popLayout">
             {open && (
-              <motion.img src={OscarLogo} alt="Oscar logo" width={140} />
+              <a
+                href="https://oscar.grycap.net/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <motion.img src={OscarLogo} alt="Oscar logo" width={140} />
+              </a>
             )}
           </AnimatePresence>
           <SidebarTrigger />
@@ -203,6 +212,40 @@ function AppSidebar() {
       <SidebarSeparator />
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <div className="flex justify-center gap-4 mb-2 min-w-o truncate">
+              <a
+                href="https://oscar.grycap.net/blog"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Blog"
+                title="Blog"
+                style={{ color: "inherit", display: "inline-flex" }}
+              >
+                <Globe size={18} />
+              </a>
+              <a
+                href="https://docs.oscar.grycap.net/latest"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Documentation"
+                title="Documentation"
+                style={{ color: "inherit", display: "inline-flex" }}
+              >
+                <BookOpen size={18} />
+              </a>
+              <a
+                href="https://github.com/grycap/oscar"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Repository"
+                title="Repository"
+                style={{ color: "inherit", display: "inline-flex" }}
+              >
+                <Github size={18} />
+              </a>
+            </div>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Log out">
               <div
