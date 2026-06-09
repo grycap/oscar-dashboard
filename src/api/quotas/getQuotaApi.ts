@@ -8,7 +8,7 @@ function parseQuotaResources(data: ClusterUserQuota): ClusterUserQuota {
     return data;
   }
 
-  const { cpu, memory } = data.resources;
+  const { cpu, memory, gpu } = data.resources;
   return {
     ...data,
     resources: {
@@ -19,6 +19,10 @@ function parseQuotaResources(data: ClusterUserQuota): ClusterUserQuota {
       memory: {
         max: typeof memory.max === "string" ? parseMemoryToBytes(memory.max) : memory.max,
         used: typeof memory.used === "string" ? parseMemoryToBytes(memory.used) : memory.used,
+      },
+      gpu: {
+        max: typeof gpu.max === "string" ? parseInt(gpu.max, 10) : gpu.max,
+        used: typeof gpu.used === "string" ? parseInt(gpu.used, 10) : gpu.used,
       },
     },
   };
