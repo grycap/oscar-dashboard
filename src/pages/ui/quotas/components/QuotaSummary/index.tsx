@@ -75,8 +75,8 @@ function QuotaSummary({ quota, userId, adminMode, onEdit }: QuotaSummaryProps) {
             <QuotaMetricCard
               icon={<GpuIcon size={18} />}
               label="GPU limit"
-              max={`${formatCores(gpuMax)} cores`}
-              used={`${formatCores(gpuUsed)} cores`}
+              max={`${gpuMax}`}
+              used={`${gpuUsed}`}
               percentage={usagePercentage(gpuUsed, gpuMax)}
             />
           </>
