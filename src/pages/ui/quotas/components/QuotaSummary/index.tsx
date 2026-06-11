@@ -2,7 +2,7 @@ import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClusterUserQuota } from "@/models/clusterUserQuota";
-import { Cpu, Database, GpuIcon, HardDrive, Layers, MemoryStick, Pencil } from "lucide-react";
+import { Box, Cpu, Database, GpuIcon, HardDrive, Layers, MemoryStick, Pencil } from "lucide-react";
 import QuotaMetricCard from "../QuotaMetricCard";
 import {
   formatBytes,
@@ -27,6 +27,8 @@ function QuotaSummary({ quota, userId, adminMode, onEdit }: QuotaSummaryProps) {
   const gpuMax = quota.resources?.gpu?.max ?? 0;
   const memoryUsed = quota.resources?.memory.used;
   const memoryMax = quota.resources?.memory.max;
+  const ephemeralStorageUsed = quota.resources?.ephemeralStorage.used;
+  const ephemeralStorageMax = quota.resources?.ephemeralStorage.max;
 
   return (
     <div className="flex flex-col gap-4">
@@ -78,6 +80,13 @@ function QuotaSummary({ quota, userId, adminMode, onEdit }: QuotaSummaryProps) {
               max={`${gpuMax}`}
               used={`${gpuUsed}`}
               percentage={usagePercentage(gpuUsed, gpuMax)}
+            />
+            <QuotaMetricCard
+              icon={<Box size={18} />}
+              label="Ephemeral Storage limit"
+              max={formatBytes(ephemeralStorageMax)}
+              used={formatBytes(ephemeralStorageUsed)}
+              percentage={usagePercentage(ephemeralStorageUsed, ephemeralStorageMax)}
             />
           </>
         )}

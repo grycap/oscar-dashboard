@@ -6,10 +6,12 @@ export type ClusterUserQuota = {
   minio?: MinioQuota;
 };
 
+
 type Resources = {
   cpu: ResourceDetail;
   memory: ResourceDetail;
   gpu: ResourceDetail;
+  ephemeralStorage: ResourceDetail;
 };
 
 type ResourceDetail = {
@@ -52,6 +54,7 @@ export type QuotaUpdateRequest = {
   cpu?: string;
   memory?: string;
   gpu?: string;
+  ephemeralStorage?: string;
   volumes?: VolumeQuotaUpdate;
   minio?: MinioQuotaUpdate;
 };

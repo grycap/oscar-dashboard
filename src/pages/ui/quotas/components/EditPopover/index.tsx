@@ -60,6 +60,9 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
     minioBucketsMax: 0,
     minioStoragePerBucketMax: "",
     minioStoragePerBucketUnit: "Gi",
+    ephemeralStorageMax: "",
+    ephemeralStorageUnit: "Gi",
+    gpuMax: "",
   });
 
   const [validationMessage, setValidationMessage] = useState("");
@@ -79,12 +82,16 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
     minioBucketsMax: false,
     minioStoragePerBucketMax: false,
     minioStoragePerBucketUnit: false,
+    ephemeralStorageMax: false,
+    ephemeralStorageUnit: false,
+    gpuMax: false,
   });
 
   useEffect(() => {
     if (!isOpen || !user) return;
 
     const memory = bytesToEditableQuantity(user.resources?.memory.max);
+    const ephemeralStorage = bytesToEditableQuantity(user.resources?.ephemeralStorage.max);
     const volumeDisk = splitQuantity(user.volumes?.disk.max);
     const maxDiskPerVolume = splitQuantity(user.volumes?.max_disk_per_volume);
     const minDiskPerVolume = splitQuantity(user.volumes?.min_disk_per_volume, "Mi");
@@ -105,6 +112,9 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
       minioBucketsMax: user.minio?.buckets.max ?? 0,
       minioStoragePerBucketMax: minioStoragePerBucket.value,
       minioStoragePerBucketUnit: minioStoragePerBucket.unit,
+      ephemeralStorageMax: ephemeralStorage.value,
+      ephemeralStorageUnit: ephemeralStorage.unit,
+      gpuMax: user.resources ? user.resources.gpu.max.toString() : "",
     });
     setErrors({
       cpuMax: false,
@@ -120,6 +130,9 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
       minioBucketsMax: false,
       minioStoragePerBucketMax: false,
       minioStoragePerBucketUnit: false,
+      ephemeralStorageMax: false,
+      ephemeralStorageUnit: false,
+      gpuMax: false,
     });
     setValidationMessage("");
   }, [isOpen, user]);
@@ -139,6 +152,9 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
       minioBucketsMax: Boolean(user.minio && !formData.minioBucketsMax),
       minioStoragePerBucketMax: Boolean(user.minio && !isValidNumber(formData.minioStoragePerBucketMax)),
       minioStoragePerBucketUnit: Boolean(user.minio && !formData.minioStoragePerBucketUnit),
+      ephemeralStorageMax: Boolean(user.resources && !isValidNumber(formData.ephemeralStorageMax)),
+      ephemeralStorageUnit: Boolean(user.resources && !formData.ephemeralStorageUnit),
+      gpuMax: Boolean(user.resources && !isValidNumber(formData.gpuMax)),
     };
 
     setErrors(newErrors);
@@ -153,6 +169,7 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
     if (user.resources) {
       quotaUpdateRequest.cpu = Number(formData.cpuMax).toString();
       quotaUpdateRequest.memory = `${formData.memoryMax}${formData.memoryUnit}`;
+      quotaUpdateRequest.gpu = Number(formData.gpuMax).toString();
     }
     if (user.volumes) {
       quotaUpdateRequest.volumes = {
@@ -241,6 +258,53 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
                 >
                   <SelectTrigger className="w-[80px]">
                     <SelectValue id="memory-unit" placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Gi">GiB</SelectItem>
+                    <SelectItem value="Mi">MiB</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>GPU Max (units)</Label>
+                <Input
+                  type="number"
+                  step={0.1}
+                  min={0}
+                  value={formData.gpuMax}
+                  className={errors.gpuMax ? "border-red-500 focus:border-red-500" : ""}
+                  onChange={(e) => {
+                    setFormData({ ...formData, gpuMax: e.target.value });
+                    if (errors.gpuMax) setErrors({ ...errors, gpuMax: false });
+                    if (validationMessage) setValidationMessage("");
+                  }}
+                  placeholder="Enter max GPU units"
+                />
+              </div>
+              <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
+                <div>
+                  <Label>Ephemeral Storage Max</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={formData.ephemeralStorageMax}
+                    className={errors.ephemeralStorageMax ? "border-red-500 focus:border-red-500" : ""}
+                    onChange={(e) => {
+                      setFormData({ ...formData, ephemeralStorageMax: e.target.value });
+                      if (errors.ephemeralStorageMax) setErrors({ ...errors, ephemeralStorageMax: false });
+                      if (validationMessage) setValidationMessage("");
+                    }}
+                    placeholder="Enter max ephemeral storage"
+                  />
+                </div>
+                <Select
+                  value={formData.ephemeralStorageUnit}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, ephemeralStorageUnit: value })
+                  }
+                >
+                  <SelectTrigger className="w-[80px]">
+                    <SelectValue id="ephemeral-storage-unit" placeholder="Unit" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Gi">GiB</SelectItem>

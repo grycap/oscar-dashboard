@@ -102,42 +102,41 @@ function Quotas() {
         refresher={topbarRefresher}
         secondaryRow={topbarActions}
       />
-      {error && (
+      {error ? (
         <div className="flex items-center justify-center h-full">
           <ErrorAlert description={"Quota could not be loaded"} variant="warning" icon={CircleAlert} />
         </div>
-        )}
-      {!error && ((loading || (!quota && !adminMode))) ? 
-      <div className="flex items-center justify-center h-full">
-        <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
-      </div>
-      :
-      <div className="w-full h-full mx-auto px-4 pt-6 pb-6 space-y-6">
-        {!adminMode && !personalMode && (
-          <Alert variant="destructive">
-            <AlertTitle>Quotas unavailable</AlertTitle>
-            <AlertDescription>
-              Personal quota lookup is available for OIDC users. Admin quota management is available for oscar.
-            </AlertDescription>
-          </Alert>
-        )}
+      ) : loading || (!quota && !adminMode) ? (
+        <div className="flex items-center justify-center h-full">
+          <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+        </div>
+      ) : (
+        <div className="w-full h-full mx-auto px-4 pt-6 pb-6 space-y-6">
+          {!adminMode && !personalMode && (
+            <Alert variant="destructive">
+              <AlertTitle>Quotas unavailable</AlertTitle>
+              <AlertDescription>
+                Personal quota lookup is available for OIDC users. Admin quota management is available for oscar.
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {inputError && (
-          <ErrorAlert title="Missing user ID" description={inputError} variant="warning" icon={MessageSquareWarningIcon} />
-        )}
+          {inputError && (
+            <ErrorAlert title="Missing user ID" description={inputError} variant="warning" icon={MessageSquareWarningIcon} />
+          )}
 
-        {quota ? (
-          <QuotaSummary
-            quota={quota}
-            userId={userId}
-            adminMode={adminMode}
-            onEdit={() => setIsEditOpen(true)}
-          />
-        ) : (
-          <QuotaEmptyState hasSearched={hasSearched} adminMode={adminMode} />
-        )}
-      </div>
-      }
+          {quota ? (
+            <QuotaSummary
+              quota={quota}
+              userId={userId}
+              adminMode={adminMode}
+              onEdit={() => setIsEditOpen(true)}
+            />
+          ) : !inputError && (
+            <QuotaEmptyState hasSearched={hasSearched} adminMode={adminMode} />
+          )}
+        </div>
+      )}
 
       {adminMode && quota && (
         <EditPopover
