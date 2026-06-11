@@ -193,7 +193,7 @@ function TerminalFormPopover() {
       );
       const scriptText = await scriptResponse.text();
 
-      const services = yamlToServices(fdlText, scriptText);
+      const services = yamlToServices(fdlText, scriptText, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
 
       if (!services?.length) {
         throw new Error("No services found");

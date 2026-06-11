@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { errorMessage } from "@/lib/error";
 import { ClusterUserQuota } from "@/models/clusterUserQuota";
-import { Search } from "lucide-react";
+import { CircleAlert, LoaderPinwheel, MessageSquareWarningIcon, Search } from "lucide-react";
 import { useState } from "react";
 import EditPopover from "./components/EditPopover";
 import QuotaEmptyState from "./components/QuotaEmptyState";
-import QuotaLoadingState from "./components/QuotaLoadingState";
 import QuotaSummary from "./components/QuotaSummary";
+import OscarColors from "@/styles";
+import { ErrorAlert } from "@/components/ErrorAlert";
 
 type LoadQuotaOptions = {
   userId?: string;
@@ -95,50 +96,47 @@ function Quotas() {
   const userId = quota?.user_id || lastLoadedUid;
 
   return (
-    <div className="h-full w-full overflow-auto">
+    <div className="flex flex-col h-full w-full ">
       <GenericTopbar
         defaultHeader={{ title: "Quotas", linkTo: "/ui/quotas" }}
         refresher={topbarRefresher}
         secondaryRow={topbarActions}
       />
+      {error ? (
+        <div className="flex items-center justify-center h-full">
+          <ErrorAlert description={"Quota could not be loaded"} variant="warning" icon={CircleAlert} />
+        </div>
+      ) : loading || (!quota && !adminMode) ? (
+        <div className="flex items-center justify-center h-full">
+          <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+        </div>
+      ) : (
+        <div className="w-full h-full mx-auto px-4 pt-6 pb-6 space-y-6">
+          {!adminMode && !personalMode && (
+            <Alert variant="destructive">
+              <AlertTitle>Quotas unavailable</AlertTitle>
+              <AlertDescription>
+                Personal quota lookup is available for OIDC users. Admin quota management is available for oscar.
+              </AlertDescription>
+            </Alert>
+          )}
 
-      <div className="w-full max-w-full mx-auto px-4 pt-6 pb-6 space-y-6">
-        {!adminMode && !personalMode && (
-          <Alert variant="destructive">
-            <AlertTitle>Quotas unavailable</AlertTitle>
-            <AlertDescription>
-              Personal quota lookup is available for OIDC users. Admin quota management is available for oscar.
-            </AlertDescription>
-          </Alert>
-        )}
+          {inputError && (
+            <ErrorAlert title="Missing user ID" description={inputError} variant="warning" icon={MessageSquareWarningIcon} />
+          )}
 
-        {inputError && (
-          <Alert variant="destructive">
-            <AlertTitle>Missing user ID</AlertTitle>
-            <AlertDescription>{inputError}</AlertDescription>
-          </Alert>
-        )}
-
-        {error && (
-          <Alert variant="destructive">
-            <AlertTitle>Quota could not be loaded</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {loading && !quota ? (
-          <QuotaLoadingState />
-        ) : quota ? (
-          <QuotaSummary
-            quota={quota}
-            userId={userId}
-            adminMode={adminMode}
-            onEdit={() => setIsEditOpen(true)}
-          />
-        ) : (
-          <QuotaEmptyState hasSearched={hasSearched} adminMode={adminMode} />
-        )}
-      </div>
+          {quota ? (
+            <QuotaSummary
+              quota={quota}
+              userId={userId}
+              adminMode={adminMode}
+              onEdit={() => setIsEditOpen(true)}
+            />
+          ) : !inputError && (
+            <QuotaEmptyState hasSearched={hasSearched} adminMode={adminMode} />
+          )}
+        </div>
+      )}
 
       {adminMode && quota && (
         <EditPopover
