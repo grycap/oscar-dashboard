@@ -13,7 +13,7 @@ import createServiceApi from "@/api/services/createServiceApi";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Plus, RefreshCcwIcon } from "lucide-react";
 import RequestButton from "@/components/RequestButton";
-import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs, isVersionLower } from "@/lib/utils";
+import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
 import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import { errorMessage } from "@/lib/error";
 
@@ -21,7 +21,7 @@ import { errorMessage } from "@/lib/error";
 
 function FlowsFormPopover() {
   const [isOpen, setIsOpen] = useState(false);
-  const {systemConfig, authData, clusterInfo } = useAuth();
+  const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
   const buckets = useGetPrivateBuckets();
@@ -107,7 +107,7 @@ function FlowsFormPopover() {
       const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
       const scriptText = await scriptResponse.text();
 
-      const services = yamlToServices(fdlText, scriptText, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
+      const services = yamlToServices(fdlText, scriptText);
       if (!services?.length) throw Error("No services found");
 
       const service = services[0];

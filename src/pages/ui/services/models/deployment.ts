@@ -3,7 +3,6 @@ export type DeploymentState =
   | "ready"
   | "degraded"
   | "failed"
-  | "stopped"
   | "unavailable";
 
 export type DeploymentResourceKind =
