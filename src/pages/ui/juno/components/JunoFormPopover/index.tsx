@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import { alert } from "@/lib/alert";
-import { convertDockerImageToMap, fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
+import { convertDockerImageToMap, fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs, isVersionLower } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
@@ -22,7 +22,7 @@ import { errorMessage } from "@/lib/error";
 
 function JunoFormPopover() {
   const [isOpen, setIsOpen] = useState(false);
-  const {systemConfig, authData } = useAuth();
+  const {systemConfig, authData, clusterInfo } = useAuth();
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
   const buckets = useGetPrivateBuckets();
@@ -101,7 +101,7 @@ function JunoFormPopover() {
 
     try {
       const fdlUrl =
-        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/feat-notebook-select-image/juno.yaml";
+        "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/juno.yaml";
       const fdlResponse = await fetch(fdlUrl, fetchFromGitHubOptions);
       const fdlText = await fdlResponse.text();
       const scriptUrl =
@@ -109,7 +109,7 @@ function JunoFormPopover() {
       const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
       const scriptText = await scriptResponse.text();
 
-      const services = yamlToServices(fdlText, scriptText);
+      const services = yamlToServices(fdlText, scriptText, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
       if (!services?.length) throw Error("No services found");
       
       const service = services[0];

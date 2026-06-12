@@ -29,6 +29,7 @@ const OSCAR_HUB_SELECTED_SOURCE_KEY = "oscar_hub_selected_source";
 
 export const DEFAULT_SOURCES = [
   { repository: "grycap/oscar-hub", branch: "main" },
+  { repository: "grycap/oscar-hub", branch: "devel" },
 ];
 
 function HubSrcPopoverButton({
