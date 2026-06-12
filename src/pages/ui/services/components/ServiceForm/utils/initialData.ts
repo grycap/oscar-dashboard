@@ -50,10 +50,10 @@ export const defaultService: Service = {
   expose: {
     min_scale: "",
     max_scale: "",
-    api_port: [],
+    api_port: "",
     cpu_threshold: "",
     rewrite_target: false,
-    nodePort: [],
+    nodePort: "",
     default_command: false,
     set_auth: false,
     health_path: "",

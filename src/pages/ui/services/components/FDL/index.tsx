@@ -17,15 +17,12 @@ import updateServiceApi from "@/api/services/updateServiceApi";
 import { alert } from "@/lib/alert";
 import RequestButton from "@/components/RequestButton";
 import yamlToServices from "./utils/yamlToService";
-import { useAuth } from "@/contexts/AuthContext";
-import { isVersionLower } from "@/lib/utils";
 
 function FDLForm() {
   const { showFDLModal, setShowFDLModal, refreshServices } =
     useServicesContext();
   const [selectedTab, setSelectedTab] = useState<"fdl" | "script">("fdl");
   const [editorKey, setEditorKey] = useState(0);
-  const { clusterInfo } = useAuth();
 
   const [fdl, setFdl] = useState("");
   const [script, setScript] = useState("");
@@ -56,7 +53,7 @@ function FDLForm() {
       return;
     }
 
-    const services = yamlToServices(fdl, script, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
+    const services = yamlToServices(fdl, script);
     if (!services) {
       return;
     }

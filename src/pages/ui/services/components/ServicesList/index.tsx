@@ -7,7 +7,7 @@ import DeleteDialog from "@/components/DeleteDialog";
 import { Service, ServiceVisibility } from "../../models/service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowDownToLine, ExternalLink, LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2, WrapText } from "lucide-react";
+import { ArrowDownToLine, LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2 } from "lucide-react";
 import OscarColors from "@/styles";
 import { Link, useNavigate } from "react-router-dom";
 import GenericTable, { ColumnDef } from "@/components/Table";
@@ -22,14 +22,11 @@ import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
 import { DeploymentStatus } from "../../models/deployment";
 import ServiceRedirectButton from "@/components/ServiceRedirectButton";
 import { isVersionLower, shortenFullname } from "@/lib/utils";
-import lifecycleServiceApi, { ServiceLifecycleAction } from "@/api/services/lifecycleServiceApi";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface DeploymentStatusCellProps {
   initialDeployment?: DeploymentStatus;
   serviceName: string;
   onNavigate: () => void;
-  onDeploymentChange: (deployment: DeploymentStatus) => void;
   eagerLoad?: boolean;
 }
 
@@ -39,7 +36,7 @@ const visibilityBadgeColors = {
   [ServiceVisibility.public]: "bg-green-100 text-green-900 border-green-200",
 };
 
-function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, onDeploymentChange, eagerLoad }: DeploymentStatusCellProps) {
+function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, eagerLoad }: DeploymentStatusCellProps) {
   const [deployment, setDeployment] = useState<DeploymentStatus | undefined>(initialDeployment);
   const [loading, setLoading] = useState(false);
 
@@ -48,7 +45,6 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, onDe
     try {
       const result = await getDeploymentStatusApi(serviceName);
       setDeployment(result);
-      onDeploymentChange(result);
     } catch {
       // leave existing state on error
     } finally {
@@ -61,10 +57,6 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, onDe
       fetchDeployment();
     }
   }, [eagerLoad]);
-
-  useEffect(() => {
-    setDeployment(initialDeployment);
-  }, [initialDeployment]);
 
   return (
     <div
@@ -106,19 +98,8 @@ function ServicesList() {
     useServicesContext();
   const { authData, clusterInfo } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
-  const [lifecycleServiceName, setLifecycleServiceName] = useState<string | null>(null);
   const navigate = useNavigate();
   const buttonRef = useRef<Map<string, HTMLButtonElement>>(new Map())
-
-  function updateServiceDeployment(serviceName: string, deployment: DeploymentStatus) {
-    setServices((currentServices) =>
-      currentServices.map((currentService) =>
-        currentService.name === serviceName
-          ? { ...currentService, deployment }
-          : currentService
-      )
-    );
-  }
 
   async function handleGetServices() {
     try {
@@ -184,19 +165,6 @@ function ServicesList() {
     }
   }
 
-  async function handleLifecycleService(service: Service, action: ServiceLifecycleAction) {
-    setLifecycleServiceName(service.name);
-    try {
-      const deployment = await lifecycleServiceApi(service.name, action);
-      updateServiceDeployment(service.name, deployment);
-      alert.success(`Service ${action} completed successfully`);
-    } catch (error) {
-      alert.error(`Error running ${action} on service: ${errorMessage(error)}`);
-    } finally {
-      setLifecycleServiceName(null);
-    }
-  }
-
   const filteredServices = useMemo(() => {
     const filteredServices = handleFilterServices({
       filter,
@@ -253,9 +221,6 @@ function ServicesList() {
                       setFormService(row);
                       navigate(`/ui/services/${row.name}/deployment`);
                     }}
-                    onDeploymentChange={(deployment) => {
-                      updateServiceDeployment(row.name, deployment);
-                    }}
                   />
                 ),
                 sortBy: "deployment",
@@ -299,36 +264,8 @@ function ServicesList() {
                       setFormService(item);
                       navigate(`/ui/services/${item.name}/logs`);
                     }}
-                    handleLifecycleService={(action) => handleLifecycleService(item, action)}
-                    lifecycleIsLoading={lifecycleServiceName === item.name}
                   />
                 ),
-              },
-              {
-                button: (item) => (
-                  <>
-                    {item.expose.max_scale != "0" && item?.expose?.nodePort?.length > 0 && 
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Ports">
-                            <WrapText />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="min-w-40">
-                          {item.expose.nodePort.map((port, index) => (
-                            <DropdownMenuItem key={index} onClick={() => {window.open(`${authData.endpoint}:${port}`, "_blank", "noopener,noreferrer");}}>
-                              <ExternalLink className="mr-2 h-4 w-4" />
-                              <div className="flex flex-row leading-tight items-center">
-                                <span className="uppercase tracking-wide text-muted-foreground mr-1">Port</span>
-                                <span className="text-sm font-semibold">{port}</span>
-                              </div>
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>      
-                    }
-                  </>
-                )
               },
               {
                 button: (item) => (
@@ -340,7 +277,7 @@ function ServicesList() {
                       endpoint={authData.endpoint}
                       healthcheckPath={item.expose.health_path}
                     />
-                   :
+                    :
                     <InvokePopover
                       service={item}
                       triggerRenderer={

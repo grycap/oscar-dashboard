@@ -90,7 +90,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
     token: "",
     enviromentVars: {} as Record<string, string>,
     enviromentSecrets: {} as Record<string, string>,
-    nodePort: [] as number[],
+    nodePort: "",
   });
   const [newVolume, setNewVolume] = useState(false);
   const [volumes, setVolumes] = useState<ManagedVolume[]>([]);
@@ -145,7 +145,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       token: genRandomString(128),
       enviromentVars: service.environment?.variables || {},
       enviromentSecrets: service.environment?.secrets || {},
-      nodePort: service.expose?.nodePort?.length > 0 ? service.expose.nodePort : [],
+      nodePort: service.expose?.nodePort || "",
     }));
     setNewBucket(false);
     setVolumes([]);
@@ -296,10 +296,6 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
           ...service.labels,
           oscar_hub: "true",
         },
-        expose: {
-          ...service.expose,
-          nodePort: formData.nodePort,
-        }
       };
       await createServiceApi(modifiedService);
       refreshServices();
@@ -426,25 +422,20 @@ return (
                   </SelectContent>
                 </Select>
             </div>
-            {service?.expose?.nodePort?.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {formData.nodePort.map((port, index) => (
-                <div key={index} className="w-full sm:w-[173px]">
-                  <Label htmlFor={`nodePort-${index}`}>{"Node Port to " + (service?.expose?.api_port[index] ?? "Unknown")}</Label>
-                  <Input
-                    id={`nodePort-${index}`}
-                    type="number"
-                    placeholder="Enter Node Port"
-                    value={port}
-                    className={errors.nodePort ? "border-red-500 focus:border-red-500" : ""}
-                    onChange={(e) => {
-                      const newNodePort = [...formData.nodePort];
-                      newNodePort[index] = Number(e.target.value);
-                      setFormData({ ...formData, nodePort: newNodePort });
-                      if (errors.nodePort) setErrors({ ...errors, nodePort: false });
-                    }}
-                  />
-                </div>))}
+            {service?.expose?.nodePort && (
+              <div>
+                <Label htmlFor="nodePort">Node Port</Label>
+                <Input
+                  id="nodePort"
+                  type="number"
+                  placeholder="Enter Node Port"
+                  value={formData.nodePort}
+                  className={errors.nodePort ? "border-red-500 focus:border-red-500" : ""}
+                  onChange={(e) => {
+                    setFormData({ ...formData, nodePort: e.target.value });
+                    if (errors.nodePort) setErrors({ ...errors, nodePort: false });
+                  }}
+                />
               </div>
             )}
 						{(asyncService || mountBucket) && 

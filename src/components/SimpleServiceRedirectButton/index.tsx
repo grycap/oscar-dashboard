@@ -23,7 +23,6 @@ function SimpleServiceRedirectButton({
   const [isAlive, setIsAlive] = useState<boolean | null>(null);
   const { clusterInfo } = useAuth();
   const redirectLink = `${endpoint}/system/services/${service.name}/exposed/${interpolateVariables(service, additionalExposedPathArgs)}`
-  const serviceIsStopped = service.deployment?.state === "stopped";
 
   const safeHealthcheckPath = healthcheckPath.startsWith("/") ? healthcheckPath.slice(1).trim() : healthcheckPath
   const healthcheckLink = `${endpoint}/system/services/${service.name}/exposed/${safeHealthcheckPath}`;
@@ -56,11 +55,6 @@ function SimpleServiceRedirectButton({
   useEffect(() => {
     let isMounted = true;
     const checkStatus = async () => {
-      if (serviceIsStopped) {
-        if (isMounted) setIsAlive(false);
-        return;
-      }
-
       if (clusterInfo && isVersionLower(clusterInfo.version, "3.6.4")) {
         if (isMounted) setIsAlive(true);
         return;
@@ -80,18 +74,7 @@ function SimpleServiceRedirectButton({
     return () => {
       isMounted = false;
     };
-  }, [service.name, endpoint, healthcheckPath, serviceIsStopped]);
-
-  if (serviceIsStopped) {
-    return (
-      <span
-        className={`${className ?? ""} cursor-not-allowed opacity-40`}
-        title="Service is stopped"
-      >
-        <ExternalLink />
-      </span>
-    );
-  }
+  }, [service.name, endpoint, healthcheckPath]);
 
   return isAlive ? (
     <Link

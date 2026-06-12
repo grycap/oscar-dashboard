@@ -10,9 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { alert } from "@/lib/alert";
-import { MoreVertical, Activity, Play, Key, Edit, Trash, RefreshCw, Square } from "lucide-react";
+import { MoreVertical, Activity, Play, Key, Edit, Trash } from "lucide-react";
 import OscarColors from "@/styles";
-import { ServiceLifecycleAction } from "@/api/services/lifecycleServiceApi";
 
 interface Props {
   service: Service;
@@ -20,8 +19,6 @@ interface Props {
   handleEditService: () => void;
   handleInvokeService: () => void;
   handleLogs: () => void;
-  handleLifecycleService: (action: ServiceLifecycleAction) => void;
-  lifecycleIsLoading?: boolean;
 }
 
 export default function MoreActionsPopover({
@@ -30,12 +27,7 @@ export default function MoreActionsPopover({
   handleEditService,
   handleInvokeService,
   handleLogs,
-  handleLifecycleService,
-  lifecycleIsLoading = false,
 }: Props) {
-  const isExposedService = service.expose?.api_port?.length > 0 || service.expose?.nodePort?.length > 0;
-  const isStopped = service.deployment?.state === "stopped";
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild title="More actions">
@@ -65,31 +57,6 @@ export default function MoreActionsPopover({
             <span>Invoke</span>            
           </div>
         </DropdownMenuItem>
-        {isExposedService && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              disabled={lifecycleIsLoading}
-              onClick={() => handleLifecycleService(isStopped ? "start" : "stop")}
-            >
-              {isStopped ? (
-                <Play className="mr-2 h-4 w-4" />
-              ) : (
-                <Square className="mr-2 h-4 w-4" />
-              )}
-              <span>{isStopped ? "Start" : "Stop"}</span>
-            </DropdownMenuItem>
-            {!isStopped && 
-              <DropdownMenuItem
-                disabled={lifecycleIsLoading}
-                onClick={() => handleLifecycleService("restart")}
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                <span>Restart</span>
-              </DropdownMenuItem>
-            }
-          </>
-        )}
         <DropdownMenuItem 
           onClick={() => {
             navigator.clipboard.writeText(service?.token || "");

@@ -2,14 +2,11 @@ import OscarLogo from "@/assets/oscar-big.png";
 import {
   Activity,
   BarChart2,
-  BookOpen,
   Boxes,
   ChartPie,
   Codesandbox,
   Database,
   FolderOpen,
-  Github,
-  Globe,
   HardDrive,
   Info,
   LogOut,
@@ -35,23 +32,14 @@ import {
 } from "@/components/ui/sidebar";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
+import { isVersionLower } from "@/lib/utils";
 import env from "@/env";
 
 function AppSidebar() {
   const authContext = useAuth();
+  const {clusterInfo} = useAuth();
   const { open } = useSidebar();
   const location = useLocation();
-
-  /*
-      },
-    // CHANGE ON NEW RELEASE Example
-    ...(clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") ? [{
-      title: "Volumes",
-      icon: <HardDrive size={20} />,
-      path: "/volumes",
-    }] : []),
-    {
-  */
 
   const items = [
     {
@@ -64,11 +52,12 @@ function AppSidebar() {
       icon: <Database size={20} />,
       path: "/minio",
     },
-    {
+    // CHANGE ON NEW RELEASE
+    ...(clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") ? [{
       title: "Volumes",
       icon: <HardDrive size={20} />,
       path: "/volumes",
-    },
+    }] : []),
     {
       title: "Notebooks",
       icon: <Notebook size={20} />,
@@ -171,13 +160,7 @@ function AppSidebar() {
         >
           <AnimatePresence mode="popLayout">
             {open && (
-              <a
-                href="https://oscar.grycap.net/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <motion.img src={OscarLogo} alt="Oscar logo" width={140} />
-              </a>
+              <motion.img src={OscarLogo} alt="Oscar logo" width={140} />
             )}
           </AnimatePresence>
           <SidebarTrigger />
@@ -212,40 +195,6 @@ function AppSidebar() {
       <SidebarSeparator />
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <div className="flex justify-center gap-4 mb-2 min-w-o truncate">
-              <a
-                href="https://oscar.grycap.net/blog"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Blog"
-                title="Blog"
-                style={{ color: "inherit", display: "inline-flex" }}
-              >
-                <Globe size={18} />
-              </a>
-              <a
-                href="https://docs.oscar.grycap.net/latest"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Documentation"
-                title="Documentation"
-                style={{ color: "inherit", display: "inline-flex" }}
-              >
-                <BookOpen size={18} />
-              </a>
-              <a
-                href="https://github.com/grycap/oscar"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Repository"
-                title="Repository"
-                style={{ color: "inherit", display: "inline-flex" }}
-              >
-                <Github size={18} />
-              </a>
-            </div>
-          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Log out">
               <div

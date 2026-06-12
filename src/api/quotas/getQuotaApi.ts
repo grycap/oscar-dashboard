@@ -8,10 +8,7 @@ function parseQuotaResources(data: ClusterUserQuota): ClusterUserQuota {
     return data;
   }
 
-  const { cpu, memory, gpu } = data.resources;
-  const resourcesRaw = data.resources as Record<string, any>;
-  const ephemeralStorage = resourcesRaw["ephemeral-storage"] ?? data.resources.ephemeralStorage;
-
+  const { cpu, memory } = data.resources;
   return {
     ...data,
     resources: {
@@ -22,14 +19,6 @@ function parseQuotaResources(data: ClusterUserQuota): ClusterUserQuota {
       memory: {
         max: typeof memory.max === "string" ? parseMemoryToBytes(memory.max) : memory.max,
         used: typeof memory.used === "string" ? parseMemoryToBytes(memory.used) : memory.used,
-      },
-      gpu: {
-        max: typeof gpu.max === "string" ? parseInt(gpu.max, 10) : gpu.max,
-        used: typeof gpu.used === "string" ? parseInt(gpu.used, 10) : gpu.used,
-      },
-      ephemeralStorage: {
-        max: typeof ephemeralStorage.max === "string" ? parseMemoryToBytes(ephemeralStorage.max) : ephemeralStorage.max,
-        used: typeof ephemeralStorage.used === "string" ? parseMemoryToBytes(ephemeralStorage.used) : ephemeralStorage.used,
       },
     },
   };

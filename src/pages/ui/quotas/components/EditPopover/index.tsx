@@ -8,7 +8,6 @@ import { alert } from "@/lib/alert";
 import putUserQuotaApi from "@/api/quotas/putQuotaApi";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { errorMessage } from "@/lib/error";
-import RequestButton from "@/components/RequestButton";
 
 const splitQuantity = (value?: string, fallbackUnit = "Gi") => {
   const match = value?.match(/^([0-9.]+)\s*([A-Za-z]+)$/);
@@ -57,12 +56,6 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
     maxDiskPerVolumeUnit: "Gi",
     minDiskPerVolume: "",
     minDiskPerVolumeUnit: "Mi",
-    minioBucketsMax: 0,
-    minioStoragePerBucketMax: "",
-    minioStoragePerBucketUnit: "Gi",
-    ephemeralStorageMax: "",
-    ephemeralStorageUnit: "Gi",
-    gpuMax: "",
   });
 
   const [validationMessage, setValidationMessage] = useState("");
@@ -79,23 +72,15 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
     maxDiskPerVolumeUnit: false,
     minDiskPerVolume: false,
     minDiskPerVolumeUnit: false,
-    minioBucketsMax: false,
-    minioStoragePerBucketMax: false,
-    minioStoragePerBucketUnit: false,
-    ephemeralStorageMax: false,
-    ephemeralStorageUnit: false,
-    gpuMax: false,
   });
 
   useEffect(() => {
     if (!isOpen || !user) return;
 
     const memory = bytesToEditableQuantity(user.resources?.memory.max);
-    const ephemeralStorage = bytesToEditableQuantity(user.resources?.ephemeralStorage.max);
     const volumeDisk = splitQuantity(user.volumes?.disk.max);
     const maxDiskPerVolume = splitQuantity(user.volumes?.max_disk_per_volume);
     const minDiskPerVolume = splitQuantity(user.volumes?.min_disk_per_volume, "Mi");
-    const minioStoragePerBucket = splitQuantity(user.minio?.storage_per_bucket.max);
 
     setFormData({
       uid: user.user_id ?? "",
@@ -109,12 +94,6 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
       maxDiskPerVolumeUnit: maxDiskPerVolume.unit,
       minDiskPerVolume: minDiskPerVolume.value,
       minDiskPerVolumeUnit: minDiskPerVolume.unit,
-      minioBucketsMax: user.minio?.buckets.max ?? 0,
-      minioStoragePerBucketMax: minioStoragePerBucket.value,
-      minioStoragePerBucketUnit: minioStoragePerBucket.unit,
-      ephemeralStorageMax: ephemeralStorage.value,
-      ephemeralStorageUnit: ephemeralStorage.unit,
-      gpuMax: user.resources ? user.resources.gpu.max.toString() : "",
     });
     setErrors({
       cpuMax: false,
@@ -127,12 +106,6 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
       maxDiskPerVolumeUnit: false,
       minDiskPerVolume: false,
       minDiskPerVolumeUnit: false,
-      minioBucketsMax: false,
-      minioStoragePerBucketMax: false,
-      minioStoragePerBucketUnit: false,
-      ephemeralStorageMax: false,
-      ephemeralStorageUnit: false,
-      gpuMax: false,
     });
     setValidationMessage("");
   }, [isOpen, user]);
@@ -149,12 +122,6 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
       maxDiskPerVolumeUnit: Boolean(user.volumes && !formData.maxDiskPerVolumeUnit),
       minDiskPerVolume: Boolean(user.volumes && !isValidNumber(formData.minDiskPerVolume)),
       minDiskPerVolumeUnit: Boolean(user.volumes && !formData.minDiskPerVolumeUnit),
-      minioBucketsMax: Boolean(user.minio && !formData.minioBucketsMax),
-      minioStoragePerBucketMax: Boolean(user.minio && !isValidNumber(formData.minioStoragePerBucketMax)),
-      minioStoragePerBucketUnit: Boolean(user.minio && !formData.minioStoragePerBucketUnit),
-      ephemeralStorageMax: Boolean(user.resources && !isValidNumber(formData.ephemeralStorageMax)),
-      ephemeralStorageUnit: Boolean(user.resources && !formData.ephemeralStorageUnit),
-      gpuMax: Boolean(user.resources && !isValidNumber(formData.gpuMax)),
     };
 
     setErrors(newErrors);
@@ -169,7 +136,6 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
     if (user.resources) {
       quotaUpdateRequest.cpu = Number(formData.cpuMax).toString();
       quotaUpdateRequest.memory = `${formData.memoryMax}${formData.memoryUnit}`;
-      quotaUpdateRequest.gpu = Number(formData.gpuMax).toString();
     }
     if (user.volumes) {
       quotaUpdateRequest.volumes = {
@@ -177,12 +143,6 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
         volumes: formData.volumesMax,
         max_disk_per_volume: `${formData.maxDiskPerVolume}${formData.maxDiskPerVolumeUnit}`,
         min_disk_per_volume: `${formData.minDiskPerVolume}${formData.minDiskPerVolumeUnit}`,
-      };
-    }
-    if (user.minio) {
-      quotaUpdateRequest.minio = {
-        buckets: formData.minioBucketsMax.toString(),
-        storage_per_bucket: `${formData.minioStoragePerBucketMax}${formData.minioStoragePerBucketUnit}`,
       };
     }
     setSaving(true);
@@ -200,145 +160,148 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-[720px] max-h-[90%]  gap-4 flex flex-col">
+      <DialogContent className="max-w-[720px] max-h-[90%] gap-4 flex flex-col overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit user quota</DialogTitle>
         </DialogHeader>
-        <div className="w-full h-full overflow-y-auto ">
-          <div className="grid grid-cols-1 gap-3 min-w-[200px]">
-            {validationMessage && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {validationMessage}
+
+        <div className="grid grid-cols-1 gap-3">
+          {validationMessage && (
+            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {validationMessage}
+            </div>
+          )}
+
+          <div>
+            <Label>UID</Label>
+            <Input value={formData.uid} disabled />
+          </div>
+
+          {user.resources && <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
+            <div>
+              <Label>CPU Max (cores)</Label>
+              <Input
+                type="number"
+                step={0.1}
+                min={0}
+                value={formData.cpuMax}
+                className={errors.cpuMax ? "border-red-500 focus:border-red-500" : ""}
+                onChange={(e) => {
+                  setFormData({ ...formData, cpuMax: e.target.value });
+                  if (errors.cpuMax) setErrors({ ...errors, cpuMax: false });
+                  if (validationMessage) setValidationMessage("");
+                }}
+                placeholder="Enter max CPU cores"
+              />
+            </div>
+            <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
+              <div>
+                <Label>Max RAM</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={formData.memoryMax}
+                  className={errors.memoryMax ? "border-red-500 focus:border-red-500" : ""}
+                  onChange={(e) => {
+                    setFormData({ ...formData, memoryMax: e.target.value });
+                    if (errors.memoryMax) setErrors({ ...errors, memoryMax: false });
+                    if (validationMessage) setValidationMessage("");
+                  }}
+                  placeholder="Enter max memory RAM"
+                />
               </div>
-            )}
+              <Select
+                value={formData.memoryUnit}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, memoryUnit: value })
+                }
+              >
+                <SelectTrigger className="w-[80px]">
+                  <SelectValue id="memory-unit" placeholder="Unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Gi">GiB</SelectItem>
+                  <SelectItem value="Mi">MiB</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>}
+
+          {user.volumes && <div className="grid grid-cols-1 gap-3 pb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-end">
+              <div>
+                <Label>Volume Disk Max</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={formData.volumeDiskMax}
+                  className={errors.volumeDiskMax ? "border-red-500 focus:border-red-500" : ""}
+                  onChange={(e) => {
+                    setFormData({ ...formData, volumeDiskMax: e.target.value });
+                    if (errors.volumeDiskMax) setErrors({ ...errors, volumeDiskMax: false });
+                    if (validationMessage) setValidationMessage("");
+                  }}
+                  placeholder="Enter max volume disk quota"
+                />
+              </div>
+              <Select
+                value={formData.volumeDiskUnit}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, volumeDiskUnit: value })
+                }
+              >
+                <SelectTrigger className="w-[80px]">
+                  <SelectValue id="volume-disk-unit" placeholder="Unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Gi">GiB</SelectItem>
+                  <SelectItem value="Mi">MiB</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             <div>
-              <Label>UID</Label>
-              <Input value={formData.uid} disabled />
+              <Label>Volumes Max</Label>
+              <Input
+                type="number"
+                min={0}
+                step={1}
+                value={formData.volumesMax}
+                className={errors.volumesMax ? "border-red-500 focus:border-red-500" : ""}
+                onChange={(e) => {
+                  setFormData({ ...formData, volumesMax: e.target.value });
+                  if (errors.volumesMax) setErrors({ ...errors, volumesMax: false });
+                  if (validationMessage) setValidationMessage("");
+                }}
+                placeholder="Enter max number of managed volumes"
+              />
             </div>
 
-            {user.resources && <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
-              <div>
-                <Label>CPU Max (cores)</Label>
-                <Input
-                  type="number"
-                  step={0.1}
-                  min={0}
-                  value={formData.cpuMax}
-                  className={errors.cpuMax ? "border-red-500 focus:border-red-500" : ""}
-                  onChange={(e) => {
-                    setFormData({ ...formData, cpuMax: e.target.value });
-                    if (errors.cpuMax) setErrors({ ...errors, cpuMax: false });
-                    if (validationMessage) setValidationMessage("");
-                  }}
-                  placeholder="Enter max CPU cores"
-                />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                 <div>
-                  <Label>Max RAM</Label>
+                  <Label>Max Disk Per Volume</Label>
                   <Input
                     type="number"
                     min={0}
-                    value={formData.memoryMax}
-                    className={errors.memoryMax ? "border-red-500 focus:border-red-500" : ""}
+                    value={formData.maxDiskPerVolume}
+                    className={errors.maxDiskPerVolume ? "border-red-500 focus:border-red-500" : ""}
                     onChange={(e) => {
-                      setFormData({ ...formData, memoryMax: e.target.value });
-                      if (errors.memoryMax) setErrors({ ...errors, memoryMax: false });
+                      setFormData({ ...formData, maxDiskPerVolume: e.target.value });
+                      if (errors.maxDiskPerVolume) setErrors({ ...errors, maxDiskPerVolume: false });
                       if (validationMessage) setValidationMessage("");
                     }}
-                    placeholder="Enter max memory RAM"
+                    placeholder="Enter max volume size"
                   />
                 </div>
                 <Select
-                  value={formData.memoryUnit}
+                  value={formData.maxDiskPerVolumeUnit}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, memoryUnit: value })
+                    setFormData({ ...formData, maxDiskPerVolumeUnit: value })
                   }
                 >
                   <SelectTrigger className="w-[80px]">
-                    <SelectValue id="memory-unit" placeholder="Unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Gi">GiB</SelectItem>
-                    <SelectItem value="Mi">MiB</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>GPU Max (units)</Label>
-                <Input
-                  type="number"
-                  step={0.1}
-                  min={0}
-                  value={formData.gpuMax}
-                  className={errors.gpuMax ? "border-red-500 focus:border-red-500" : ""}
-                  onChange={(e) => {
-                    setFormData({ ...formData, gpuMax: e.target.value });
-                    if (errors.gpuMax) setErrors({ ...errors, gpuMax: false });
-                    if (validationMessage) setValidationMessage("");
-                  }}
-                  placeholder="Enter max GPU units"
-                />
-              </div>
-              <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
-                <div>
-                  <Label>Ephemeral Storage Max</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={formData.ephemeralStorageMax}
-                    className={errors.ephemeralStorageMax ? "border-red-500 focus:border-red-500" : ""}
-                    onChange={(e) => {
-                      setFormData({ ...formData, ephemeralStorageMax: e.target.value });
-                      if (errors.ephemeralStorageMax) setErrors({ ...errors, ephemeralStorageMax: false });
-                      if (validationMessage) setValidationMessage("");
-                    }}
-                    placeholder="Enter max ephemeral storage"
-                  />
-                </div>
-                <Select
-                  value={formData.ephemeralStorageUnit}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, ephemeralStorageUnit: value })
-                  }
-                >
-                  <SelectTrigger className="w-[80px]">
-                    <SelectValue id="ephemeral-storage-unit" placeholder="Unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Gi">GiB</SelectItem>
-                    <SelectItem value="Mi">MiB</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>}
-
-            {user.volumes && <div className="grid grid-cols-1 gap-3 pb-4">
-              <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
-                <div>
-                  <Label>Volume Disk Max</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={formData.volumeDiskMax}
-                    className={errors.volumeDiskMax ? "border-red-500 focus:border-red-500" : ""}
-                    onChange={(e) => {
-                      setFormData({ ...formData, volumeDiskMax: e.target.value });
-                      if (errors.volumeDiskMax) setErrors({ ...errors, volumeDiskMax: false });
-                      if (validationMessage) setValidationMessage("");
-                    }}
-                    placeholder="Enter max volume disk quota"
-                  />
-                </div>
-                <Select
-                  value={formData.volumeDiskUnit}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, volumeDiskUnit: value })
-                  }
-                >
-                  <SelectTrigger className="w-[80px]">
-                    <SelectValue id="volume-disk-unit" placeholder="Unit" />
+                    <SelectValue id="max-volume-disk-unit" placeholder="Unit" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Gi">GiB</SelectItem>
@@ -347,133 +310,30 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
                 </Select>
               </div>
 
-              <div>
-                <Label>Volumes Max</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={formData.volumesMax}
-                  className={errors.volumesMax ? "border-red-500 focus:border-red-500" : ""}
-                  onChange={(e) => {
-                    setFormData({ ...formData, volumesMax: e.target.value });
-                    if (errors.volumesMax) setErrors({ ...errors, volumesMax: false });
-                    if (validationMessage) setValidationMessage("");
-                  }}
-                  placeholder="Enter max number of managed volumes"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
-                  <div>
-                    <Label>Max Disk Per Volume</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={formData.maxDiskPerVolume}
-                      className={errors.maxDiskPerVolume ? "border-red-500 focus:border-red-500" : ""}
-                      onChange={(e) => {
-                        setFormData({ ...formData, maxDiskPerVolume: e.target.value });
-                        if (errors.maxDiskPerVolume) setErrors({ ...errors, maxDiskPerVolume: false });
-                        if (validationMessage) setValidationMessage("");
-                      }}
-                      placeholder="Enter max volume size"
-                    />
-                  </div>
-                  <Select
-                    value={formData.maxDiskPerVolumeUnit}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, maxDiskPerVolumeUnit: value })
-                    }
-                  >
-                    <SelectTrigger className="w-[80px]">
-                      <SelectValue id="max-volume-disk-unit" placeholder="Unit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Gi">GiB</SelectItem>
-                      <SelectItem value="Mi">MiB</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
-                  <div>
-                    <Label>Min Disk Per Volume</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={formData.minDiskPerVolume}
-                      className={errors.minDiskPerVolume ? "border-red-500 focus:border-red-500" : ""}
-                      onChange={(e) => {
-                        setFormData({ ...formData, minDiskPerVolume: e.target.value });
-                        if (errors.minDiskPerVolume) setErrors({ ...errors, minDiskPerVolume: false });
-                        if (validationMessage) setValidationMessage("");
-                      }}
-                      placeholder="Enter min volume size"
-                    />
-                  </div>
-                  <Select
-                    value={formData.minDiskPerVolumeUnit}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, minDiskPerVolumeUnit: value })
-                    }
-                  >
-                    <SelectTrigger className="w-[80px]">
-                      <SelectValue id="min-volume-disk-unit" placeholder="Unit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Gi">GiB</SelectItem>
-                      <SelectItem value="Mi">MiB</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>}
-
-            {user.minio && <div className="grid sm:grid-cols-2 grid-cols-1 gap-3 pb-4">
-              <div>
-                <Label>Max MinIO Buckets</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={formData.minioBucketsMax}
-                  className={errors.minioBucketsMax ? "border-red-500 focus:border-red-500" : ""}
-                  onChange={(e) => {
-                    setFormData({ ...formData, minioBucketsMax: Number(e.target.value) });
-                    if (errors.minioBucketsMax) setErrors({ ...errors, minioBucketsMax: false });
-                    if (validationMessage) setValidationMessage("");
-                  }}
-                  placeholder="Enter max number of MinIO buckets"
-                />
-              </div>
-
               <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                 <div>
-                  <Label className="truncate">Max MinIO Storage Size Per Bucket</Label>
+                  <Label>Min Disk Per Volume</Label>
                   <Input
                     type="number"
                     min={0}
-                    value={formData.minioStoragePerBucketMax}
-                    className={errors.minioStoragePerBucketMax ? "border-red-500 focus:border-red-500" : ""}
+                    value={formData.minDiskPerVolume}
+                    className={errors.minDiskPerVolume ? "border-red-500 focus:border-red-500" : ""}
                     onChange={(e) => {
-                      setFormData({ ...formData, minioStoragePerBucketMax: e.target.value });
-                      if (errors.minioStoragePerBucketMax) setErrors({ ...errors, minioStoragePerBucketMax: false });
+                      setFormData({ ...formData, minDiskPerVolume: e.target.value });
+                      if (errors.minDiskPerVolume) setErrors({ ...errors, minDiskPerVolume: false });
                       if (validationMessage) setValidationMessage("");
                     }}
-                    placeholder="Enter max storage per MinIO bucket"
+                    placeholder="Enter min volume size"
                   />
-
                 </div>
                 <Select
-                  value={formData.minioStoragePerBucketUnit}
+                  value={formData.minDiskPerVolumeUnit}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, minioStoragePerBucketUnit: value })
+                    setFormData({ ...formData, minDiskPerVolumeUnit: value })
                   }
                 >
                   <SelectTrigger className="w-[80px]">
-                    <SelectValue id="minio-storage-per-bucket-unit" placeholder="Unit" />
+                    <SelectValue id="min-volume-disk-unit" placeholder="Unit" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Gi">GiB</SelectItem>
@@ -481,20 +341,20 @@ function EditPopover({ isOpen, setIsOpen, user, onSaved }: EditPopoverProps) {
                   </SelectContent>
                 </Select>
               </div>
-            </div>}
-          </div>
+            </div>
+          </div>}
         </div>
-          <DialogFooter>
-            <div className="flex w-full justify-end gap-2">
-              <Button variant="ghost" onClick={() => setIsOpen(false)}>
-                Cancel
-              </Button>
-              <RequestButton variant="mainGreen" request={handleSave}>
-                {saving ? "Saving" : "Save changes"}
-              </RequestButton>
-            </div>
-          </DialogFooter>
-        
+
+        <DialogFooter>
+          <div className="flex w-full justify-end gap-2">
+            <Button variant="ghost" onClick={() => setIsOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Saving" : "Save changes"}
+            </Button>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
