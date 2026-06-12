@@ -32,6 +32,7 @@ function ServiceRedirectButton({
   const safeHealthcheckPath = healthcheckPath.startsWith("/") ? healthcheckPath.slice(1).trim() : healthcheckPath
   const healthcheckLink = `${endpoint}/system/services/${service.name}/exposed/${safeHealthcheckPath}`;
   const exposedBaseLink = `${endpoint}/system/services/${service.name}/exposed/`;
+  const serviceIsStopped = service.deployment?.state === "stopped";
       
   /**
    * Interpolate variables in the additionalExposedPathArgs string.
@@ -234,6 +235,11 @@ function ServiceRedirectButton({
     };
 
     const checkStatus = async () => {
+      if (serviceIsStopped) {
+        if (isMounted) setIsAlive(false);
+        return;
+      }
+
       if (clusterInfo && isVersionLower(clusterInfo.version, "3.6.4")) {
         if (isMounted) setIsAlive(true);
         return;
@@ -270,7 +276,18 @@ function ServiceRedirectButton({
     return () => {
       isMounted = false;
     };
-  }, [service, endpoint, additionalExposedPathArgs, authActionPathArgs, targetExposedPath, healthcheckPath]);
+  }, [service, endpoint, additionalExposedPathArgs, authActionPathArgs, targetExposedPath, healthcheckPath, serviceIsStopped]);
+
+  if (serviceIsStopped) {
+    return (
+      <span
+        className={`${className ?? ""} cursor-not-allowed opacity-40`}
+        title="Service is stopped"
+      >
+        <ExternalLink />
+      </span>
+    );
+  }
 
   return isAlive && redirectLink ? (
     <button
