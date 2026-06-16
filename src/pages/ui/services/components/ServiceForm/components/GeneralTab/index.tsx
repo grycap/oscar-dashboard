@@ -270,11 +270,6 @@ function ServiceGeneralTab() {
                   <XIcon size={16} className="pt-[2px]" />
                 )}
               </div>
-
-              <div className="flex flex-row gap-2 items-center">
-                <strong>Visibility:</strong>
-                {visibility?.toUpperCase()}
-              </div>
               {serviceIsRestricted && (
                 <div className="flex flex-row gap-2 items-center">
                   <strong>Allowed users:</strong>
@@ -292,7 +287,7 @@ function ServiceGeneralTab() {
       <ServiceFormCell title="Service specifications">
         <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5 w-full max-w-6xl min-w-[720px]">
           <ScriptButton  />
-          <div className="grid grid-cols-[210px_210px_150px] gap-[10px] 2xl:pl-[40px] items-end">
+          <div className="grid grid-cols-[150px_150px_150px] gap-[10px] 2xl:pl-[40px] items-end">
             <Input
               id="cpu-input"
               value={formService?.cpu}
