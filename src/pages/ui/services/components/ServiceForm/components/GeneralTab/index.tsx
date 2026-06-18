@@ -281,26 +281,6 @@ const serviceToDownload = getFDLAndScriptText(formService)
                   />
                 </div>
               )}
-              <div className="flex flex-row gap-2 items-center">
-                <Button
-                  variant="link"
-                  onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}.yaml`, "application/yaml")}}
-                >
-                  Download FDL
-                </Button>
-                <Button
-                  variant="link"
-                  onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}.yaml`, "application/yaml")}}
-                >
-                  Download Script
-                </Button>
-                <Button
-                  variant="link"
-                  onClick={() => {setShowFDLModal(true);}}
-                >
-                  inline Editor
-                </Button>
-              </div>
             </div>
           )}
         </div>
