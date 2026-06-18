@@ -359,7 +359,7 @@ const serviceToDownload = getFDLAndScriptText(formService)
           <Button
             className="flex flex-row gap-2 items-center"
             variant="secondary"
-            onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}.yaml`, "application/yaml")}}
+            onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}-script.sh`)}}
           >
             <Download size={16} />
             Download Script
