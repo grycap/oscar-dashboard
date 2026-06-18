@@ -41,7 +41,7 @@ export default function MoreActionsPopover({
     
     const { fdlText, scriptText } = getFDLAndScriptText(service);
     const content = type === "fdl" ? fdlText : scriptText;
-    downloadString(content, `${service.name}.${type === "fdl" ? "yaml" : "sh"}`);
+    downloadString(content, `${service.name}${type === "fdl" ? ".yaml" : "-script.sh"}`);
   }
 
   return (
@@ -51,7 +51,7 @@ export default function MoreActionsPopover({
           <MoreVertical />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[220px]">
+      <DropdownMenuContent align="end" className="w-[220px] overflow-y-auto min-h-0 max-h-[var(--radix-dropdown-menu-content-available-height)]">
         <DropdownMenuLabel>
           <div className="flex flex-col">
             <span className="text-sm font-normal text-muted-foreground">
