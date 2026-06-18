@@ -18,14 +18,16 @@ import { alert } from "@/lib/alert";
 import RequestButton from "@/components/RequestButton";
 import yamlToServices from "./utils/yamlToService";
 import { useAuth } from "@/contexts/AuthContext";
-import { isVersionLower } from "@/lib/utils";
+import { getFDLAndScriptText, isVersionLower } from "@/lib/utils";
 
 function FDLForm() {
-  const { showFDLModal, setShowFDLModal, refreshServices } =
+  const { showFDLModal, setShowFDLModal, refreshServices, formService } =
     useServicesContext();
   const [selectedTab, setSelectedTab] = useState<"fdl" | "script">("fdl");
   const [editorKey, setEditorKey] = useState(0);
   const { clusterInfo } = useAuth();
+
+  const existingService = formService && formService.name && formService.name !== "" && formService.script && formService.script !== "script.sh";
 
   const [fdl, setFdl] = useState("");
   const [script, setScript] = useState("");
@@ -59,6 +61,9 @@ function FDLForm() {
     const services = yamlToServices(fdl, script, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
     if (!services) {
       return;
+    }
+    if (existingService && services.length === 1) {
+      services[0].name = formService.name;
     }
     const promises = services.map(async (service) => {
       try{
@@ -108,6 +113,12 @@ function FDLForm() {
       setFdl("");
       setScript("");
       setSelectedTab("fdl");
+    } else {
+      if (existingService){
+        const { fdlText, scriptText } = getFDLAndScriptText(formService);
+        setFdl(fdlText);
+        setScript(scriptText);
+      }
     }
   }, [showFDLModal]);
 
@@ -179,7 +190,7 @@ function FDLForm() {
           </TabsContent>
         </Tabs>
         <DialogFooter>
-          <RequestButton request={handleSave}>Create Service</RequestButton>
+          <RequestButton request={handleSave}>{existingService ? "Update Service" : "Create Service"}</RequestButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -15,7 +15,7 @@ import {
 import EnviromentVariables from "./components/EnviromentVariables";
 import ServiceFormCell from "../FormCell";
 import ScriptButton from "./components/ScriptButton";
-import { CheckIcon, CopyIcon, XIcon, ExternalLink } from "lucide-react";
+import { CheckIcon, CopyIcon, XIcon, ExternalLink, Download, FileCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { alert } from "@/lib/alert";
 import Divider from "@/components/ui/divider";
@@ -28,11 +28,11 @@ import EnviromentSecrets from "./components/EnviromentSecrets";
 import Annotations from "./components/Annotations";
 
 import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
-import { getAllowedVOs } from "@/lib/utils";
+import { downloadString, getAllowedVOs, getFDLAndScriptText } from "@/lib/utils";
 import { useEffect } from "react";
 
 function ServiceGeneralTab() {
-  const { formService, setFormService, formMode, formFunctions } =
+  const { formService, setFormService, formMode, formFunctions, setShowFDLModal } =
     useServicesContext();
 
   const { handleChange, onBlur, errors } = formFunctions;
@@ -57,6 +57,8 @@ function ServiceGeneralTab() {
       allowed_users: users
     }));
   };
+const serviceToDownload = getFDLAndScriptText(formService)
+  
 
   const visibility = formService?.visibility ?? ServiceVisibility.private;
   const serviceIsRestricted = visibility === ServiceVisibility.restricted;
@@ -279,15 +281,36 @@ function ServiceGeneralTab() {
                   />
                 </div>
               )}
+              <div className="flex flex-row gap-2 items-center">
+                <Button
+                  variant="link"
+                  onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}.yaml`, "application/yaml")}}
+                >
+                  Download FDL
+                </Button>
+                <Button
+                  variant="link"
+                  onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}.yaml`, "application/yaml")}}
+                >
+                  Download Script
+                </Button>
+                <Button
+                  variant="link"
+                  onClick={() => {setShowFDLModal(true);}}
+                >
+                  inline Editor
+                </Button>
+              </div>
             </div>
           )}
         </div>
       </ServiceFormCell>
       <Divider />
       <ServiceFormCell title="Service specifications">
-        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5 w-full max-w-6xl min-w-[720px]">
+        <div className="grid grid-cols-1 gap-5 w-full max-w-6xl min-w-[720px]">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 w-full max-w-5xl min-w-[720px] ">
           <ScriptButton  />
-          <div className="grid grid-cols-[150px_150px_150px] gap-[10px] 2xl:pl-[40px] items-end">
+          <div className="grid grid-cols-[150px_150px_150px] gap-[10px] xl:pl-[40px] items-end">
             <Input
               id="cpu-input"
               value={formService?.cpu}
@@ -334,6 +357,35 @@ function ServiceGeneralTab() {
               </SelectContent>
             </Select>
           </div>
+        </div>
+        {formMode === ServiceViewMode.Update && (
+        <div className="flex flex-row gap-[50px] items-center">
+          <Button
+            className="flex flex-row gap-2 items-center"
+            variant="secondary"
+            onClick={() => {setShowFDLModal(true);}}
+          >
+            <FileCode size={16} />
+            FDL Editor
+          </Button>
+          <Button
+            className="flex flex-row gap-2 items-center"
+            variant="secondary"
+            onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}.yaml`, "application/yaml")}}
+          >
+            <Download size={16} />
+            Download FDL
+          </Button>
+          <Button
+            className="flex flex-row gap-2 items-center"
+            variant="secondary"
+            onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}.yaml`, "application/yaml")}}
+          >
+            <Download size={16} />
+            Download Script
+          </Button>
+        </div>
+        )}
         </div>
       </ServiceFormCell>
       <Divider />
