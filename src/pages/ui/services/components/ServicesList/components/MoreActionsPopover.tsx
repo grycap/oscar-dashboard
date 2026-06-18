@@ -41,7 +41,7 @@ export default function MoreActionsPopover({
     
     const { fdlText, scriptText } = getFDLAndScriptText(service);
     const content = type === "fdl" ? fdlText : scriptText;
-    downloadString(content, `${service.name}.${type === "fdl" ? "yaml" : "sh"}`);
+    downloadString(content, `${service.name}${type === "fdl" ? ".yaml" : "-script.sh"}`);
   }
 
   return (
