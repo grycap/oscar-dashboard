@@ -1,9 +1,11 @@
 import getBucketItemsApi from "@/api/buckets/getBucketItemsApi";
 import { AuthData } from "@/contexts/AuthContext";
 import { SystemConfig } from "@/models/systemConfig";
+import { Service } from "@/pages/ui/services/models/service";
 import { _Object, CommonPrefix } from "@aws-sdk/client-s3";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { stringify } from "yaml";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -407,4 +409,88 @@ export const convertDockerImageToMap = (images: DockerImage[]): Map<string, Dock
     map.set(image.tag, image);
   });
   return map;
+}
+
+function removeEmpty(value: any): any {
+  if (Array.isArray(value)) {
+    const cleaned = value
+      .map(removeEmpty)
+      .filter(
+        v =>
+          v !== undefined &&
+          v !== null &&
+          v !== "" &&
+          !(Array.isArray(v) && v.length === 0) &&
+          !(typeof v === "object" && Object.keys(v).length === 0)
+      );
+
+    return cleaned.length ? cleaned : undefined;
+  }
+
+  if (value && typeof value === "object") {
+    const cleaned = Object.fromEntries(
+      Object.entries(value)
+        .map(([k, v]) => [k, removeEmpty(v)])
+        .filter(
+          ([_, v]) =>
+            v !== undefined &&
+            v !== null &&
+            v !== "" &&
+            !(Array.isArray(v) && v.length === 0) &&
+            !(typeof v === "object" && Object.keys(v).length === 0)
+        )
+    );
+
+    return Object.keys(cleaned).length ? cleaned : undefined;
+  }
+
+  return value;
+}
+
+export function normalizeFDL<T>(obj: T): T {
+  if (Array.isArray(obj)) {
+    return obj.map(normalizeFDL) as T;
+  }
+
+  if (obj && typeof obj === "object") {
+    const result: any = {};
+
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] =
+        key === "script"
+          ? "script.sh"
+          : normalizeFDL(value);
+    }
+
+    return result;
+  }
+
+  return obj;
+}
+
+export function getFDLAndScriptText(service: Service): { fdlText: string; scriptText: string } {
+  const auxService = structuredClone(service);
+  const scriptText = auxService.script.toString();
+  auxService.script = "script.sh"; // Replace script content with placeholder for FDL
+  const getOSCARServiceFDL =  {functions: { oscar: [ {oscar_service: auxService} ] }}
+  const fdlText = stringify(removeEmpty(getOSCARServiceFDL));
+
+  return { fdlText, scriptText };
+}
+
+// application/yaml
+// text/plain
+export function downloadString(data: string, filename: string, type: string = "text/plain") {
+  const blob = new Blob([data], {
+    type: type,
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
 }
