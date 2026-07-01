@@ -65,6 +65,7 @@ function FDLForm() {
     if (existingService && services.length === 1) {
       services[0].name = formService.name;
     }
+    var createMode = true;
     const promises = services.map(async (service) => {
       try{
         await getServiceApi(service.name);
@@ -73,6 +74,7 @@ function FDLForm() {
         return response;
       }
         const response = await updateServiceApi(service);
+        createMode = false;
         return response;
     });
 
@@ -81,10 +83,10 @@ function FDLForm() {
     results.forEach((result, index) => {
       if (result.status === "rejected") {
         alert.error(
-          `Error creating service ${services[index].name}: ${result.reason.response.data}`
+          `Error ${createMode ? "creating" : "updating"} service ${services[index].name}: ${result.reason.response.data}`
         );
       } else {
-        alert.success(`Service ${services[index].name} created successfully`);
+        alert.success(`Service ${services[index].name} ${createMode ? "created" : "updated"} successfully`);
       }
     });
 
