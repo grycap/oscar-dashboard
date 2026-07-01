@@ -69,12 +69,12 @@ function FDLForm() {
     const promises = services.map(async (service) => {
       try{
         await getServiceApi(service.name);
+        createMode = false;
       }catch (error) {
         const response = await createServiceApi(service);
         return response;
       }
         const response = await updateServiceApi(service);
-        createMode = false;
         return response;
     });
 
