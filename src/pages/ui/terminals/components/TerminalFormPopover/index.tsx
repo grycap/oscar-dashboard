@@ -41,9 +41,9 @@ import { Plus, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const TERMINAL_FDL_URL =
-  "https://raw.githubusercontent.com/grycap/oscar-hub/refs/heads/main/crates/ghostty-web/fdl.yml";
+  "https://raw.githubusercontent.com/grycap/oscar-terminal/refs/heads/main/fdl.yml";
 const TERMINAL_SCRIPT_URL =
-  "https://raw.githubusercontent.com/grycap/oscar-hub/refs/heads/main/crates/ghostty-web/script.sh";
+  "https://raw.githubusercontent.com/grycap/oscar-terminal/refs/heads/main/script.sh";
 
 function isValidVolumeSize(value: string): boolean {
   const trimmedValue = value.trim();
