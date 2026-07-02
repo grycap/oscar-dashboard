@@ -5,12 +5,18 @@ import { toast } from "sonner";
 class ToastAlert {
   constructor() {}
 
-  private formatMessage(message: React.ReactNode | string) {
+  private formatMessage(message: React.ReactNode | string, copyable: boolean = false) {
     if (typeof message === "string") {
       return React.createElement(
         "span",
         {
-          className: "toast-message-scroll w-full",
+          onClick: () => {
+            if (!copyable) return;
+            navigator.clipboard.writeText(message);
+            alert.success("Alert message copied to clipboard");
+          },
+          title: `${copyable ? "Click to copy" : ""}`,
+          className: `toast-message-scroll w-full ${copyable ? "cursor-pointer" : ""}`,
         },
         message
       );
@@ -38,7 +44,7 @@ class ToastAlert {
       console.error(message);
     }
 
-    toast.error(this.formatMessage(message), {
+    toast.error(this.formatMessage(message, true), {
       style: {
         backgroundColor: OscarColors.Red,
         color: "white",
