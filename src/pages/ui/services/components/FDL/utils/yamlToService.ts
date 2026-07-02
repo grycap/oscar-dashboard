@@ -54,7 +54,7 @@ const yamlToServices = (fdlString: string, scriptString: string, exposePortsToAr
 
   return services;
   } catch (error) {
-    alert.error(`Error creating service: ${errorMessage(error)}`);
+    alert.error(`Error: ${errorMessage(error)}`);
     return [];
   }
 
