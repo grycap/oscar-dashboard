@@ -59,6 +59,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {endIcon}
           </div>
         )}
+        {props.error && (
+          <div className="text-red-400 text-sm mt-0">
+            {props.error}
+          </div>
+        )}
       </div>
     );
   }
