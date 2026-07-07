@@ -39,19 +39,23 @@ function JunoFormPopover() {
     memoryUnit: "Gi",
     bucket: "",
     volume: "",
-    volumeSize: "",
+    volumeSize: "1",
     mainStorage: "bucket",
     vo: "",
     token: "",
     imageTag: IMAGE_TAGS[0].tag,
+    addBucket: true,
+    addVolume: false,
+    newBucket: true,
+    newVolume: true,
   });
 
   const [errors, setErrors] = useState({
     name: false,
     cpuCores: false,
     memoryRam: false,
-    bucket: false,
-    volume: false,
+    bucket: true,
+    volume: true,
     volumeSize: false,
     vo: false,
     token: false,
@@ -73,10 +77,14 @@ function JunoFormPopover() {
       memoryUnit: "Gi",
       bucket: "",
       volume: "",
-      volumeSize: "",
+      volumeSize: "1",
       mainStorage: "bucket",
       token: genRandomString(128),
       imageTag: IMAGE_TAGS[0].tag,
+      addBucket: true,
+      addVolume: false,
+      newBucket: true,
+      newVolume: true,
     }));
     setErrors({
       name: false,
@@ -95,11 +103,11 @@ function JunoFormPopover() {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
       memoryRam: !formData.memoryRam,
-      bucket: formData.mainStorage === "bucket" && !formData.bucket,
       vo: !formData.vo,
       token: !formData.token,
-      volume: formData.mainStorage === "volume" && !formData.volume,
-      volumeSize: errors.volumeSize,
+      bucket: formData.addBucket && !formData.bucket,
+      volume: formData.addVolume && !formData.volume,
+      volumeSize: formData.addVolume && formData.newVolume && (!formData.volumeSize || parseInt(formData.volumeSize) < 1),
     };
 
     setErrors(newErrors);
@@ -164,6 +172,7 @@ function JunoFormPopover() {
             storage_provider: service.mount?.storage_provider ?? "minio.default",
           },
         } : {}),
+        volume: undefined,
         ...(formData.volume ? { 
           volume: {
             name: formData.volume,
@@ -377,7 +386,6 @@ return (
                 formData={formData}
                 setFormData={setFormData}
                 errors={errors}
-                setErrors={setErrors}
               />
             </div>
           </div>
