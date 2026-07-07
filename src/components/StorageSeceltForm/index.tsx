@@ -6,20 +6,52 @@ import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import useGetVolumes from "@/hooks/useGetVolumes";
 import CustomSwitch from "../CustomSwitch";
 
-function StorageSelectForm({ formData, setFormData, errors, setErrors }: any) {
+function StorageSelectForm({ formData, setFormData, errors, manageBucket = true, manageVolume = true }: { formData: any; setFormData: Function; errors: any; manageBucket?: boolean; manageVolume?: boolean }) {
   const [newBucket, setNewBucket] = useState(true);
   const [bucketLoading, setBucketLoading] = useState(true);
   const buckets = useGetPrivateBuckets(!newBucket);
   const [newVolume, setNewVolume] = useState(true);
   const [volumeLoading, setVolumeLoading] = useState(true);
   const volumes = useGetVolumes(!newVolume);
-  const [mainStorage, setMainStorage] = useState<"volume" | "bucket">("bucket");
-  const [addVolume, setAddVolume] = useState(false);
-  const [addBucket, setAddBucket] = useState(true);
+  const [mainStorage, setMainStorage] = useState<"volume" | "bucket">(
+    !manageBucket && manageVolume ? "volume" : "bucket"
+  );
+  const [addVolume, setAddVolume] = useState(mainStorage === "volume" || formData.addVolume);
+  const [addBucket, setAddBucket] = useState(mainStorage === "bucket" || formData.addBucket);
 
   const isMainStorage = (storageType: "volume" | "bucket") => {
     return mainStorage === storageType;
   };
+
+  const setBucketValue = (value: string) => {
+    const bucketValue = value ?? "";
+    setFormData({ ...formData, bucket: bucketValue });
+    /*if (bucketValue.trim()) {
+      setErrors((prev: any) => ({ ...prev, bucket: false }));
+    } else {
+      setErrors((prev: any) => ({ ...prev, bucket: true }));
+    }*/
+  };
+
+  const setVolumeValue = (value: string) => {
+    const volumeValue = value ?? "";
+    setFormData({ ...formData, volume: volumeValue });
+    /*if (volumeValue.trim()) {
+      setErrors((prev: any) => ({ ...prev, volume: false }));
+    } else {
+      setErrors((prev: any) => ({ ...prev, volume: true }));
+    }*/
+  };
+
+  useEffect(() => {
+    if (manageBucket && !manageVolume) {
+      setMainStorage("bucket");
+      setAddBucket(true);
+    } else if (!manageBucket && manageVolume) {
+      setMainStorage("volume");
+      setAddVolume(true);
+    }
+  }, [manageBucket, manageVolume]);
 
   useEffect(() => {
     if (newBucket || buckets.length > 0) {
@@ -43,13 +75,42 @@ function StorageSelectForm({ formData, setFormData, errors, setErrors }: any) {
     return () => window.clearTimeout(timeout);
   }, [newVolume, volumes.length]);
 
+  useEffect(() => {
+    if (newVolume && formData.volumeSize === "") {
+      setFormData({ ...formData, volumeSize: "1" });
+    }
+    if (!newVolume) {
+      setFormData({ ...formData, volumeSize: "" });
+    }
+  }, [newVolume]);
+
+  useEffect(() => {
+    setFormData((prev: any) => ({
+      ...prev,
+      addBucket,
+      addVolume,
+      newBucket,
+      newVolume,
+    }));
+  }, [addBucket, addVolume, newBucket, newVolume]);
+
   return (
     <div className="flex flex-col gap-2 pt-2">
+      {manageBucket && (
       <div>
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] items-center mb-1 gap-2">
           <Label>Bucket</Label>
           <CustomSwitch variant="checkbox" title="Main Storage" checked={isMainStorage("bucket")} onChange={() => { setMainStorage("bucket"); setAddBucket(true); setFormData({ ...formData, mainStorage: "bucket" }); }} />
-          <CustomSwitch variant="checkbox" title="Add Bucket" checked={addBucket} onChange={() => { setAddBucket(!addBucket || mainStorage === "bucket"); !addBucket ? setFormData({ ...formData, bucket: "" }) : null; }} />
+          <CustomSwitch variant="checkbox" title="Add Bucket" checked={addBucket} onChange={() => {
+            const nextAddBucket = !addBucket || mainStorage === "bucket";
+            setAddBucket(nextAddBucket);
+            !nextAddBucket ? setFormData({ ...formData, bucket: "" }) : null;
+           /* if (!nextAddBucket) {
+              setErrors((prev: any) => ({ ...prev, bucket: false }));
+            } else if (!formData.bucket?.trim()) {
+              setErrors((prev: any) => ({ ...prev, bucket: true }));
+            }*/
+          }} />
         </div>
         <hr className="mb-2"/>
         {addBucket && (
@@ -62,19 +123,17 @@ function StorageSelectForm({ formData, setFormData, errors, setErrors }: any) {
             style={{ width: "100%",
               fontWeight: "normal",
               }}
-            className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}
             onChange={(e) => {
-                setFormData({ ...formData, bucket: e.target?.value });
-                if (errors.bucket) setErrors({ ...errors, bucket: false });
+              setBucketValue(e.target?.value);
             }}
             placeholder="Enter new bucket name"
+            error={errors.bucket ? "Bucket is required" : undefined}
           />
           :
             <Select
               value={formData.bucket}
               onValueChange={(value) => {
-                setFormData({ ...formData, bucket: value });
-                if (errors.bucket) setErrors({ ...errors, bucket: false });
+                setBucketValue(value);
               }}
             >
               <SelectTrigger className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}>
@@ -100,17 +159,37 @@ function StorageSelectForm({ formData, setFormData, errors, setErrors }: any) {
         </div>
         )}
       </div>
+      )}
+      {manageVolume && (
       <div>
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] items-center mb-1 gap-2">
           <Label>Volume</Label>
           <CustomSwitch variant="checkbox" title="Main Storage" checked={isMainStorage("volume")} onChange={() => { setMainStorage("volume"); setAddVolume(true); setFormData({ ...formData, mainStorage: "volume" }); }} />
-          <CustomSwitch variant="checkbox" title="Add Volume" checked={addVolume} onChange={() => { setAddVolume(!addVolume || mainStorage === "volume"); !addVolume ? setFormData({ ...formData, volume: "" }) : null; }} />
+          <CustomSwitch variant="checkbox" title="Add Volume" checked={addVolume} onChange={() => {
+            const nextAddVolume = !addVolume || mainStorage === "volume";
+            setAddVolume(nextAddVolume);
+            !nextAddVolume ? setFormData({ ...formData, volume: "" }) : null;
+            /*if (!nextAddVolume ) {
+              setErrors((prev: any) => ({ ...prev, volume: false }));
+            } else if (!formData.volume?.trim()) {
+              setErrors((prev: any) => ({ ...prev, volume: true }));
+            }*/
+          }} />
         </div>
         <hr className="mb-2"/>
         {addVolume && (
         <div className={`grid grid-cols-1 ${newVolume ? "sm:grid-cols-2" : ""} gap-2`}>
           <div className="flex flex-col gap-2">
-          <CustomSwitch title="New Volume" checked={newVolume} onChange={() => { setNewVolume(!newVolume); setFormData({ ...formData, volume: "" }); }} />
+          <CustomSwitch title="New Volume" checked={newVolume} onChange={() => { 
+            const nextNewVolume = !newVolume;
+            setNewVolume(nextNewVolume); 
+            if (nextNewVolume && formData.volumeSize === "") {
+              setFormData({ ...formData, volumeSize: "1" });
+            } else if (!nextNewVolume) {
+              setFormData({ ...formData, volumeSize: "" });
+            }
+            }} 
+          />
           {newVolume?
           <Input
             type="input"
@@ -118,19 +197,17 @@ function StorageSelectForm({ formData, setFormData, errors, setErrors }: any) {
             style={{ width: "100%",
               fontWeight: "normal",
               }}
-            className={errors.volume ? "border-red-500 focus:border-red-500" : ""}
             onChange={(e) => {
-                setFormData({ ...formData, volume: e.target?.value });
-                if (errors.volume) setErrors({ ...errors, volume: false });
+              setVolumeValue(e.target?.value);
             }}
             placeholder="Enter new volume name"
+            error={errors.volume ? "Volume is required" : undefined}
           />
           :
             <Select
               value={formData.volume}
               onValueChange={(value) => {
-                setFormData({ ...formData, volume: value });
-                if (errors.volume) setErrors({ ...errors, volume: false });
+                setVolumeValue(value);
               }}
             >
               <SelectTrigger className={errors.volume ? "border-red-500 focus:border-red-500" : ""}>
@@ -162,15 +239,16 @@ function StorageSelectForm({ formData, setFormData, errors, setErrors }: any) {
               style={{ width: "100%",
                 fontWeight: "normal",
                 }}
-              className={errors.volumeSize ? "border-red-500 focus:border-red-500" : ""}
               onChange={(e) => {
-                if (e.target.value === "" || parseInt(e.target.value) < 1) {
+                setFormData({ ...formData, volumeSize: e.target?.value });
+               /* if (e.target.value === "" || parseInt(e.target.value) < 1) {
                   setErrors({ ...errors, volumeSize: true});
                 } else {
                   setFormData({ ...formData, volumeSize: e.target?.value });
                   if (errors.volumeSize) setErrors({ ...errors, volumeSize: false });
-                }
+                }*/
               }}
+              defaultValue={1}
               min={1}
               placeholder="Enter new volume size (e.g. 1)"
               error={errors.volumeSize ? "Volume size must be a positive number" : undefined}
@@ -180,6 +258,7 @@ function StorageSelectForm({ formData, setFormData, errors, setErrors }: any) {
         </div>
         )}
       </div>
+      )}
     </div>
   );
 }
