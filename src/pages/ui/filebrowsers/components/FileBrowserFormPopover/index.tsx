@@ -1,6 +1,6 @@
 import createServiceApi from "@/api/services/createServiceApi";
-import getVolumesApi from "@/api/volumes/getVolumesApi";
 import RequestButton from "@/components/RequestButton";
+import StorageSelectForm from "@/components/StorageSeceltForm";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
-import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import { alert } from "@/lib/alert";
 import { errorMessage } from "@/lib/error";
 import {
@@ -32,7 +31,7 @@ import {
 } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
-import { ManagedVolume, Service } from "@/pages/ui/services/models/service";
+import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Plus, RefreshCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -46,14 +45,9 @@ type StorageMode = "volume" | "bucket";
 
 function FileBrowserFormPopover() {
   const [isOpen, setIsOpen] = useState(false);
-  const [newBucket, setNewBucket] = useState(false);
-  const [volumes, setVolumes] = useState<ManagedVolume[]>([]);
   const { systemConfig, authData, clusterInfo } = useAuth();
   const { refreshServices } = useServicesContext();
-  const buckets = useGetPrivateBuckets();
   const oidcGroups = getAllowedVOs(systemConfig, authData);
-  const volumeSupportEnabled =
-    clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0");
 
   function nameService() {
     return (
@@ -70,6 +64,7 @@ function FileBrowserFormPopover() {
     storageMode: "volume" as StorageMode,
     bucket: "",
     volume: "",
+    volumeSize: "1",
     vo: "",
     token: "",
   });
@@ -80,6 +75,9 @@ function FileBrowserFormPopover() {
     memoryRam: false,
     storage: false,
     vo: false,
+    volume: false,
+    bucket: false,
+    volumeSize: false,
   });
 
   useEffect(() => {
@@ -99,62 +97,36 @@ function FileBrowserFormPopover() {
       cpuCores: "0.5",
       memoryRam: "512",
       memoryUnit: "Mi",
-      storageMode: volumeSupportEnabled ? "volume" : "bucket",
+      storageMode: "volume",
       bucket: "",
       volume: "",
+      volumeSize: "1",
       token: genRandomString(128),
     }));
-    setNewBucket(false);
-    setVolumes([]);
     setErrors({
       name: false,
       cpuCores: false,
       memoryRam: false,
       storage: false,
       vo: false,
+      volume: false,
+      bucket: false,
+      volumeSize: false,
     });
-  }, [isOpen, volumeSupportEnabled]);
-
-  useEffect(() => {
-    if (!isOpen || !volumeSupportEnabled) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const loadVolumes = async () => {
-      try {
-        const nextVolumes = await getVolumesApi();
-
-        if (!cancelled) {
-          setVolumes(nextVolumes);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error(error);
-          setVolumes([]);
-        }
-      }
-    };
-
-    void loadVolumes();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, volumeSupportEnabled]);
+  }, [isOpen]);
 
   const handleDeploy = async () => {
     const selectedBucket = formData.bucket.trim();
     const selectedVolume = formData.volume.trim();
-    const usesVolume = formData.storageMode === "volume";
-    const usesBucket = formData.storageMode === "bucket";
     const newErrors = {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
       memoryRam: !formData.memoryRam,
-      storage: usesVolume ? !selectedVolume : !selectedBucket,
+      storage: formData.storageMode === "volume" ? !selectedVolume : !selectedBucket,
       vo: !formData.vo,
+      volume: formData.storageMode === "volume" && !formData.volume,
+      bucket: formData.storageMode === "bucket" && !formData.bucket,
+      volumeSize: errors.volumeSize,
     };
 
     setErrors(newErrors);
@@ -172,7 +144,7 @@ function FileBrowserFormPopover() {
         fetchFromGitHubOptions
       );
       const scriptText = await scriptResponse.text();
-      const services = yamlToServices(fdlText, scriptText);
+      const services = yamlToServices(fdlText, scriptText, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
 
       if (!services?.length) {
         throw new Error("No services found");
@@ -180,7 +152,7 @@ function FileBrowserFormPopover() {
 
       const service = services[0];
       const serviceName = formData.name || nameService();
-      const sourcePath = usesVolume ? "/data" : `/mnt/${selectedBucket}`;
+      const sourcePath = formData.storageMode === "volume" ? `/mnt/volumes/${formData.volume}` : `/mnt/${selectedBucket}`;
 
       const modifiedService: Service = {
         ...service,
@@ -189,18 +161,6 @@ function FileBrowserFormPopover() {
         token: formData.token,
         memory: `${formData.memoryRam}${formData.memoryUnit}`,
         cpu: formData.cpuCores,
-        mount: usesBucket
-          ? {
-              path: selectedBucket,
-              storage_provider: service.mount?.storage_provider ?? "minio.default",
-            }
-          : undefined,
-        volume: usesVolume
-          ? {
-              name: selectedVolume,
-              mount_path: "/data",
-            }
-          : undefined,
         environment: {
           variables: {
             ...service.environment.variables,
@@ -215,6 +175,22 @@ function FileBrowserFormPopover() {
           ...service.labels,
           filebrowser: "true",
         },
+        mount: undefined,
+        ...(formData.bucket ? {
+          mount: {
+            ...service.mount,
+            path: formData.bucket ?? "/notebook",
+            storage_provider: service.mount?.storage_provider ?? "minio.default",
+          },
+        } : {}),
+        volume: undefined,
+        ...(formData.volume ? { 
+          volume: {
+            name: formData.volume,
+            size: formData.volumeSize ? `${formData.volumeSize.trim()}Gi` : undefined,
+            mount_path: `/mnt/volumes/${formData.volume}`,
+          }
+        } : {}),
       };
 
       await createServiceApi(modifiedService);
@@ -374,101 +350,18 @@ function FileBrowserFormPopover() {
                 <SelectValue placeholder="Select storage type" />
               </SelectTrigger>
               <SelectContent>
-                {volumeSupportEnabled && (
-                  <SelectItem value="volume">Existing volume</SelectItem>
-                )}
+                <SelectItem value="volume">Volume</SelectItem>
                 <SelectItem value="bucket">MinIO bucket</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {formData.storageMode === "volume" ? (
-            <div>
-              <Label htmlFor="volume">Volume</Label>
-              <Select
-                value={formData.volume}
-                onValueChange={(value) => {
-                  setFormData({ ...formData, volume: value });
-                  if (errors.storage) {
-                    setErrors({ ...errors, storage: false });
-                  }
-                }}
-              >
-                <SelectTrigger
-                  id="volume"
-                  className={errors.storage ? "border-red-500 focus:border-red-500" : ""}
-                >
-                  <SelectValue placeholder="Select a volume" />
-                </SelectTrigger>
-                <SelectContent>
-                  {volumes.map((volume) => (
-                    <SelectItem key={volume.name} value={volume.name}>
-                      {volume.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <div>
-              <Label>Bucket</Label>
-              <div>
-                <Label className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newBucket}
-                    className="sr-only peer"
-                    onChange={() => {
-                      setNewBucket(!newBucket);
-                      setFormData({ ...formData, bucket: "" });
-                    }}
-                  />
-                  <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600"></div>
-                  <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                    New Bucket
-                  </span>
-                </Label>
-                {newBucket ? (
-                  <Input
-                    value={formData.bucket}
-                    className={errors.storage ? "border-red-500 focus:border-red-500" : ""}
-                    onChange={(e) => {
-                      setFormData({ ...formData, bucket: e.target.value });
-                      if (errors.storage) {
-                        setErrors({ ...errors, storage: false });
-                      }
-                    }}
-                    placeholder="Enter bucket name"
-                  />
-                ) : (
-                  <Select
-                    value={formData.bucket}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, bucket: value });
-                      if (errors.storage) {
-                        setErrors({ ...errors, storage: false });
-                      }
-                    }}
-                  >
-                    <SelectTrigger
-                      className={errors.storage ? "border-red-500 focus:border-red-500" : ""}
-                    >
-                      <SelectValue placeholder="Select a bucket" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {buckets.map((bucket) => (
-                        <SelectItem
-                          key={bucket.bucket_name}
-                          value={bucket.bucket_name}
-                        >
-                          {bucket.bucket_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </div>
-          )}
+          <StorageSelectForm 
+            errors={errors}
+            formData={formData}
+            setFormData={setFormData}
+            manageBucket={formData.storageMode === "bucket"}
+            manageVolume={formData.storageMode === "volume"}
+          />
         </div>
         <DialogFooter>
           <RequestButton
