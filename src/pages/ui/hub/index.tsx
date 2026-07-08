@@ -13,8 +13,9 @@ import { Service } from "../services/models/service";
 import GenericTable from "@/components/Table";
 import HubTableActions from "./components/HubTableActions";
 import LayoutSelect from "@/components/LayoutSelect";
-import { getHubServiceTypeTagColor } from "@/lib/utils";
+import { getHubServiceTypeTagColor, isVersionLower } from "@/lib/utils";
 import HubSrcPopoverButton, { DEFAULT_SOURCES, GitHubSource } from "./components/HubSrcPopoverButton";
+import { useAuth } from "@/contexts/AuthContext";
 
 function HubView() {
   const [filteredServices, setFilteredServices] = useState<Record<string, [RoCrateServiceDefinition, Service]>>({});
@@ -24,6 +25,7 @@ function HubView() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGridView, setIsGridView] = useState(true);
   const [selectedSource, setSelectedSource] = useState<GitHubSource>(DEFAULT_SOURCES[0]);
+  const { clusterInfo } = useAuth();
 
   const fetchService = useCallback(
     async (
@@ -31,7 +33,7 @@ function HubView() {
     ): Promise<Service | undefined> => {
       const response = await fetch(roCrateServiceDef.fdlUrl);
       if (response.ok) {
-        const service = yamlToServices(await response.text(), "")![0];
+        const service = yamlToServices(await response.text(), "", (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")))![0];
         const services: Service = {
           ...service,
           environment: {
