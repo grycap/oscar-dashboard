@@ -1,6 +1,6 @@
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { exposedServiceIsAlive, isVersionLower } from "@/lib/utils";
+import { axiosExposedServiceIsAlive, exposedServiceIsAlive, isVersionLower } from "@/lib/utils";
 import { Service } from "@/pages/ui/services/models/service";
 import { Link } from "react-router-dom";
 import OscarColors from "@/styles";
@@ -13,12 +13,14 @@ function SimpleServiceRedirectButton({
   endpoint,
   additionalExposedPathArgs,
   healthcheckPath = "",
+  axios = false,
 }: {
   className?: string;
   service: Service;
   endpoint: string;
   additionalExposedPathArgs?: string;
   healthcheckPath?: string;
+  axios?: boolean;
 }) {
   const [isAlive, setIsAlive] = useState<boolean | null>(null);
   const { clusterInfo } = useAuth();
@@ -66,9 +68,16 @@ function SimpleServiceRedirectButton({
         return;
       }
       try {
-        const status = await exposedServiceIsAlive(healthcheckLink, 10000, 20);
-        if (isMounted) { 
-          setIsAlive(status);
+        if (axios) {
+          const status = await axiosExposedServiceIsAlive(healthcheckLink, 10000, 20);
+          if (isMounted) { 
+            setIsAlive(status);
+          }
+        } else {
+          const status = await exposedServiceIsAlive(healthcheckLink, 10000, 20);
+          if (isMounted) { 
+            setIsAlive(status);
+          }
         }
       } catch (error) {
         if (isMounted) {

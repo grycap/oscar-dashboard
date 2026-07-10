@@ -1,6 +1,6 @@
 import createServiceApi from "@/api/services/createServiceApi";
 import RequestButton from "@/components/RequestButton";
-import StorageSelectForm from "@/components/StorageSeceltForm";
+import StorageSelectForm, { StorageSelectFormRef } from "@/components/StorageSelectForm";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,7 +34,7 @@ import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Plus, RefreshCcwIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const FILEBROWSER_FDL_URL =
   "https://raw.githubusercontent.com/grycap/oscar-filebrowser/refs/heads/main/fdl.yml";
@@ -48,6 +48,7 @@ function FileBrowserFormPopover() {
   const { systemConfig, authData, clusterInfo } = useAuth();
   const { refreshServices } = useServicesContext();
   const oidcGroups = getAllowedVOs(systemConfig, authData);
+  const storageFormRef = useRef<StorageSelectFormRef | null>(null);
 
   function nameService() {
     return (
@@ -62,9 +63,6 @@ function FileBrowserFormPopover() {
     memoryRam: "512",
     memoryUnit: "Mi",
     storageMode: "volume" as StorageMode,
-    bucket: "",
-    volume: "",
-    volumeSize: "1",
     vo: "",
     token: "",
   });
@@ -75,9 +73,6 @@ function FileBrowserFormPopover() {
     memoryRam: false,
     storage: false,
     vo: false,
-    volume: false,
-    bucket: false,
-    volumeSize: false,
   });
 
   useEffect(() => {
@@ -98,9 +93,6 @@ function FileBrowserFormPopover() {
       memoryRam: "512",
       memoryUnit: "Mi",
       storageMode: "volume",
-      bucket: "",
-      volume: "",
-      volumeSize: "1",
       token: genRandomString(128),
     }));
     setErrors({
@@ -109,32 +101,35 @@ function FileBrowserFormPopover() {
       memoryRam: false,
       storage: false,
       vo: false,
-      volume: false,
-      bucket: false,
-      volumeSize: false,
     });
   }, [isOpen]);
 
   const handleDeploy = async () => {
-    const selectedBucket = formData.bucket.trim();
-    const selectedVolume = formData.volume.trim();
+
+    
+
+    const storageValid = storageFormRef.current ? storageFormRef.current.validate() : false;
+    const storageConfig = storageFormRef.current ? storageFormRef.current!.getStorageConfig() : { mainStorage: "none", bucket: "", volume: "", volumeSize: "" };
+    const selectedBucket = storageConfig.bucket.trim();
+    const selectedVolume = storageConfig.volume.trim();
+
     const newErrors = {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
       memoryRam: !formData.memoryRam,
       storage: formData.storageMode === "volume" ? !selectedVolume : !selectedBucket,
       vo: !formData.vo,
-      volume: formData.storageMode === "volume" && !formData.volume,
-      bucket: formData.storageMode === "bucket" && !formData.bucket,
-      volumeSize: errors.volumeSize,
+      volume: formData.storageMode === "volume" && !storageConfig.volume,
+      bucket: formData.storageMode === "bucket" && !storageConfig.bucket,
     };
 
     setErrors(newErrors);
 
-    if (Object.values(newErrors).some((error) => error)) {
-      alert.error("Please fill in all fields");
+    if (Object.values(newErrors).some(Boolean) || !storageValid) {
+      alert.error("Please fill in all required fields");
       return;
     }
+    
 
     try {
       const fdlResponse = await fetch(FILEBROWSER_FDL_URL, fetchFromGitHubOptions);
@@ -152,7 +147,7 @@ function FileBrowserFormPopover() {
 
       const service = services[0];
       const serviceName = formData.name || nameService();
-      const sourcePath = formData.storageMode === "volume" ? `/mnt/volumes/${formData.volume}` : `/mnt/${selectedBucket}`;
+      const sourcePath = formData.storageMode === "volume" ? `/mnt/volumes/${storageConfig.volume}` : `/mnt/${selectedBucket}`;
 
       const modifiedService: Service = {
         ...service,
@@ -176,19 +171,19 @@ function FileBrowserFormPopover() {
           filebrowser: "true",
         },
         mount: undefined,
-        ...(formData.bucket ? {
+        ...(storageConfig.bucket ? {
           mount: {
             ...service.mount,
-            path: formData.bucket ?? "/notebook",
+            path: storageConfig.bucket ?? "/notebook",
             storage_provider: service.mount?.storage_provider ?? "minio.default",
           },
         } : {}),
         volume: undefined,
-        ...(formData.volume ? { 
+        ...(storageConfig.volume ? { 
           volume: {
-            name: formData.volume,
-            size: formData.volumeSize ? `${formData.volumeSize.trim()}Gi` : undefined,
-            mount_path: `/mnt/volumes/${formData.volume}`,
+            name: storageConfig.volume,
+            size: storageConfig.volumeSize ? `${storageConfig.volumeSize.trim()}Gi` : undefined,
+            mount_path: `/mnt/volumes/${storageConfig.volume}`,
           }
         } : {}),
       };
@@ -338,8 +333,6 @@ function FileBrowserFormPopover() {
                 setFormData({
                   ...formData,
                   storageMode: value as StorageMode,
-                  bucket: "",
-                  volume: "",
                 });
                 if (errors.storage) {
                   setErrors({ ...errors, storage: false });
@@ -356,9 +349,7 @@ function FileBrowserFormPopover() {
             </Select>
           </div>
           <StorageSelectForm 
-            errors={errors}
-            formData={formData}
-            setFormData={setFormData}
+            ref={storageFormRef}
             manageBucket={formData.storageMode === "bucket"}
             manageVolume={formData.storageMode === "volume"}
           />

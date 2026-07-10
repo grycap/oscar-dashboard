@@ -13,17 +13,18 @@ import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Plus, RefreshCcwIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IMAGE_TAGS } from "./images";
 import InfoPopUp from "@/components/InfoPopUp";
 import InfoItem from "@/pages/ui/info/components/InfoItem";
 import { errorMessage } from "@/lib/error";
-import StorageSelectForm from "@/components/StorageSeceltForm";
+import StorageSelectForm, { StorageSelectFormRef } from "@/components/StorageSelectForm";
 
 function JunoFormPopover() {
   const [isOpen, setIsOpen] = useState(false);
   const {systemConfig, authData, clusterInfo } = useAuth();
   const { refreshServices } = useServicesContext();
+  const storageFormRef = useRef<StorageSelectFormRef | null>(null);
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
   const imageTagsMap = convertDockerImageToMap(IMAGE_TAGS);
@@ -37,26 +38,15 @@ function JunoFormPopover() {
     cpuCores: "1.0",
     memoryRam: "2",
     memoryUnit: "Gi",
-    bucket: "",
-    volume: "",
-    volumeSize: "1",
-    mainStorage: "bucket",
     vo: "",
     token: "",
     imageTag: IMAGE_TAGS[0].tag,
-    addBucket: true,
-    addVolume: false,
-    newBucket: true,
-    newVolume: true,
   });
 
   const [errors, setErrors] = useState({
     name: false,
     cpuCores: false,
     memoryRam: false,
-    bucket: true,
-    volume: true,
-    volumeSize: false,
     vo: false,
     token: false,
   });
@@ -75,26 +65,15 @@ function JunoFormPopover() {
       cpuCores: "1.0",
       memoryRam: "2",
       memoryUnit: "Gi",
-      bucket: "",
-      volume: "",
-      volumeSize: "1",
-      mainStorage: "bucket",
       token: genRandomString(128),
       imageTag: IMAGE_TAGS[0].tag,
-      addBucket: true,
-      addVolume: false,
-      newBucket: true,
-      newVolume: true,
     }));
     setErrors({
       name: false,
       cpuCores: false,
       memoryRam: false,
-      bucket: false,
       vo: false,
       token: false,
-      volume: false,
-      volumeSize: false,
     });
   }, [isOpen]);
 
@@ -105,17 +84,16 @@ function JunoFormPopover() {
       memoryRam: !formData.memoryRam,
       vo: !formData.vo,
       token: !formData.token,
-      bucket: formData.addBucket && !formData.bucket,
-      volume: formData.addVolume && !formData.volume,
-      volumeSize: formData.addVolume && formData.newVolume && (!formData.volumeSize || parseInt(formData.volumeSize) < 1),
     };
 
     setErrors(newErrors);
 
-    if (Object.values(newErrors).some(error => error)) {
-      alert.error("Please fill in all fields");
+    const storageValid = storageFormRef.current ? storageFormRef.current.validate() : false;
+    if (Object.values(newErrors).some(Boolean) || !storageValid) {
+      alert.error("Please fill in all required fields");
       return;
     }
+    const storageConfig = storageFormRef.current!.getStorageConfig();
 
     try {
       const fdlUrl =
@@ -134,10 +112,10 @@ function JunoFormPopover() {
 
       const serviceName = formData.name || nameService();
 
-      const workspaceDir = formData.mainStorage === "volume" && formData.volume
-        ? `/mnt/volumes/${formData.volume}`
-        : formData.mainStorage === "bucket" && formData.bucket
-          ? `/mnt/${formData.bucket}`
+      const workspaceDir = storageConfig.mainStorage === "volume" && storageConfig.volume
+        ? `/mnt/volumes/${storageConfig.volume}`
+        : storageConfig.mainStorage === "bucket" && storageConfig.bucket
+          ? `/mnt/${storageConfig.bucket}`
           : `/tmp/${serviceName}`;
 
       const modifiedService: Service = {
@@ -165,19 +143,19 @@ function JunoFormPopover() {
           jupyter_notebook: "true",
         },
         mount: undefined,
-        ...(formData.bucket ? {
+        ...(storageConfig.bucket ? {
           mount: {
             ...service.mount,
-            path: formData.bucket ?? "/notebook",
+            path: storageConfig.bucket ?? "/notebook",
             storage_provider: service.mount?.storage_provider ?? "minio.default",
           },
         } : {}),
         volume: undefined,
-        ...(formData.volume ? { 
+        ...(storageConfig.volume ? { 
           volume: {
-            name: formData.volume,
-            size: formData.volumeSize ? `${formData.volumeSize.trim()}Gi` : undefined,
-            mount_path: `/mnt/volumes/${formData.volume}`,
+            name: storageConfig.volume,
+            size: storageConfig.volumeSize ? `${storageConfig.volumeSize.trim()}Gi` : undefined,
+            mount_path: `/mnt/volumes/${storageConfig.volume}`,
           }
         } : {}),
       };
@@ -383,9 +361,7 @@ return (
             </div>
             <div>
               <StorageSelectForm 
-                formData={formData}
-                setFormData={setFormData}
-                errors={errors}
+                ref={storageFormRef}
               />
             </div>
           </div>
