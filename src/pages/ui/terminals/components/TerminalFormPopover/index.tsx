@@ -1,7 +1,7 @@
 import createServiceApi from "@/api/services/createServiceApi";
 import CustomSwitch from "@/components/CustomSwitch";
 import RequestButton from "@/components/RequestButton";
-import StorageSelectForm from "@/components/StorageSeceltForm";
+import StorageSelectForm, { StorageSelectFormRef } from "@/components/StorageSelectForm";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,7 +37,7 @@ import {
 } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Plus, RefreshCcwIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const TERMINAL_FDL_URL =
   "https://raw.githubusercontent.com/grycap/oscar-terminal/refs/heads/main/fdl.yml";
@@ -49,6 +49,7 @@ function TerminalFormPopover() {
   const { systemConfig, authData, clusterInfo } = useAuth();
   const { refreshServices } = useServicesContext();
   const [withStorage, setWithStorage] = useState(true);
+  const storageFormRef = useRef<StorageSelectFormRef | null>(null);
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
 
@@ -64,14 +65,6 @@ function TerminalFormPopover() {
     cpuCores: "0.5",
     memoryRam: "256",
     memoryUnit: "Mi",
-    bucket: "",
-    volume: "",
-    volumeSize: "1",
-    mainStorage: "bucket",
-    addBucket: true,
-    addVolume: false,
-    newBucket: true,
-    newVolume: true,
     refreshToken: "",
     vo: "",
     token: "",
@@ -81,9 +74,6 @@ function TerminalFormPopover() {
     name: false,
     cpuCores: false,
     memoryRam: false,
-    bucket: false,
-    volume: false,
-    volumeSize: false,
     vo: false,
   });
 
@@ -104,23 +94,13 @@ function TerminalFormPopover() {
       cpuCores: "0.5",
       memoryRam: "256",
       memoryUnit: "Mi",
-      bucket: "",
-      volume: "",
-      volumeSize: "1",
       refreshToken: "",
-      addBucket: true,
-      addVolume: false,
-      newBucket: true,
-      newVolume: true,
       token: genRandomString(128),
     }));
     setErrors({
       name: false,
       cpuCores: false,
       memoryRam: false,
-      bucket: false,
-      volume: false,
-      volumeSize: false,
       vo: false,
     });
   }, [isOpen]);
@@ -130,18 +110,19 @@ function TerminalFormPopover() {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
       memoryRam: !formData.memoryRam,
-      bucket: withStorage && formData.addBucket && !formData.bucket,
-      volume: withStorage && formData.addVolume && !formData.volume,
-      volumeSize: withStorage && formData.addVolume && formData.newVolume && (!formData.volumeSize || parseInt(formData.volumeSize) < 1),
       vo: !formData.vo,
     };
 
     setErrors(newErrors);
 
-    if (Object.values(newErrors).some((error) => error)) {
-      alert.error("Please fill in all fields");
+    
+    const storageValid = storageFormRef.current ? storageFormRef.current.validate() : withStorage === false;
+    if (Object.values(newErrors).some(Boolean) || !storageValid) {
+      alert.error("Please fill in all required fields");
       return;
     }
+
+    const storageConfig = withStorage ? storageFormRef.current!.getStorageConfig() : { mainStorage: "none", bucket: "", volume: "", volumeSize: "" };
 
     try {
       const fdlResponse = await fetch(TERMINAL_FDL_URL, fetchFromGitHubOptions);
@@ -161,11 +142,13 @@ function TerminalFormPopover() {
 
       const service = services[0];
       const serviceName = formData.name || nameService();
-      const workspaceDir = withStorage && formData.mainStorage === "volume" && formData.volume
-        ? `/mnt/volumes/${formData.volume}`
-        : withStorage && formData.mainStorage === "bucket" && formData.bucket
-          ? `/mnt/${formData.bucket}`
+      console.log("Storage Config:", storageConfig);
+      const workspaceDir = withStorage && storageConfig.mainStorage === "volume" && storageConfig.volume
+        ? `/mnt/volumes/${storageConfig.volume}`
+        : withStorage && storageConfig.mainStorage === "bucket" && storageConfig.bucket
+          ? `/mnt/${storageConfig.bucket}`
           : `/tmp/${serviceName}`;
+          console.log("Workspace Directory:", workspaceDir);
 
       const baseSecrets = Object.fromEntries(
         Object.entries(service.environment.secrets || {}).filter(
@@ -199,19 +182,19 @@ function TerminalFormPopover() {
           terminal: "true",
         },
         mount: undefined,
-        ...(formData.bucket ? {
+        ...(storageConfig.bucket ? {
           mount: {
             ...service.mount,
-            path: formData.bucket ?? "/notebook",
+            path: storageConfig.bucket ?? "/notebook",
             storage_provider: service.mount?.storage_provider ?? "minio.default",
           },
         } : {}),
         volume: undefined,
-        ...(formData.volume ? { 
+        ...(storageConfig.volume ? { 
           volume: {
-            name: formData.volume,
-            size: formData.volumeSize ? `${formData.volumeSize.trim()}Gi` : undefined,
-            mount_path: `/mnt/volumes/${formData.volume}`,
+            name: storageConfig.volume,
+            size: storageConfig.volumeSize ? `${storageConfig.volumeSize.trim()}Gi` : undefined,
+            mount_path: `/mnt/volumes/${storageConfig.volume}`,
           }
         } : {}),
       };
@@ -388,9 +371,7 @@ function TerminalFormPopover() {
           </div>
           {withStorage && (
           <StorageSelectForm
-            formData={formData}
-            setFormData={setFormData}
-            errors={errors}
+            ref={storageFormRef}
           />
           )}
         </div>

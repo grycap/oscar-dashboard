@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import OscarColors from "@/styles";
 import {  Dialog,  DialogContent, DialogFooter,  DialogHeader,  DialogTitle,  DialogTrigger} from "@/components/ui/dialog";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,7 +15,7 @@ import { Plus, RefreshCcwIcon } from "lucide-react";
 import RequestButton from "@/components/RequestButton";
 import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs, isVersionLower } from "@/lib/utils";
 import { errorMessage } from "@/lib/error";
-import StorageSelectForm from "@/components/StorageSeceltForm";
+import StorageSelectForm, { StorageSelectFormRef } from "@/components/StorageSelectForm";
 
 
 
@@ -24,6 +24,8 @@ function FlowsFormPopover() {
   const {systemConfig, authData, clusterInfo } = useAuth();
   const { refreshServices } = useServicesContext();
   const oidcGroups = getAllowedVOs(systemConfig, authData);
+  const storageFormRef = useRef<StorageSelectFormRef | null>(null);
+  
 
   function nameService() {
     return `flows-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
@@ -34,28 +36,17 @@ function FlowsFormPopover() {
       cpuCores: "1.0",
       memoryRam: "2",
       memoryUnit: "Gi",
-      bucket: "",
       vo: "",
       password: "",
       secret: "",
-      volume: "",
-      volumeSize: "1",
-      mainStorage: "bucket",
-      addBucket: true,
-      addVolume: false,
-      newBucket: true,
-      newVolume: true,
   });
 
   const [errors, setErrors] = useState({
     name: false,
     cpuCores: false,
     memoryRam: false,
-    bucket: false,
     vo: false,
     password: false,
-    volumeSize: false,
-    volume: false,
   });
 
   useEffect(() => {
@@ -73,25 +64,14 @@ function FlowsFormPopover() {
       cpuCores: "1.0",
       memoryRam: "2",
       memoryUnit: "Gi",
-      bucket: "",
       password: "",
-      mainStorage: "bucket",
-      volume: "",
-      volumeSize: "1",
-      addBucket: true,
-      addVolume: false,
-      newBucket: true,
-      newVolume: true,
     }));
     setErrors({
       name: false,
       cpuCores: false,
       memoryRam: false,
-      bucket: false,
       vo: false,
       password: false,
-      volumeSize: false,
-      volume: false,
     });
   }, [isOpen]);
 
@@ -102,17 +82,16 @@ function FlowsFormPopover() {
       memoryRam: !formData.memoryRam,
       vo: !formData.vo,
       password: !formData.password,
-      bucket: formData.addBucket && !formData.bucket,
-      volume: formData.addVolume && !formData.volume,
-      volumeSize: formData.addVolume && formData.newVolume && (!formData.volumeSize || parseInt(formData.volumeSize) < 1),
     };
 
     setErrors(newErrors);
 
-    if (Object.values(newErrors).some(error => error)) {
-      alert.error("Please fill in all fields");
+    const storageValid = storageFormRef.current ? storageFormRef.current.validate() : false;
+    if (Object.values(newErrors).some(Boolean) || !storageValid) {
+      alert.error("Please fill in all required fields");
       return;
     }
+    const storageConfig = storageFormRef.current!.getStorageConfig();
 
     try {
       const fdlUrl = "https://raw.githubusercontent.com/grycap/oscar-flows/refs/heads/main/flows.yaml";
@@ -130,10 +109,10 @@ function FlowsFormPopover() {
 
       const serviceName = formData.name || nameService();
 
-      const workspaceDir = formData.mainStorage === "volume" && formData.volume
-        ? `/mnt/volumes/${formData.volume}`
-        : formData.mainStorage === "bucket" && formData.bucket
-          ? `/mnt/${formData.bucket}`
+      const workspaceDir = storageConfig.mainStorage === "volume" && storageConfig.volume
+        ? `/mnt/volumes/${storageConfig.volume}`
+        : storageConfig.mainStorage === "bucket" && storageConfig.bucket
+          ? `/mnt/${storageConfig.bucket}`
           : `/tmp/${serviceName}`;
 
       const modifiedService: Service = {
@@ -159,19 +138,19 @@ function FlowsFormPopover() {
           node_red: "true",
         },
         mount: undefined,
-        ...(formData.bucket ? {
+        ...(storageConfig.bucket ? {
           mount: {
             ...service.mount,
-            path: formData.bucket ?? "/flows",
+            path: storageConfig.bucket ?? "/flows",
             storage_provider: service.mount?.storage_provider ?? "minio.default",
           },
         } : {}),
         volume: undefined,
-        ...(formData.volume ? { 
+        ...(storageConfig.volume ? { 
           volume: {
-            name: formData.volume,
-            size: formData.volumeSize ? `${formData.volumeSize.trim()}Gi` : undefined,
-            mount_path: `/mnt/volumes/${formData.volume}`,
+            name: storageConfig.volume,
+            size: storageConfig.volumeSize ? `${storageConfig.volumeSize.trim()}Gi` : undefined,
+            mount_path: `/mnt/volumes/${storageConfig.volume}`,
           }
         } : {}),
       };
@@ -342,9 +321,7 @@ function FlowsFormPopover() {
             </div>
             <div>
               <StorageSelectForm
-                formData={formData}
-                setFormData={setFormData}
-                errors={errors}
+                ref={storageFormRef}
               />
             </div>
           </div>
