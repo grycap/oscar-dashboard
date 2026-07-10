@@ -3,6 +3,7 @@ import { AuthData } from "@/contexts/AuthContext";
 import { SystemConfig } from "@/models/systemConfig";
 import { Service } from "@/pages/ui/services/models/service";
 import { _Object, CommonPrefix } from "@aws-sdk/client-s3";
+import axios from "axios";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { stringify } from "yaml";
@@ -101,6 +102,30 @@ export async function exposedServiceIsAlive(url: string, delay = 6000, attempts 
         }
       }
     } catch (error) {
+      console.error(`Attempt ${i + 1} failed:`, error);
+    }
+    await sleep(delay);
+  }
+  
+  return false;
+}
+
+export async function axiosExposedServiceIsAlive(url: string, delay = 6000, attempts = 100): Promise<boolean> {
+  for (let i = 0; i < attempts || attempts === -1; i++) {
+    try {
+      const response = await axios.head(url);
+      if (response.status === 200) {
+        return true;
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response && error.response.status !== 503) {
+          const response = await axios.get(url);
+          if (response.status === 200) {
+            return true;
+          }
+        }
+      }
       console.error(`Attempt ${i + 1} failed:`, error);
     }
     await sleep(delay);
@@ -493,4 +518,8 @@ export function downloadString(data: string, filename: string, type: string = "t
   a.click();
 
   URL.revokeObjectURL(url);
+}
+
+export function textToLF(text: string): string {
+  return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 }
