@@ -223,29 +223,33 @@ export interface Service {
   deployment?: DeploymentSummary;
   volume?: ServiceVolumeConfig;
   expose: {
-    min_scale: string,
-    max_scale: string,
+    min_scale: number,
+    max_scale: number,
     api_port: number[],
-    cpu_threshold: string,
+    cpu_threshold: number,
     rewrite_target: boolean,
     nodePort: number[],
     default_command: boolean,
     set_auth: boolean
     health_path: string;
+    auth_type?: "basic" | "forward";
+    probe_mode?: string;
   };
 }
 
 export interface TmpService extends Omit<Service, "expose"> {
   expose: {
-    min_scale: string,
-    max_scale: string,
+    min_scale: number,
+    max_scale: number,
     api_port: number[] | number,
-    cpu_threshold: string,
+    cpu_threshold: number,
     rewrite_target: boolean,
     nodePort: number[] | number,
     default_command: boolean,
     set_auth: boolean
     health_path: string;
+    auth_type?: "basic" | "forward";
+    probe_mode?: string;
   };
 }
 
