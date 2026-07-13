@@ -5,16 +5,16 @@ import { Button } from "@/components/ui/button";
 import Editor from "@monaco-editor/react";
 import RequestButton from "@/components/RequestButton";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
-import createServiceApi from "@/api/services/createServiceApi";
-import getServiceApi from "@/api/services/getServiceApi";
 import updateServiceApi from "@/api/services/updateServiceApi";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import { alert } from "@/lib/alert";
 import { getFDLAndScriptText, isVersionLower } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import getServiceApi from "@/api/services/getServiceApi";
+import createServiceApi from "@/api/services/createServiceApi";
 
-function InlineFDLEditor() {
-  const { formService, refreshServices } = useServicesContext();
+function InlineFDLEditor({ mode = "api" }: { mode?: "api" | "inline-edit" }) {
+  const { formService, setFormService, refreshServices } = useServicesContext();
   const { clusterInfo } = useAuth();
   const existingService = useMemo(
     () =>
@@ -77,10 +77,14 @@ function InlineFDLEditor() {
     if (!services || services.length === 0) {
       return;
     }
+    if (mode === "inline-edit") {
+      setFormService(services[0]);
+      console.log("Updated formService:", services[0]);
+      return;
+    }
 
     let createMode = true;
     setIsSaving(true);
-
     try {
       const promises = services.map(async (service) => {
         try {
@@ -171,7 +175,7 @@ function InlineFDLEditor() {
               Cancel
             </Button>
             <RequestButton request={handleSave} disabled={isSaving}>
-              {existingService ? "Update service" : "Create service"}
+              { mode === "inline-edit" ? "Save changes" : existingService ? "Update service" : "Create service"}
             </RequestButton>
           </div>
         </div>

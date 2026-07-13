@@ -289,7 +289,7 @@ const serviceToDownload = getFDLAndScriptText(formService)
       <ServiceFormCell title="Service Resources">
         <div className="grid grid-cols-1 gap-5 w-full max-w-6xl min-w-[720px]">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 w-full max-w-5xl min-w-[720px] ">
-            <div className="grid grid-cols-[150px_150px_150px] gap-[10px] xl:pl-[40px] items-end">
+            <div className="grid grid-cols-[150px_150px_150px] gap-[10px] items-end">
               <Input
                 id="cpu-input"
                 value={formService?.cpu}
@@ -341,9 +341,9 @@ const serviceToDownload = getFDLAndScriptText(formService)
       </ServiceFormCell>
       <Divider />
       <ServiceFormCell title="FDL / Script">
-        {formMode === ServiceViewMode.Update && (
+        { (
           <div className="grid gap-5 w-full max-w-6xl min-w-[720px]">
-            <InlineFDLEditor />
+            <InlineFDLEditor mode={formMode === ServiceViewMode.Create ? "inline-edit" : "api"} />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm text-slate-600 dark:text-slate-300">
                 Download the service files for review or backup.
