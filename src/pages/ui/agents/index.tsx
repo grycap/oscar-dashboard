@@ -24,7 +24,7 @@ import yamlToServices from "../services/components/FDL/utils/yamlToService";
 }*/
 
 const DEFAULT_SOURCES = [
-  { repository: "grycap/oscar-agents", branch: "dashboard-agent" },
+  { repository: "grycap/oscar-agents", branch: "main" },
 ];
 
 function AgentsView() {
