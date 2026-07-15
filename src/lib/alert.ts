@@ -1,22 +1,17 @@
 import OscarColors from "@/styles";
+import { Copy } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
 class ToastAlert {
   constructor() {}
 
-  private formatMessage(message: React.ReactNode | string, copyable: boolean = false) {
+  private formatMessage(message: React.ReactNode ) {
     if (typeof message === "string") {
       return React.createElement(
         "span",
         {
-          onClick: () => {
-            if (!copyable) return;
-            navigator.clipboard.writeText(message);
-            alert.success("Alert message copied to clipboard");
-          },
-          title: `${copyable ? "Click to copy" : ""}`,
-          className: `toast-message-scroll w-full ${copyable ? "cursor-pointer" : ""}`,
+          className: "toast-message-scroll w-full",
         },
         message
       );
@@ -25,12 +20,28 @@ class ToastAlert {
     return message;
   }
 
+  private handleCopy(message: string) {
+    navigator.clipboard.writeText(message);
+    this.success("Alert message copied to clipboard");
+  }
+
+  private copyIcon() {
+    return React.createElement(
+      Copy,
+      {
+        size: 16,
+        className: "cursor-pointer",
+      }
+    );
+  }
+
   default(message: React.ReactNode | string) {
     toast(this.formatMessage(message));
   }
 
   success(message: string) {
-    toast.success(this.formatMessage(message), {
+    toast.success("Success", {
+      description: this.formatMessage(message),
       style: {
         backgroundColor: "#17A34B",
         color: "white",
@@ -44,11 +55,28 @@ class ToastAlert {
       console.error(message);
     }
 
-    toast.error(this.formatMessage(message, true), {
+    const copyText = typeof message === "string" ? message : "";
+
+    toast.error("Error", {
+      description: this.formatMessage(message),
       style: {
         backgroundColor: OscarColors.Red,
         color: "white",
         border: "none",
+      },
+      actionButtonStyle: {
+        background: "transparent",
+        backgroundColor: "transparent",
+        border: "none",
+        boxShadow: "none",
+        padding: 0,
+        color: "inherit",
+      },
+      action: {
+        label: this.copyIcon(),
+        onClick: () => {
+          this.handleCopy(copyText);
+        },
       },
     });
   }
@@ -58,7 +86,8 @@ class ToastAlert {
       console.warn(messsage);
     }
 
-    toast.warning(this.formatMessage(messsage), {
+    toast.warning("Warning", {
+      description: this.formatMessage(messsage),
       style: {
         backgroundColor: "orange",
         color: "white",
