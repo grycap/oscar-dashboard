@@ -94,7 +94,7 @@ function AgentsModelForm({ agentServiceType, noCustomSkillFiles = false, noCusto
           <Label htmlFor="provider-name">Provider name</Label>
           <Input
             id="provider-name"
-            placeholder="YOUR_LLM_PROVIDER_NAME"
+            placeholder="Custom provider name (e.g., GryCap)"
             value={formData.providerName}
             onChange={(e) => {
               setFormData({ ...formData, providerName: e.target.value });
@@ -107,7 +107,7 @@ function AgentsModelForm({ agentServiceType, noCustomSkillFiles = false, noCusto
           <Label htmlFor="model">Model</Label>
           <Input
             id="model"
-            placeholder="YOUR_OPENAI_MODEL"
+            placeholder="Model name (e.g., gpt-3.5-turbo)"
             value={formData.model}
             onChange={(e) => {
               setFormData({ ...formData, model: e.target.value });
@@ -121,7 +121,7 @@ function AgentsModelForm({ agentServiceType, noCustomSkillFiles = false, noCusto
         <Label htmlFor="base-url">OpenAI-compatible base URL</Label>
         <Input
           id="base-url"
-          placeholder="YOUR_OPENAI_BASE_URL"
+          placeholder="OpenAI-compatible base URL (e.g., https://api.openai.com/v1)"
           value={formData.baseUrl}
           error={errors.baseUrl ? "OpenAI base URL is required" : undefined}
           onChange={(e) => {
@@ -135,7 +135,7 @@ function AgentsModelForm({ agentServiceType, noCustomSkillFiles = false, noCusto
         <Input
           id="api-key"
           type="password"
-          placeholder="Leave empty to configure Hermes later"
+          placeholder="API key (Leave empty to configure later)"
           value={formData.apiKey}
           onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
         />
