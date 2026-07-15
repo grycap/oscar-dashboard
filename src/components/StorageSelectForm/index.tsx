@@ -69,7 +69,8 @@ function StorageSelectForm({ manageBucket = true, manageVolume = true, ref }: St
           volume: addVolume && !storageConfig.volume.trim(),
           volumeSize: newVolume && (!storageConfig.volumeSize || parseInt(storageConfig.volumeSize) < 1),
         };
-        setErrors((prev: any) => ({ ...prev, ...nextErrors }));
+        console.log("Validating StorageSelectForm", nextErrors, storageConfig);
+        setErrors(nextErrors);
         return !Object.values(nextErrors).some(Boolean);
       },
       getStorageConfig() {

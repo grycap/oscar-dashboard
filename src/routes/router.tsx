@@ -21,6 +21,7 @@ import HubView from "@/pages/ui/hub";
 import Quotas from "@/pages/ui/quotas";
 import UploadFromPresignedURL from "@/pages/UploadFromPresignedURL";
 import MetricsView from "@/pages/ui/metrics";
+import AgentsView from "@/pages/ui/agents";
 
 function AppRouter() {
   return (
@@ -52,6 +53,7 @@ function AppRouter() {
           <Route path="metrics" element={<MetricsView />} />
           <Route path="hub" element={<HubView />} />
           <Route path="quotas" element={<Quotas />} />
+          <Route path="agents" element={<AgentsView />} />
           
           
         </Route>

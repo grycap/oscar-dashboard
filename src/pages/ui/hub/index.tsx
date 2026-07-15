@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import HubCard from "./components/HubCard/index";
-import parseROCrateDataJS, { RoCrateServiceDefinition } from "@/lib/roCrate";
+import {parseROCrateDataJS, RoCrateServiceDefinition } from "@/lib/roCrate";
 import { Input } from "@/components/ui/input";
 import { Filter, LoaderPinwheel, Search } from "lucide-react";
 import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";

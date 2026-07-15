@@ -316,6 +316,10 @@ export function getHubServiceTypeTagColor(type: string) {
       return "bg-blue-100 text-blue-700";
     case "exposed":
       return "bg-yellow-100 text-yellow-700";
+    case "on-demand":
+      return "bg-purple-100 text-purple-700";
+    case "agent":
+      return "bg-pink-100 text-pink-700";
     default:
       return "bg-red-100 text-red-700";
   }
