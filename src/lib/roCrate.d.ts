@@ -10,6 +10,11 @@ export interface RoCrateServiceDefinition {
     memoryUnits: string;
     cpuRequirements: string;
     gpuRequirements: string;
+    
+    kserveMemoryRequirements?: string;
+    kserveMemoryUnits?: string;
+    kserveCpuRequirements?: string;
+    kserveGpuRequirements?: string;
 }
 
 export interface RoCrateAgentServiceDefinition {

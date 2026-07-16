@@ -41,6 +41,49 @@ function resolveGithubBlobUrl(baseBlobUrl, relativePath) {
   return url.toString();
 }
 
+function parseMemoryRequirements(requirements, service) {
+  const memoryRequirements = Array.isArray(requirements) ? requirements : [requirements];
+
+  for (const req of memoryRequirements) {
+    const { value, unit } = normalizeMemoryRequirement(req, [
+      { match: /kserve-?GiB/i, unit: 'Gi' },
+      { match: /GiB/i, unit: 'Gi' },
+      { match: /MiB/i, unit: 'Mi' }
+    ], 'Mi');
+
+    if (!value) continue;
+
+    if (/kserve-?GiB/i.test(String(req))) {
+      service.kserveMemoryRequirements = value;
+      service.kserveMemoryUnits = unit;
+    } else {
+      service.memoryRequirements = value;
+      service.memoryUnits = unit;
+    }
+  }
+}
+
+function parseProcessorRequirements(requirements, service) {
+  const processorRequirements = Array.isArray(requirements) ? requirements : [requirements];
+
+  for (const req of processorRequirements) {
+    const splitReq = String(req).trim().split(/\s+/);
+    if (splitReq.length < 2) continue;
+
+    const [value, procType] = splitReq;
+
+    if (/^vCPU$/i.test(procType)) {
+      service.cpuRequirements = value;
+    } else if (/^GPU$/i.test(procType)) {
+      service.gpuRequirements = value;
+    } else if (/^kserve-vCPU$/i.test(procType)) {
+      service.kserveCpuRequirements = value;
+    } else if (/^kserve-GPU$/i.test(procType)) {
+      service.kserveGpuRequirements = value;
+    }
+  }
+}
+
 const RoCrateServiceDefinition = {
     name: "",
     description: "",
@@ -55,7 +98,12 @@ const RoCrateServiceDefinition = {
     gpuRequirements: "0",
     agentSoulUrl: "",
     agentSkillUrl: [],
-    agentType: "" // "exposed" | "on-demand",
+    agentType: "", // "exposed" | "on-demand",
+
+    kserveMemoryRequirements: "2",
+    kserveMemoryUnits: "Mi",
+    kserveCpuRequirements: "1",
+    kserveGpuRequirements: "0",
 };
 
 /* With validation
@@ -81,7 +129,7 @@ async function parseROCrateDataJScore(githubUser, githubRepo, githubBranch, crat
     headers: {
       'Accept': 'text/plain, application/x-yaml, */*',
       // Can be required for private repositories or higher rate limits
-      //'Authorization': `token ${""}`
+      //'Authorization': `Bearer ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`
     }
   };
   
@@ -207,17 +255,9 @@ async function parseROCrateDataJScore(githubUser, githubRepo, githubBranch, crat
       service.description = crateRoot.description;
       service.author = crate.getEntity(crateRoot.author['@id']).name;
       service.type = Array.isArray(crateRoot.serviceType) ? crateRoot.serviceType : [crateRoot.serviceType];
-      const memory = crateRoot.memoryRequirements.split(' ');
-      
-      /^\d+$/.test(memory[0]) && (service.memoryRequirements = memory[0]);
-      service.memoryUnits = memory[1] === "GiB" ? "Gi" : "Mi";
 
-      crateRoot.processorRequirements.forEach((req) => {
-        const splitReq = req.split(' ')
-        const procType = /^(vCPU|GPU)$/i.test(splitReq[1]) ? splitReq[1] : "vCPU";
-        procType === "vCPU" && (service.cpuRequirements = splitReq[0]);
-        procType === "GPU" && (service.gpuRequirements = splitReq[0]);
-      });
+      parseMemoryRequirements(crateRoot.memoryRequirements, service);
+      parseProcessorRequirements(crateRoot.processorRequirements, service);
 
       serviceList.push(service);
     } catch (error) {
@@ -226,6 +266,23 @@ async function parseROCrateDataJScore(githubUser, githubRepo, githubBranch, crat
     }
   }
   return serviceList;
+}
+
+
+function normalizeMemoryRequirement(requirement, unitMap = [{ match: /GiB/i, unit: 'Gi' }, { match: /MiB/i, unit: 'Mi' }], defaultUnit = 'Mi') {
+  const normalized = Array.isArray(requirement)
+    ? requirement.map((item) => String(item).trim()).join(' ').trim()
+    : String(requirement ?? '').trim();
+
+  const parts = normalized.split(/\s+/).filter(Boolean);
+  const value = parts.length > 0 && /^\d+$/.test(parts[0]) ? parts[0] : '';
+  const text = parts.slice(1).join(' ');
+  const match = unitMap.find((entry) => entry.match.test(text));
+
+  return {
+    value,
+    unit: match ? match.unit : defaultUnit,
+  };
 }
 
 export async function parseAgentsROCrateDataJS(githubUser, githubRepo, githubBranch, cratesFolder = "agents", validate = false) {
