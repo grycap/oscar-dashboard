@@ -222,6 +222,7 @@ export interface Service {
   };
   deployment?: DeploymentSummary;
   volume?: ServiceVolumeConfig;
+  kserve?: KServe;
   expose: {
     min_scale: number,
     max_scale: number,
@@ -251,6 +252,31 @@ export interface TmpService extends Omit<Service, "expose"> {
     auth_type?: "basic" | "forward";
     probe_mode?: string;
   };
+}
+
+export interface KServe {
+  type: "inference" | "llm_inference";
+  inference?: KServeInference;
+  llm_inference?: KServeLLMInference;
+  storage_uri: string;
+  min_scale?: number;
+  max_scale?: number;
+  cpu?: string;
+  memory?: string;
+  args?: string[];
+  env?: Record<string, string>;
+  enable_gpu?: boolean;
+  set_auth?: boolean;
+}
+
+export interface KServeInference {
+  model_format: string;
+  runtime: string;
+  api_version: string;
+}
+
+export interface KServeLLMInference {
+  runtime_image: string;
 }
 
 export enum ServiceTab {

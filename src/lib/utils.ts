@@ -320,6 +320,8 @@ export function getHubServiceTypeTagColor(type: string) {
       return "bg-purple-100 text-purple-700";
     case "agent":
       return "bg-pink-100 text-pink-700";
+    case "kserve":
+      return "bg-indigo-100 text-indigo-700";
     default:
       return "bg-red-100 text-red-700";
   }
