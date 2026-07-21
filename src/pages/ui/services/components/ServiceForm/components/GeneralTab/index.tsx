@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/select";
 import EnviromentVariables from "./components/EnviromentVariables";
 import ServiceFormCell from "../FormCell";
-import ScriptButton from "./components/ScriptButton";
-import { CheckIcon, CopyIcon, XIcon, ExternalLink } from "lucide-react";
+import InlineFDLEditor from "./components/InlineFDLEditor";
+import { CheckIcon, CopyIcon, XIcon, ExternalLink, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { alert } from "@/lib/alert";
 import Divider from "@/components/ui/divider";
@@ -28,7 +28,7 @@ import EnviromentSecrets from "./components/EnviromentSecrets";
 import Annotations from "./components/Annotations";
 
 import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
-import { getAllowedVOs } from "@/lib/utils";
+import { downloadString, getAllowedVOs, getFDLAndScriptText } from "@/lib/utils";
 import { useEffect } from "react";
 
 function ServiceGeneralTab() {
@@ -57,6 +57,8 @@ function ServiceGeneralTab() {
       allowed_users: users
     }));
   };
+const serviceToDownload = getFDLAndScriptText(formService)
+  
 
   const visibility = formService?.visibility ?? ServiceVisibility.private;
   const serviceIsRestricted = visibility === ServiceVisibility.restricted;
@@ -270,11 +272,6 @@ function ServiceGeneralTab() {
                   <XIcon size={16} className="pt-[2px]" />
                 )}
               </div>
-
-              <div className="flex flex-row gap-2 items-center">
-                <strong>Visibility:</strong>
-                {visibility?.toUpperCase()}
-              </div>
               {serviceIsRestricted && (
                 <div className="flex flex-row gap-2 items-center">
                   <strong>Allowed users:</strong>
@@ -289,57 +286,89 @@ function ServiceGeneralTab() {
         </div>
       </ServiceFormCell>
       <Divider />
-      <ServiceFormCell title="Service specifications">
-        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5 w-full max-w-6xl min-w-[720px]">
-          <ScriptButton  />
-          <div className="grid grid-cols-[210px_210px_150px] gap-[10px] 2xl:pl-[40px] items-end">
-            <Input
-              id="cpu-input"
-              value={formService?.cpu}
-              onChange={(e) => {
-                handleChange(e, "cpu");
-              }}
-              label="CPU cores"
-              error={errors.cpu}
-              type="number"
-              step="0.1"
-            />
-            <Input
-              id="memory-input"
-              value={memory}
-              label="Memory"
-              onChange={(e) => {
-                setFormService((service: Service) => {
-                  return {
-                    ...service,
-                    memory: e.target.value + memoryUnits,
-                  };
-                });
-              }}
-              type="number"
-              error={errors.memory}
-            />
-            <Select
-              value={memoryUnits}
-              onValueChange={(value) => {
-                setFormService((service: Service) => {
-                  return {
-                    ...service,
-                    memory: memory + value,
-                  };
-                });
-              }}
-            >
-              <SelectTrigger id="memory-units-select" className="w-[75px]">
-                <SelectValue placeholder="Select unit" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Mi">Mi</SelectItem>
-                <SelectItem value="Gi">Gi</SelectItem>
-              </SelectContent>
-            </Select>
+      <ServiceFormCell title="Service Resources">
+        <div className="grid grid-cols-1 gap-5 w-full max-w-6xl min-w-[720px]">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 w-full max-w-5xl min-w-[720px] ">
+            <div className="grid grid-cols-[150px_150px_150px] gap-[10px] items-end">
+              <Input
+                id="cpu-input"
+                value={formService?.cpu}
+                onChange={(e) => {
+                  handleChange(e, "cpu");
+                }}
+                label="CPU cores"
+                error={errors.cpu}
+                type="number"
+                step="0.1"
+              />
+              <Input
+                id="memory-input"
+                value={memory}
+                label="Memory"
+                onChange={(e) => {
+                  setFormService((service: Service) => {
+                    return {
+                      ...service,
+                      memory: e.target.value + memoryUnits,
+                    };
+                  });
+                }}
+                type="number"
+                error={errors.memory}
+              />
+              <Select
+                value={memoryUnits}
+                onValueChange={(value) => {
+                  setFormService((service: Service) => {
+                    return {
+                      ...service,
+                      memory: memory + value,
+                    };
+                  });
+                }}
+              >
+                <SelectTrigger id="memory-units-select" className="w-[75px]">
+                  <SelectValue placeholder="Select unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Mi">Mi</SelectItem>
+                  <SelectItem value="Gi">Gi</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
+      </ServiceFormCell>
+      <Divider />
+      <ServiceFormCell title="FDL / Script">
+        { (
+          <div className="grid gap-5 w-full max-w-6xl min-w-[720px]">
+            <InlineFDLEditor mode={formMode === ServiceViewMode.Create ? "inline-edit" : "api"} />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm text-slate-600 dark:text-slate-300">
+                Download the service files for review or backup.
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+                <Button
+                  className="w-full sm:w-auto flex flex-row gap-2 items-center justify-center"
+                  variant="secondary"
+                  onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}.yaml`, "application/yaml")}}
+                >
+                  <Download size={16} />
+                  Download FDL
+                </Button>
+                <Button
+                  className="w-full sm:w-auto flex flex-row gap-2 items-center justify-center"
+                  variant="secondary"
+                  onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}-script.sh`)}}
+                >
+                  <Download size={16} />
+                  Download script
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </ServiceFormCell>
       <Divider />
       <ServiceFormCell title="Annotations">

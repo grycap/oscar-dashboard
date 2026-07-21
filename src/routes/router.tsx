@@ -52,6 +52,7 @@ function AppRouter() {
           <Route path="metrics" element={<MetricsView />} />
           <Route path="hub" element={<HubView />} />
           <Route path="quotas" element={<Quotas />} />
+          {/* <Route path="agents" element={<AgentsView />} /> */}
           
           
         </Route>

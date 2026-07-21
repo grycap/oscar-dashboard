@@ -16,12 +16,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { SelectIcon } from "@radix-ui/react-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import Divider from "@/components/ui/divider";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { shortenFullname } from "@/lib/utils";
 import GenPresignedURLPopover from "./GenPresignedURLPopover";
 import AnimatedRefreshCw from "@/components/ui/animatedRefreshCw";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
 function MinioTopbar() {
@@ -250,14 +250,14 @@ function MinioTopbar() {
             <></> 
             } 
             <AddFolderButton disabled={isLoading} />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <Popover >
+              <PopoverTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <UploadCloud size={20} />
                   <span className="hidden sm:inline">Upload Options</span>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-auto p-2">
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-auto p-2">
                 <div className="flex flex-col gap-2">
                   <AddFileButton disabled={isLoading} />
                   <GenPresignedURLPopover bucketName={name} operation="upload" objectKey={pathSegments.join("/")} 
@@ -269,8 +269,8 @@ function MinioTopbar() {
                     }
                   />
                 </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </PopoverContent>
+            </Popover>
 
           </div>
         </div>

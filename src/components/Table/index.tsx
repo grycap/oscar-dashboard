@@ -99,7 +99,7 @@ function GenericTable<T extends object>({
   return (
     <div className="relative flex flex-col flex-grow flex-basis-0 overflow-hidden">
       <Table id="table">
-        <TableHeader id="table-header" className="sticky top-0 z-10 h-[34px]">
+        <TableHeader id="table-header" className="sticky top-0 z-0 h-[34px]">
           <TableRow
             style={{
               background: "white",

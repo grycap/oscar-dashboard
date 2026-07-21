@@ -307,7 +307,7 @@ function ServicesList() {
               {
                 button: (item) => (
                   <>
-                    {item.expose.max_scale != "0" && item?.expose?.nodePort?.length > 0 && 
+                    {item.expose.max_scale != 0 && item?.expose?.nodePort?.length > 0 && 
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant={"link"} ref={(elem) => {buttonRef.current?.set(item.name, elem!)}} size="icon" tooltipLabel="Ports">
@@ -333,7 +333,7 @@ function ServicesList() {
               {
                 button: (item) => (
                   <>
-                  {item.expose.max_scale != "0" ?
+                  {item.expose.max_scale != 0 ?
                     <ServiceRedirectButton 
                       className="flex items-center justify-center ml-2 mr-2 "
                       service={item}

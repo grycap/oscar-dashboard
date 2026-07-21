@@ -48,10 +48,10 @@ export const defaultService: Service = {
   allowed_users: [],
   visibility: ServiceVisibility.private,
   expose: {
-    min_scale: "",
-    max_scale: "",
+    min_scale: 0,
+    max_scale: 0,
     api_port: [],
-    cpu_threshold: "",
+    cpu_threshold: 90,
     rewrite_target: false,
     nodePort: [],
     default_command: false,

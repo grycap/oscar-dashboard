@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { alert } from "@/lib/alert";
-import { MoreVertical, Activity, Play, Key, Edit, Trash, RefreshCw, Square } from "lucide-react";
+import { MoreVertical, Activity, Play, Key, Edit, Trash, RefreshCw, Square, Download } from "lucide-react";
 import OscarColors from "@/styles";
 import { ServiceLifecycleAction } from "@/api/services/lifecycleServiceApi";
+import { downloadString, getFDLAndScriptText } from "@/lib/utils";
 
 interface Props {
   service: Service;
@@ -36,6 +37,13 @@ export default function MoreActionsPopover({
   const isExposedService = service.expose?.api_port?.length > 0 || service.expose?.nodePort?.length > 0;
   const isStopped = service.deployment?.state === "stopped";
 
+  function handleDownloadFdlORScript(service: Service, type: "fdl" | "script") {
+    
+    const { fdlText, scriptText } = getFDLAndScriptText(service);
+    const content = type === "fdl" ? fdlText : scriptText;
+    downloadString(content, `${service.name}${type === "fdl" ? ".yaml" : "-script.sh"}`);
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild title="More actions">
@@ -43,7 +51,7 @@ export default function MoreActionsPopover({
           <MoreVertical />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[220px]">
+      <DropdownMenuContent align="end" className="w-[220px] overflow-y-auto min-h-0 max-h-[var(--radix-dropdown-menu-content-available-height)]">
         <DropdownMenuLabel>
           <div className="flex flex-col">
             <span className="text-sm font-normal text-muted-foreground">
@@ -100,6 +108,15 @@ export default function MoreActionsPopover({
           <div className="flex flex-col">
             <span>Copy Token</span>          
           </div>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => handleDownloadFdlORScript(service, "fdl")}>
+          <Download className="mr-2 h-4 w-4" />
+          <span>Download FDL</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleDownloadFdlORScript(service, "script")}>
+          <Download className="mr-2 h-4 w-4" />
+          <span>Download Script</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleEditService}>

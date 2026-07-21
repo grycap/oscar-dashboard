@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import OscarColors from "@/styles";
 import {  Dialog,  DialogContent, DialogFooter,  DialogHeader,  DialogTitle,  DialogTrigger} from "@/components/ui/dialog";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,8 +14,8 @@ import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Plus, RefreshCcwIcon } from "lucide-react";
 import RequestButton from "@/components/RequestButton";
 import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs, isVersionLower } from "@/lib/utils";
-import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
 import { errorMessage } from "@/lib/error";
+import StorageSelectForm, { StorageSelectFormRef } from "@/components/StorageSelectForm";
 
 
 
@@ -23,10 +23,9 @@ function FlowsFormPopover() {
   const [isOpen, setIsOpen] = useState(false);
   const {systemConfig, authData, clusterInfo } = useAuth();
   const { refreshServices } = useServicesContext();
-  const [newBucket, setNewBucket] = useState(false);
-  const buckets = useGetPrivateBuckets();
-  
   const oidcGroups = getAllowedVOs(systemConfig, authData);
+  const storageFormRef = useRef<StorageSelectFormRef | null>(null);
+  
 
   function nameService() {
     return `flows-${generateReadableName(6)}-${genRandomString(8).toLowerCase()}`;
@@ -37,7 +36,6 @@ function FlowsFormPopover() {
       cpuCores: "1.0",
       memoryRam: "2",
       memoryUnit: "Gi",
-      bucket: "",
       vo: "",
       password: "",
       secret: "",
@@ -47,7 +45,6 @@ function FlowsFormPopover() {
     name: false,
     cpuCores: false,
     memoryRam: false,
-    bucket: false,
     vo: false,
     password: false,
   });
@@ -67,36 +64,34 @@ function FlowsFormPopover() {
       cpuCores: "1.0",
       memoryRam: "2",
       memoryUnit: "Gi",
-      bucket: "",
       password: "",
     }));
     setErrors({
       name: false,
       cpuCores: false,
       memoryRam: false,
-      bucket: false,
       vo: false,
       password: false,
     });
   }, [isOpen]);
 
   const handleDeploy = async () => {
-
     const newErrors = {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
       memoryRam: !formData.memoryRam,
-      bucket: !formData.bucket,
       vo: !formData.vo,
       password: !formData.password,
     };
 
     setErrors(newErrors);
 
-    if (Object.values(newErrors).some(error => error)) {
-      alert.error("Please fill in all fields");
+    const storageValid = storageFormRef.current ? storageFormRef.current.validate() : false;
+    if (Object.values(newErrors).some(Boolean) || !storageValid) {
+      alert.error("Please fill in all required fields");
       return;
     }
+    const storageConfig = storageFormRef.current!.getStorageConfig();
 
     try {
       const fdlUrl = "https://raw.githubusercontent.com/grycap/oscar-flows/refs/heads/main/flows.yaml";
@@ -114,22 +109,23 @@ function FlowsFormPopover() {
 
       const serviceName = formData.name || nameService();
 
+      const workspaceDir = storageConfig.mainStorage === "volume" && storageConfig.volume
+        ? `/mnt/volumes/${storageConfig.volume}`
+        : storageConfig.mainStorage === "bucket" && storageConfig.bucket
+          ? `/mnt/${storageConfig.bucket}`
+          : `/tmp/${serviceName}`;
+
       const modifiedService: Service = {
         ...service,
         name: serviceName,
         vo: formData.vo,
         memory: `${formData.memoryRam}${formData.memoryUnit}`,
         cpu: formData.cpuCores,
-        mount: {
-          ...service.mount,
-          path: formData.bucket ?? "/flows",
-          storage_provider: service.mount?.storage_provider ?? "minio.default",
-        },
         environment: {
           variables: {
             ...service.environment.variables,
             NODE_RED_BASE_URL: `/system/services/${serviceName}/exposed`,
-            NODE_RED_DIRECTORY: "/mnt/"+ formData.bucket,
+            NODE_RED_DIRECTORY: workspaceDir,
           },
           secrets:{
             ...service.environment.secrets,
@@ -141,6 +137,22 @@ function FlowsFormPopover() {
           ...service.labels,
           node_red: "true",
         },
+        mount: undefined,
+        ...(storageConfig.bucket ? {
+          mount: {
+            ...service.mount,
+            path: storageConfig.bucket ?? "/flows",
+            storage_provider: service.mount?.storage_provider ?? "minio.default",
+          },
+        } : {}),
+        volume: undefined,
+        ...(storageConfig.volume ? { 
+          volume: {
+            name: storageConfig.volume,
+            size: storageConfig.volumeSize ? `${storageConfig.volumeSize.trim()}Gi` : undefined,
+            mount_path: `/mnt/volumes/${storageConfig.volume}`,
+          }
+        } : {}),
       };
       
       await createServiceApi(modifiedService);
@@ -308,51 +320,9 @@ function FlowsFormPopover() {
               ></Input>
             </div>
             <div>
-              <Label>Bucket</Label>
-              <hr className="mb-2"/>
-              <div>
-                <Label className="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" value="" className="sr-only peer" onClick={() => { setNewBucket(!newBucket); setFormData({ ...formData, bucket: "" });}} />
-                  <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600 dark:peer-checked:bg-teal-600"></div>
-                  <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">New Bucket</span>
-                </Label>
-                {newBucket? 
-                <Input
-                  type="input"
-                  onFocus={(e) => (e.target.type = "text")}
-                  style={{ width: "100%",
-                    fontWeight: "normal",
-                    }}
-                  className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}
-                  onChange={(e) => {
-                      setFormData({ ...formData, bucket: e.target?.value });
-                      if (errors.bucket) setErrors({ ...errors, bucket: false });
-                  }}
-                  placeholder="Enter new bucket name"
-                />
-                :
-                  <Select
-                    value={formData.bucket}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, bucket: value });
-                      if (errors.bucket) setErrors({ ...errors, bucket: false });
-                    }}
-                  >
-                    <SelectTrigger className={errors.bucket ? "border-red-500 focus:border-red-500" : ""}>
-                      <SelectValue
-                        placeholder="Select a bucket"
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {buckets.map((bucket) => (
-                        <SelectItem key={bucket.bucket_name} value={bucket.bucket_name}>
-                          {bucket.bucket_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                }
-              </div>
+              <StorageSelectForm
+                ref={storageFormRef}
+              />
             </div>
           </div>
         <DialogFooter>

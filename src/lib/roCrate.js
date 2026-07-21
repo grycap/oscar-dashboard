@@ -8,6 +8,82 @@ function isSupportedIcon(id, type) {
   );
 }
 
+function resolveGithubBlobUrl(baseBlobUrl, relativePath) {
+  const url = new URL(baseBlobUrl);
+  const segments = url.pathname.split('/').filter(Boolean);
+  const relativeSegments = relativePath.split('/');
+  let resolvedSegments;
+
+  if (url.hostname === 'raw.githubusercontent.com') {
+    resolvedSegments = [...segments];
+    if (!baseBlobUrl.endsWith('/') && resolvedSegments.length > 3 && resolvedSegments[resolvedSegments.length - 1].includes('.')) {
+      resolvedSegments.pop();
+    }
+  } else if (url.hostname === 'github.com' && segments[2] === 'blob') {
+    resolvedSegments = segments.slice(0, segments.length - 1);
+  } else {
+    throw new Error('Invalid GitHub URL');
+  }
+
+  for (const part of relativeSegments) {
+    if (part === '.' || part === '') continue;
+    if (part === '..') {
+      if (resolvedSegments.length <= 3) {
+        throw new Error('Relative path escapes repository root');
+      }
+      resolvedSegments.pop();
+    } else {
+      resolvedSegments.push(part);
+    }
+  }
+
+  url.pathname = '/' + resolvedSegments.join('/');
+  return url.toString();
+}
+
+function parseMemoryRequirements(requirements, service) {
+  const memoryRequirements = Array.isArray(requirements) ? requirements : [requirements];
+
+  for (const req of memoryRequirements) {
+    const { value, unit } = normalizeMemoryRequirement(req, [
+      { match: /kserve-?GiB/i, unit: 'Gi' },
+      { match: /GiB/i, unit: 'Gi' },
+      { match: /MiB/i, unit: 'Mi' }
+    ], 'Mi');
+
+    if (!value) continue;
+
+    if (/kserve-?GiB/i.test(String(req))) {
+      service.kserveMemoryRequirements = value;
+      service.kserveMemoryUnits = unit;
+    } else {
+      service.memoryRequirements = value;
+      service.memoryUnits = unit;
+    }
+  }
+}
+
+function parseProcessorRequirements(requirements, service) {
+  const processorRequirements = Array.isArray(requirements) ? requirements : [requirements];
+
+  for (const req of processorRequirements) {
+    const splitReq = String(req).trim().split(/\s+/);
+    if (splitReq.length < 2) continue;
+
+    const [value, procType] = splitReq;
+
+    if (/^vCPU$/i.test(procType)) {
+      service.cpuRequirements = value;
+    } else if (/^GPU$/i.test(procType)) {
+      service.gpuRequirements = value;
+    } else if (/^kserve-vCPU$/i.test(procType)) {
+      service.kserveCpuRequirements = value;
+    } else if (/^kserve-GPU$/i.test(procType)) {
+      service.kserveGpuRequirements = value;
+    }
+  }
+}
+
 const RoCrateServiceDefinition = {
     name: "",
     description: "",
@@ -20,6 +96,14 @@ const RoCrateServiceDefinition = {
     memoryUnits: "Mi",
     cpuRequirements: "1",
     gpuRequirements: "0",
+    agentSoulUrl: "",
+    agentSkillUrl: [],
+    agentType: "", // "exposed" | "on-demand",
+
+    kserveMemoryRequirements: "2",
+    kserveMemoryUnits: "Mi",
+    kserveCpuRequirements: "1",
+    kserveGpuRequirements: "0",
 };
 
 /* With validation
@@ -32,13 +116,12 @@ const RoCrateServiceDefinition = {
 1.1 kB transferred
 21.9 kB resources
 */
-export default async function parseROCrateDataJS(githubUser, githubRepo, githubBranch, validate = false) {
+async function parseROCrateDataJScore(githubUser, githubRepo, githubBranch, cratesFolder = 'crates', validate = false, isAgentService = false) {
   // Define the GitHub repository details
   // Replace with your GitHub username, repository name, and branch
   const user = githubUser;
   const repo = githubRepo;
   const branch = githubBranch;
-  const cratesFolder = 'crates';
   const githubUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/${branch}`;
 
   const fetchFromGitHubOptions = {
@@ -46,7 +129,7 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
     headers: {
       'Accept': 'text/plain, application/x-yaml, */*',
       // Can be required for private repositories or higher rate limits
-      //'Authorization': `token ${""}`
+      //'Authorization': `Bearer ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`
     }
   };
   
@@ -107,16 +190,23 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
             //service.fdlUrl = crate.getEntity(element['@id'])['url'];
             if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
               service.fdlUrl = element['@id'];
+            else if (element['@id'].startsWith('../'))
+                service.fdlUrl = resolveGithubBlobUrl(`${folderRawFileUrl}/`, element['@id']);
             else
               service.fdlUrl = `${folderRawFileUrl}/fdl.yml`;
             
           }
           if (service.scriptUrl === "" && element['@id'].includes("script.sh") && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/x-shellscript") {
             //service.scriptUrl = crate.getEntity(element['@id'])['url'];
-            if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
+            if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://')) {
               service.scriptUrl = element['@id'];
-            else
+            }
+            else if (element['@id'].startsWith('../')) {
+              service.scriptUrl = resolveGithubBlobUrl(`${folderRawFileUrl}/`, element['@id']);
+            }
+            else {
               service.scriptUrl = `${folderRawFileUrl}/script.sh`;
+            }
           }
           if (isSupportedIcon(element['@id'], type)) {
             if (
@@ -127,12 +217,36 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
             else
               service.iconUrl = `${folderRawFileUrl}/${element['@id']}`;
           }
+          if (isAgentService) {
+            if (service.agentSoulUrl === "" && element['@id'].includes("SOUL.md") && type.includes('File') && type.includes('AgentSoul')){
+              if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
+                service.agentSoulUrl = element['@id'];
+              else if (element['@id'].startsWith('../'))
+                service.agentSoulUrl = resolveGithubBlobUrl(`${folderRawFileUrl}/`, element['@id']);
+              else
+                service.agentSoulUrl = `${folderRawFileUrl}/SOUL.md`;
+            }
+            if (element['@id'].includes("SKILL.md") && type.includes('File') && type.includes('AgentSkill')){
+              if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
+                service.agentSkillUrl = service.agentSkillUrl.concat([element['@id']]);
+              else if (element['@id'].startsWith('../'))
+                service.agentSkillUrl = service.agentSkillUrl.concat([resolveGithubBlobUrl(`${folderRawFileUrl}/`, element['@id'])]);
+              else
+                service.agentSkillUrl = service.agentSkillUrl.concat([`${folderRawFileUrl}/SKILL.md`]);
+            }
+            
+          }
         } catch (error) {
           console.error(`Skip invalid part in service definition file: ${file.path}`);
         }
       });
 
-      if (service.fdlUrl === "" || service.scriptUrl === "" || service.iconUrl === "") {
+      if (isAgentService) {
+        service.agentType = crateRoot.agentType;
+      }
+
+      if ((service.fdlUrl === "" || service.scriptUrl === "" || service.iconUrl === "") ||
+         (isAgentService && service.agentType === "")) {
         console.error(`Skip invalid service definition file: ${file.path}`);
         continue;
       }
@@ -142,17 +256,8 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
       service.author = crate.getEntity(crateRoot.author['@id']).name;
       service.type = Array.isArray(crateRoot.serviceType) ? crateRoot.serviceType : [crateRoot.serviceType];
 
-      const memory = crateRoot.memoryRequirements.split(' ');
-      
-      /^\d+$/.test(memory[0]) && (service.memoryRequirements = memory[0]);
-      service.memoryUnits = memory[1] === "GiB" ? "Gi" : "Mi";
-
-      crateRoot.processorRequirements.forEach((req) => {
-        const splitReq = req.split(' ')
-        const procType = /^(vCPU|GPU)$/i.test(splitReq[1]) ? splitReq[1] : "vCPU";
-        procType === "vCPU" && (service.cpuRequirements = splitReq[0]);
-        procType === "GPU" && (service.gpuRequirements = splitReq[0]);
-      });
+      parseMemoryRequirements(crateRoot.memoryRequirements, service);
+      parseProcessorRequirements(crateRoot.processorRequirements, service);
 
       serviceList.push(service);
     } catch (error) {
@@ -161,4 +266,29 @@ export default async function parseROCrateDataJS(githubUser, githubRepo, githubB
     }
   }
   return serviceList;
+}
+
+
+function normalizeMemoryRequirement(requirement, unitMap = [{ match: /GiB/i, unit: 'Gi' }, { match: /MiB/i, unit: 'Mi' }], defaultUnit = 'Mi') {
+  const normalized = Array.isArray(requirement)
+    ? requirement.map((item) => String(item).trim()).join(' ').trim()
+    : String(requirement ?? '').trim();
+
+  const parts = normalized.split(/\s+/).filter(Boolean);
+  const value = parts.length > 0 && /^\d+$/.test(parts[0]) ? parts[0] : '';
+  const text = parts.slice(1).join(' ');
+  const match = unitMap.find((entry) => entry.match.test(text));
+
+  return {
+    value,
+    unit: match ? match.unit : defaultUnit,
+  };
+}
+
+export async function parseAgentsROCrateDataJS(githubUser, githubRepo, githubBranch, cratesFolder = "agents", validate = false) {
+  return parseROCrateDataJScore(githubUser, githubRepo, githubBranch, cratesFolder, validate, true);
+}
+
+export async function parseROCrateDataJS(githubUser, githubRepo, githubBranch, cratesFolder = "crates", validate = false) {
+  return parseROCrateDataJScore(githubUser, githubRepo, githubBranch, cratesFolder, validate, false);
 }

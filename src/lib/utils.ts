@@ -1,9 +1,12 @@
 import getBucketItemsApi from "@/api/buckets/getBucketItemsApi";
 import { AuthData } from "@/contexts/AuthContext";
 import { SystemConfig } from "@/models/systemConfig";
+import { Service } from "@/pages/ui/services/models/service";
 import { _Object, CommonPrefix } from "@aws-sdk/client-s3";
+import axios from "axios";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { stringify } from "yaml";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -99,6 +102,30 @@ export async function exposedServiceIsAlive(url: string, delay = 6000, attempts 
         }
       }
     } catch (error) {
+      console.error(`Attempt ${i + 1} failed:`, error);
+    }
+    await sleep(delay);
+  }
+  
+  return false;
+}
+
+export async function axiosExposedServiceIsAlive(url: string, delay = 6000, attempts = 100): Promise<boolean> {
+  for (let i = 0; i < attempts || attempts === -1; i++) {
+    try {
+      const response = await axios.head(url);
+      if (response.status === 200) {
+        return true;
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response && error.response.status !== 503) {
+          const response = await axios.get(url);
+          if (response.status === 200) {
+            return true;
+          }
+        }
+      }
       console.error(`Attempt ${i + 1} failed:`, error);
     }
     await sleep(delay);
@@ -289,6 +316,12 @@ export function getHubServiceTypeTagColor(type: string) {
       return "bg-blue-100 text-blue-700";
     case "exposed":
       return "bg-yellow-100 text-yellow-700";
+    case "on-demand":
+      return "bg-purple-100 text-purple-700";
+    case "agent":
+      return "bg-pink-100 text-pink-700";
+    case "kserve":
+      return "bg-indigo-100 text-indigo-700";
     default:
       return "bg-red-100 text-red-700";
   }
@@ -407,4 +440,92 @@ export const convertDockerImageToMap = (images: DockerImage[]): Map<string, Dock
     map.set(image.tag, image);
   });
   return map;
+}
+
+function removeEmpty(value: any): any {
+  if (Array.isArray(value)) {
+    const cleaned = value
+      .map(removeEmpty)
+      .filter(
+        v =>
+          v !== undefined &&
+          v !== null &&
+          v !== "" &&
+          !(Array.isArray(v) && v.length === 0) &&
+          !(typeof v === "object" && Object.keys(v).length === 0)
+      );
+
+    return cleaned.length ? cleaned : undefined;
+  }
+
+  if (value && typeof value === "object") {
+    const cleaned = Object.fromEntries(
+      Object.entries(value)
+        .map(([k, v]) => [k, removeEmpty(v)])
+        .filter(
+          ([_, v]) =>
+            v !== undefined &&
+            v !== null &&
+            v !== "" &&
+            !(Array.isArray(v) && v.length === 0) &&
+            !(typeof v === "object" && Object.keys(v).length === 0)
+        )
+    );
+
+    return Object.keys(cleaned).length ? cleaned : undefined;
+  }
+
+  return value;
+}
+
+export function normalizeFDL<T>(obj: T): T {
+  if (Array.isArray(obj)) {
+    return obj.map(normalizeFDL) as T;
+  }
+
+  if (obj && typeof obj === "object") {
+    const result: any = {};
+
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] =
+        key === "script"
+          ? "script.sh"
+          : normalizeFDL(value);
+    }
+
+    return result;
+  }
+
+  return obj;
+}
+
+export function getFDLAndScriptText(service: Service): { fdlText: string; scriptText: string } {
+  const auxService = structuredClone(service);
+  const scriptText = auxService.script.toString();
+  auxService.script = "script.sh"; // Replace script content with placeholder for FDL
+  const getOSCARServiceFDL =  {functions: { oscar: [ {oscar_service: auxService} ] }}
+  const fdlText = stringify(removeEmpty(getOSCARServiceFDL));
+
+  return { fdlText, scriptText };
+}
+
+// application/yaml
+// text/plain
+export function downloadString(data: string, filename: string, type: string = "text/plain") {
+  const blob = new Blob([data], {
+    type: type,
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+export function textToLF(text: string): string {
+  return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 }
