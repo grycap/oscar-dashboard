@@ -15,8 +15,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.654.0",
-    "@bithero/monaco-editor-vite-plugin": "^1.0.2",
-    "@monaco-editor/react": "^4.6.0",
+    "@bithero/monaco-editor-vite-plugin": "^1.0.3",
+    "@monaco-editor/react": "^4.7.0",
+    "monaco-editor": "0.55.0",
     "axios": "^1.7.2",
     "chart.js": "^4.5.1",
     "chartjs-plugin-zoom": "^2.2.0",
