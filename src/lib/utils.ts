@@ -12,6 +12,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function getExposedServiceUrl(endpoint: string, serviceName: string, path = "") {
+  const url = new URL(endpoint);
+  url.hostname = `${serviceName}.${url.hostname}`;
+  url.pathname = "/";
+  url.search = "";
+  url.hash = "";
+  return new URL(`./${path.replace(/^\/+/, "")}`, url).toString();
+}
+
 /**
  * Parses a Kubernetes CPU string and returns the value in millicores.
  * Supported formats: "2" (cores), "1500m" (millicores)
