@@ -352,7 +352,7 @@ const serviceToDownload = getFDLAndScriptText(formService)
                 <Button
                   className="w-full sm:w-auto flex flex-row gap-2 items-center justify-center"
                   variant="secondary"
-                  onClick={() => {downloadString(serviceToDownload.scriptText, `${formService.name}.yaml`, "application/yaml")}}
+                  onClick={() => {downloadString(serviceToDownload.fdlText, `${formService.name}.yaml`, "application/yaml")}}
                 >
                   <Download size={16} />
                   Download FDL
