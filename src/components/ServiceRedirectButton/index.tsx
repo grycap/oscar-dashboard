@@ -1,6 +1,6 @@
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { exposedServiceIsAlive, isVersionLower } from "@/lib/utils";
+import { exposedServiceIsAlive, getExposedServiceUrl, isVersionLower } from "@/lib/utils";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,8 +30,8 @@ function ServiceRedirectButton({
   const { clusterInfo } = useAuth();
 
   const safeHealthcheckPath = healthcheckPath.startsWith("/") ? healthcheckPath.slice(1).trim() : healthcheckPath
-  const healthcheckLink = `${endpoint}/system/services/${service.name}/exposed/${safeHealthcheckPath}`;
-  const exposedBaseLink = `${endpoint}/system/services/${service.name}/exposed/`;
+  const healthcheckLink = getExposedServiceUrl(endpoint, service.name, safeHealthcheckPath);
+  const exposedBaseLink = getExposedServiceUrl(endpoint, service.name);
   const serviceIsStopped = service.deployment?.state === "stopped";
       
   /**

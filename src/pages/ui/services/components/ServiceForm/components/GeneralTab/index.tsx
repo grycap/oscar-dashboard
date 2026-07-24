@@ -28,7 +28,7 @@ import EnviromentSecrets from "./components/EnviromentSecrets";
 import Annotations from "./components/Annotations";
 
 import { AllowedUsersPopover } from "./components/AllowedUsersPopover";
-import { downloadString, getAllowedVOs, getFDLAndScriptText } from "@/lib/utils";
+import { downloadString, getAllowedVOs, getExposedServiceUrl, getFDLAndScriptText } from "@/lib/utils";
 import { useEffect } from "react";
 
 function ServiceGeneralTab() {
@@ -244,9 +244,7 @@ const serviceToDownload = getFDLAndScriptText(formService)
                 <strong>Exposed:</strong>
                 {formService.expose?.api_port ? (
                   <Link
-                    to={`${
-                      authData.endpoint
-                    }/system/services/${formService.name}/exposed/`}
+                    to={getExposedServiceUrl(authData.endpoint, formService.name)}
                     target="_blank"
                   >
                     <ExternalLink size={18} />

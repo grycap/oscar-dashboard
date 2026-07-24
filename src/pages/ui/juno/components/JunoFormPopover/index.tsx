@@ -125,10 +125,14 @@ function JunoFormPopover() {
         vo: formData.vo,
         memory: `${formData.memoryRam}${formData.memoryUnit}`,
         cpu: formData.cpuCores,
+        expose: {
+          ...service.expose,
+          rewrite_target: false,
+        },
         environment: {
           variables: {
             ...service.environment.variables,
-            JHUB_BASE_URL: `/system/services/${serviceName}/exposed`,
+            JHUB_BASE_URL: "/",
             JUPYTER_DIRECTORY: workspaceDir,
             GRANT_SUDO: "yes",
             OSCAR_ENDPOINT: authData.endpoint,

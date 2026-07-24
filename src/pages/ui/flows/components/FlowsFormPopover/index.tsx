@@ -102,7 +102,9 @@ function FlowsFormPopover() {
       const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
       const scriptText = await scriptResponse.text();
 
-      const services = yamlToServices(fdlText, scriptText, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
+      const usesDNSRoutes =
+        !!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0");
+      const services = yamlToServices(fdlText, scriptText, usesDNSRoutes);
       if (!services?.length) throw Error("No services found");
 
       const service = services[0];
@@ -124,7 +126,9 @@ function FlowsFormPopover() {
         environment: {
           variables: {
             ...service.environment.variables,
-            NODE_RED_BASE_URL: `/system/services/${serviceName}/exposed`,
+            NODE_RED_BASE_URL: usesDNSRoutes
+              ? "/"
+              : `/system/services/${serviceName}/exposed`,
             NODE_RED_DIRECTORY: workspaceDir,
           },
           secrets:{
