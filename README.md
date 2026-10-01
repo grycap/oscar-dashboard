@@ -27,6 +27,6 @@ npm run build
 ## Licensing
 
 OSCAR-Dashboard is licensed under the Apache License, Version 2.0. See
-[LICENSE](https://github.com/grycap/scar/blob/master/LICENSE) for the full
+[LICENSE](https://github.com/grycap/oscar-dashboard-devel/blob/main/LICENSE) for the full
 license text.
  
