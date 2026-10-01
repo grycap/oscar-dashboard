@@ -83,7 +83,7 @@ function AgentsView() {
     ): Promise<Service | undefined> => {
       const response = await fetch(roCrateServiceDef.fdlUrl);
       if (response.ok) {
-        const service = yamlToServices(await response.text(), "", true)![0];
+        const service = yamlToServices(await response.text(), "", true, true)![0];
         const services: Service = {
           ...service,
           environment: {

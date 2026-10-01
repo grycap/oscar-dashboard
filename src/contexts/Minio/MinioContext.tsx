@@ -99,7 +99,11 @@ export type MinioProviderData = {
 };
 
 function isLocalhostDeployed(endpoint:string){
-  if (env.response_default_minio === endpoint){
+  if (env.response_default_minio === endpoint
+     || endpoint.includes("host.docker.internal")
+     || endpoint.includes("minio.minio")
+     || endpoint.includes("rustfs-svc.rustfs")
+    ){
     return true
   }else return false
 }
@@ -128,7 +132,9 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
       !providerInfo.region
     )
       return null;
-    providerInfo.endpoint =  isLocalhostDeployed(providerInfo.endpoint) ? "http://"+env.minio_local_endpoint+":"+env.minio_local_port : providerInfo.endpoint;
+
+    const minioPort = providerInfo.endpoint.split(":")[2] ?? env.minio_local_port;
+    providerInfo.endpoint =  isLocalhostDeployed(providerInfo.endpoint) ? "http://localhost:"+minioPort : providerInfo.endpoint;
     return new S3Client({
       region: providerInfo.region,
       endpoint: providerInfo.endpoint,

@@ -32,6 +32,26 @@ export const DEFAULT_SOURCES = [
   //{ repository: "grycap/oscar-hub", branch: "devel" },
 ];
 
+export function getSelectedSource(): GitHubSource {
+  try {
+    const storedSource = localStorage.getItem(OSCAR_HUB_SELECTED_SOURCE_KEY);
+    return storedSource ? JSON.parse(storedSource) : DEFAULT_SOURCES[0];
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      console.error(
+        "Error parsing OSCAR HUB selected source from localStorage. " +
+          "Resetting to default source:",
+        error
+      );
+      localStorage.setItem(
+        OSCAR_HUB_SELECTED_SOURCE_KEY,
+        JSON.stringify(DEFAULT_SOURCES[0])
+      );
+    }
+    return DEFAULT_SOURCES[0];
+  }
+}
+
 function HubSrcPopoverButton({
   responsiveButton = "sm",
   variant,
@@ -66,7 +86,7 @@ function HubSrcPopoverButton({
       newRepo.trim().replace("https://github.com/", "").length <= 0);
 
   useEffect(() => {
-    try {
+   /* try {
       const storedSource = localStorage.getItem(
         OSCAR_HUB_SELECTED_SOURCE_KEY
       );
@@ -86,7 +106,7 @@ function HubSrcPopoverButton({
         );
         setSelectedSource(DEFAULT_SOURCES[0]);
       }
-    }
+    }*/
 
     try {
       const storedSources = localStorage.getItem(OSCAR_HUB_SOURCES_KEY);

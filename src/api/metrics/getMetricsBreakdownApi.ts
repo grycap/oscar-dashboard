@@ -15,6 +15,7 @@ async function getMetricsBreakdownApi({
   includeUsers,
   start,
   end,
+  owner,
 }: GetMetricsBreakdownApiParams): Promise<MetricsBreakdownResponse> {
   const response = await axios.get("/system/metrics/breakdown", {
     params: {
@@ -22,6 +23,7 @@ async function getMetricsBreakdownApi({
       include_users: includeUsers ? "true" : undefined,
       start,
       end,
+      owner: owner || undefined,
     },
   });
 

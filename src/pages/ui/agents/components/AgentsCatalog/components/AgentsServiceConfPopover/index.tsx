@@ -445,7 +445,7 @@ return (
 						{(asyncService || mountBucket) && 
             <div>
               <Label>Input/Output Bucket</Label>
-              <InputOutputStorageForm ref={inputOutputBucketFormRef} />
+              <InputOutputStorageForm ref={inputOutputBucketFormRef} inOutStorageName={formData.name} />
             </div>
 						}
             {(serviceVolume || mountBucket) &&

@@ -13,8 +13,8 @@ import { Service } from "../services/models/service";
 import GenericTable from "@/components/Table";
 import HubTableActions from "./components/HubTableActions";
 import LayoutSelect from "@/components/LayoutSelect";
-import { getHubServiceTypeTagColor, isVersionLower } from "@/lib/utils";
-import HubSrcPopoverButton, { DEFAULT_SOURCES, GitHubSource } from "./components/HubSrcPopoverButton";
+import { getHubServiceTypeTagColor, useArrayPorts, usesDNSRoutes } from "@/lib/utils";
+import HubSrcPopoverButton, { getSelectedSource, GitHubSource } from "./components/HubSrcPopoverButton";
 import { useAuth } from "@/contexts/AuthContext";
 
 function HubView() {
@@ -24,8 +24,8 @@ function HubView() {
   const [filter, setFilter] = useState<{serviceType: string}>({serviceType: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [isGridView, setIsGridView] = useState(true);
-  const [selectedSource, setSelectedSource] = useState<GitHubSource>(DEFAULT_SOURCES[0]);
-  const { clusterInfo } = useAuth();
+  const [selectedSource, setSelectedSource] = useState<GitHubSource>(() => getSelectedSource());
+  const { systemConfig, clusterInfo } = useAuth();
 
   const fetchService = useCallback(
     async (
@@ -33,7 +33,7 @@ function HubView() {
     ): Promise<Service | undefined> => {
       const response = await fetch(roCrateServiceDef.fdlUrl);
       if (response.ok) {
-        const service = yamlToServices(await response.text(), "", (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")))![0];
+        const service = yamlToServices(await response.text(), "", useArrayPorts(clusterInfo?.version), usesDNSRoutes(systemConfig?.config))![0];
         const services: Service = {
           ...service,
           environment: {
@@ -51,7 +51,7 @@ function HubView() {
       }
       return undefined;
     },
-    []
+    [clusterInfo, systemConfig]
   );
 
   const fetchData = useCallback(async () => {
@@ -63,13 +63,20 @@ function HubView() {
       repoName,
       selectedSource.branch
     );
-    let i = 0;
-    const services: Record<string, [RoCrateServiceDefinition, Service]> = {};
-    for (const roCrateServiceDef of roCrateServices) {
-      const service = await fetchService(roCrateServiceDef);
-      service && (services[i.toString()] = [roCrateServiceDef, service]);
-      i++;
-    }
+
+    const servicesEntries = await Promise.all(
+      roCrateServices.map(async (roCrateServiceDef, index) => {
+        const service = await fetchService(roCrateServiceDef);
+        if (!service) return null;
+
+        return [index.toString(), [roCrateServiceDef, service]] as const;
+      })
+    );
+
+    const services: Record<string, [RoCrateServiceDefinition, Service]> = Object.fromEntries(
+      servicesEntries.filter((entry): entry is [string, [RoCrateServiceDefinition, Service]] => entry !== null)
+    );
+
     setServiceDefinitions(services);
     setFilteredServices(services);
     setIsLoading(false);
@@ -107,7 +114,7 @@ function HubView() {
 
   return (
     <div className="w-full h-full overflow-auto">
-      <GenericTopbar defaultHeader={{title: "Hub", linkTo: "/ui/hub"}} refresher={fetchData} 
+      <GenericTopbar defaultHeader={{title: "Hub", linkTo: "/ui/hub"}} refresher={fetchData} triggerRefresherAtLoad={false}
       secondaryRow={
         <div className="grid grid-cols-[auto_auto_1fr] w-full px-2 py-1 gap-2">
           <LayoutSelect isGridView={isGridView} setIsGridView={setIsGridView} />

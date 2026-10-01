@@ -19,15 +19,15 @@ export interface InputOutputStorageFormRef {
 
 const isBucketPath = (value: string) => {
   const trimmed = value.trim();
-  return /^[^/\s]+\/[^/\s].+$/.test(trimmed);
+  return /^[^/\s]+\/[^/\s].*$/.test(trimmed);
 };
 
-function InputOutputStorageForm({ ref }: { ref: React.Ref<InputOutputStorageFormRef> }) {
+function InputOutputStorageForm({inOutStorageName, ref }: { inOutStorageName?: string; ref: React.Ref<InputOutputStorageFormRef> }) {
   const [inOutStorageConfig, setInOutStorageConfig] = useState<InputOutputStorageConfig>({
     input: [
       {
         storage_provider: INPUT_STORAGE_PROVIDERS[0],
-        path: "",
+        path: inOutStorageName ? `${inOutStorageName}/input` : "",
         prefix: [],
         suffix: [],
       },
@@ -35,7 +35,7 @@ function InputOutputStorageForm({ ref }: { ref: React.Ref<InputOutputStorageForm
     output: [
       {
         storage_provider: OUTPUT_STORAGE_PROVIDERS[0],
-        path: "",
+        path: inOutStorageName ? `${inOutStorageName}/output` : "",
         prefix: [],
         suffix: [],
       },

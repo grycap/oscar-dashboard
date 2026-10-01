@@ -1,6 +1,6 @@
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { exposedServiceIsAlive, isVersionLower } from "@/lib/utils";
+import { exposedServiceIsAlive, getExposedServiceUrl, isVersionLower } from "@/lib/utils";
 import { Service } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,11 +27,11 @@ function ServiceRedirectButton({
   const [isAlive, setIsAlive] = useState<boolean | null>(null);
   const [redirectLink, setRedirectLink] = useState<string>("");
   const [authActionLink, setAuthActionLink] = useState<string>("");
-  const { clusterInfo } = useAuth();
+  const { authData, systemConfig, clusterInfo } = useAuth();
 
   const safeHealthcheckPath = healthcheckPath.startsWith("/") ? healthcheckPath.slice(1).trim() : healthcheckPath
-  const healthcheckLink = `${endpoint}/system/services/${service.name}/exposed/${safeHealthcheckPath}`;
-  const exposedBaseLink = `${endpoint}/system/services/${service.name}/exposed/`;
+  const healthcheckLink = getExposedServiceUrl(endpoint, service.name, safeHealthcheckPath, systemConfig?.config);
+  const exposedBaseLink = getExposedServiceUrl(endpoint, service.name, "", systemConfig?.config);
   const serviceIsStopped = service.deployment?.state === "stopped";
       
   /**
@@ -189,7 +189,50 @@ function ServiceRedirectButton({
     }, 800);
   }
 
+  function openForwardAuthenticatedService() {
+    if (!authData.token) {
+      window.alert("This service requires an OIDC login. Sign in to the OSCAR Dashboard with the configured identity provider.");
+      return;
+    }
+
+    const popup = window.open("about:blank", `oscar-forward-auth-${Date.now()}`);
+    if (!popup) {
+      return;
+    }
+    popup.opener = null;
+    popup.document.write("<!doctype html><title>Opening service</title><p>Opening service...</p>");
+    popup.document.close();
+
+    const targetUrl = new URL(redirectLink);
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = `${endpoint}/system/services/${encodeURIComponent(service.name)}/auth`;
+    form.target = popup.name;
+    form.style.display = "none";
+
+    const tokenInput = document.createElement("input");
+    tokenInput.type = "hidden";
+    tokenInput.name = "token";
+    tokenInput.value = authData.token;
+    form.appendChild(tokenInput);
+
+    const returnInput = document.createElement("input");
+    returnInput.type = "hidden";
+    returnInput.name = "return_to";
+    returnInput.value = `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+    form.appendChild(returnInput);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  }
+
   async function handleRedirectClick() {
+    if (service.expose.set_auth && service.expose.auth_type === "forward") {
+      openForwardAuthenticatedService();
+      return;
+    }
+
     if (!authActionLink) {
       window.open(redirectLink, "_blank", "noopener,noreferrer");
       return;
@@ -215,6 +258,9 @@ function ServiceRedirectButton({
 
   useEffect(() => {
     let isMounted = true;
+    if (!systemConfig || !clusterInfo) {
+      return;
+    }
 
     const buildRedirectLink = async () => {
       const interpolatedArgs = await interpolateVariables(
@@ -276,7 +322,7 @@ function ServiceRedirectButton({
     return () => {
       isMounted = false;
     };
-  }, [service, endpoint, additionalExposedPathArgs, authActionPathArgs, targetExposedPath, healthcheckPath, serviceIsStopped]);
+  }, [systemConfig, clusterInfo, service, endpoint, additionalExposedPathArgs, authActionPathArgs, targetExposedPath, healthcheckPath, serviceIsStopped]);
 
   if (serviceIsStopped) {
     return (

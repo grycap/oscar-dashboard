@@ -15,12 +15,14 @@ async function getServiceMetricsApi({
   metric,
   start,
   end,
+  owner,
 }: GetServiceMetricsApiParams): Promise<ServiceMetricsResponse> {
   const response = await axios.get(`/system/metrics/${encodeURIComponent(serviceName)}`, {
     params: {
       metric,
       start,
       end,
+      owner: owner || undefined,
     },
   });
 

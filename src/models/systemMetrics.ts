@@ -93,5 +93,15 @@ export type MetricsBreakdownResponse = {
 export type MetricsTimeRangeParams = {
   start?: string;
   end?: string;
+  owner?: string;
 };
 
+export type MetricsOwner = {
+  id: string;
+  name: string;
+  namespace: string;
+};
+
+export type MetricsOwnersResponse = {
+  owners: MetricsOwner[];
+};

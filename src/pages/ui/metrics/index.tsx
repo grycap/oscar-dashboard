@@ -1,7 +1,9 @@
 import getMetricsBreakdownApi from "@/api/metrics/getMetricsBreakdownApi";
 import getMetricsSummaryApi from "@/api/metrics/getMetricsSummaryApi";
+import getMetricsOwnersApi from "@/api/metrics/getMetricsOwnersApi";
 import getServiceMetricsApi from "@/api/metrics/getServiceMetricsApi";
 import GenericTopbar from "@/components/Topbar";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +14,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -29,20 +36,20 @@ import {
   BreakdownItem,
   MetricKey,
   MetricsBreakdownResponse,
+  MetricsOwner,
   MetricsSummaryResponse,
   ServiceMetricValue,
   ServiceMetricsResponse,
 } from "@/models/systemMetrics";
-import OscarColors from "@/styles";
 import { AxiosError } from "axios";
 import {
   AlertCircle,
   Boxes,
-  CalendarRange,
+  Check,
+  ChevronsUpDown,
   Cpu,
+  Gpu,
   Globe2,
-  LoaderPinwheel,
-  Sparkles,
   Users,
   Waypoints,
 } from "lucide-react";
@@ -88,6 +95,15 @@ type BreakdownChartCardProps = {
   children: ReactNode;
   hasData: boolean;
 };
+
+type ServiceAxisTickProps = {
+  x?: number;
+  y?: number;
+  payload?: { value?: string };
+  onSelect: (serviceName: string) => void;
+};
+
+type AxisTickProps = Omit<ServiceAxisTickProps, "onSelect">;
 
 const SERVICE_BAR_COLORS = ["#009688", "#1F5FA6", "#D97706"];
 const RANKING_BAR_COLOR = "#0F766E";
@@ -160,11 +176,6 @@ function getSourceBadgeVariant(status: string) {
   return "secondary" as const;
 }
 
-function truncateLabel(label: string, maxLength = 24): string {
-  if (label.length <= maxLength) return label;
-  return `${label.slice(0, maxLength - 1)}…`;
-}
-
 function sortByExecutions(items: BreakdownItem[]): BreakdownItem[] {
   return [...items].sort(
     (left, right) => (right.executions_count ?? 0) - (left.executions_count ?? 0),
@@ -201,14 +212,14 @@ function EmptyPanel({
 
 function KpiCard({ title, value, subtitle, icon }: KpiCardProps) {
   return (
-    <Card className="border-slate-200/80 shadow-sm">
-      <CardContent className="flex items-start justify-between gap-4 p-5">
+    <Card className="h-full">
+      <CardContent className="flex items-start justify-between gap-3 p-4">
         <div className="space-y-1">
           <p className="text-sm font-medium text-slate-500">{title}</p>
-          <p className="text-3xl font-semibold tracking-tight text-slate-900">{value}</p>
+          <p className="text-2xl font-semibold text-slate-950">{value}</p>
           <p className="text-sm text-slate-500">{subtitle}</p>
         </div>
-        <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">{icon}</div>
+        <div className="text-slate-900">{icon}</div>
       </CardContent>
     </Card>
   );
@@ -223,15 +234,225 @@ function BreakdownChartCard({
   hasData,
 }: BreakdownChartCardProps) {
   return (
-    <Card className="border-slate-200/80 shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-xl">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {hasData ? children : <EmptyPanel title={emptyTitle} description={emptyDescription} />}
-      </CardContent>
-    </Card>
+    <div>
+      <div className="mb-4">
+        <h4 className="font-semibold text-slate-950">{title}</h4>
+        <p className="mt-1 text-sm text-slate-500">{description}</p>
+      </div>
+      {hasData ? children : <EmptyPanel title={emptyTitle} description={emptyDescription} />}
+    </div>
+  );
+}
+
+function ServiceAxisTick({ x = 0, y = 0, payload, onSelect }: ServiceAxisTickProps) {
+  const serviceName = payload?.value ?? "";
+
+  function selectService() {
+    if (serviceName) onSelect(serviceName);
+  }
+
+  return (
+    <text
+      aria-label={`Show details for ${serviceName}`}
+      className="cursor-pointer fill-slate-700 hover:fill-slate-950 hover:underline"
+      dominantBaseline="central"
+      onClick={selectService}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectService();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      textAnchor="end"
+      x={x}
+      y={y}
+    >
+      {serviceName}
+    </text>
+  );
+}
+
+function FullAxisTick({ x = 0, y = 0, payload }: AxisTickProps) {
+  const value = payload?.value ?? "";
+
+  return (
+    <text
+      className="fill-slate-700"
+      dominantBaseline="central"
+      textAnchor="end"
+      x={x}
+      y={y}
+    >
+      {value}
+    </text>
+  );
+}
+
+function ServiceSearchSelect({
+  items,
+  value,
+  onValueChange,
+}: {
+  items: BreakdownItem[];
+  value: string;
+  onValueChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filteredItems = items.filter((item) =>
+    item.key.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
+  );
+
+  function handleOpenChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+    if (!nextOpen) setSearch("");
+  }
+
+  return (
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>
+        <Button
+          aria-expanded={open}
+          className="w-full justify-between font-normal"
+          role="combobox"
+          variant="outline"
+        >
+          <span className="truncate">{value || "Select service"}</span>
+          <ChevronsUpDown className="ml-2 shrink-0 opacity-50" size={16} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-2">
+        <Input
+          aria-label="Search services"
+          autoFocus
+          placeholder="Search service..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <div className="mt-2 max-h-64 overflow-y-auto" role="listbox">
+          {filteredItems.length > 0 ? (
+            filteredItems.map((item) => (
+              <button
+                aria-selected={item.key === value}
+                className="flex w-full items-center rounded-sm px-2 py-2 text-left text-sm hover:bg-slate-100 focus:bg-slate-100 focus:outline-none"
+                key={item.key}
+                onClick={() => {
+                  onValueChange(item.key);
+                  handleOpenChange(false);
+                }}
+                role="option"
+                type="button"
+              >
+                <Check
+                  className={item.key === value ? "mr-2 opacity-100" : "mr-2 opacity-0"}
+                  size={16}
+                />
+                <span className="truncate">{item.key}</span>
+              </button>
+            ))
+          ) : (
+            <p className="px-2 py-4 text-center text-sm text-slate-500">
+              No services found.
+            </p>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function OwnerSearchSelect({
+  owners,
+  value,
+  onValueChange,
+}: {
+  owners: MetricsOwner[];
+  value: string;
+  onValueChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const selectedOwner = owners.find((owner) => owner.id === value);
+  const normalizedSearch = search.trim().toLocaleLowerCase();
+  const filteredOwners = owners.filter((owner) =>
+    `${owner.name} ${owner.id}`.toLocaleLowerCase().includes(normalizedSearch),
+  );
+
+  function selectOwner(owner: string) {
+    onValueChange(owner);
+    setOpen(false);
+    setSearch("");
+  }
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setSearch("");
+      }}
+    >
+      <PopoverTrigger asChild>
+        <Button
+          aria-expanded={open}
+          className="h-auto min-h-10 w-full justify-between whitespace-normal text-left font-normal"
+          role="combobox"
+          variant="outline"
+        >
+          <span className="break-all">{selectedOwner?.name ?? "All owners"}</span>
+          <ChevronsUpDown className="ml-2 shrink-0 opacity-50" size={16} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-[360px] max-w-[90vw] p-2">
+        <Input
+          aria-label="Search owners"
+          autoFocus
+          placeholder="Search owner..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <div className="mt-2 max-h-64 overflow-y-auto" role="listbox">
+          {!normalizedSearch && (
+            <button
+              aria-selected={!value}
+              className="flex w-full items-center rounded-sm px-2 py-2 text-left text-sm hover:bg-slate-100 focus:bg-slate-100 focus:outline-none"
+              onClick={() => selectOwner("")}
+              role="option"
+              type="button"
+            >
+              <Check className={!value ? "mr-2 opacity-100" : "mr-2 opacity-0"} size={16} />
+              All owners
+            </button>
+          )}
+          {filteredOwners.map((owner) => (
+            <button
+              aria-selected={owner.id === value}
+              className="flex w-full items-center rounded-sm px-2 py-2 text-left text-sm hover:bg-slate-100 focus:bg-slate-100 focus:outline-none"
+              key={owner.id}
+              onClick={() => selectOwner(owner.id)}
+              role="option"
+              type="button"
+            >
+              <Check
+                className={owner.id === value ? "mr-2 opacity-100" : "mr-2 opacity-0"}
+                size={16}
+              />
+              <span className="min-w-0">
+                <span className="block break-all">{owner.name}</span>
+                {owner.name !== owner.id && (
+                  <span className="block break-all text-xs text-slate-500">{owner.id}</span>
+                )}
+              </span>
+            </button>
+          ))}
+          {filteredOwners.length === 0 && normalizedSearch && (
+            <p className="px-2 py-4 text-center text-sm text-slate-500">No owners found.</p>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -242,7 +463,6 @@ function MetricsView() {
   const initialRange = buildPresetRange("24h");
 
   const [selectedPreset, setSelectedPreset] = useState<RangePreset>("24h");
-  const [showCustomRange, setShowCustomRange] = useState(false);
   const [filters, setFilters] = useState<TimeRangeInput>(queryRangeToInput(initialRange));
   const [appliedRange, setAppliedRange] = useState<QueryRange>(initialRange);
 
@@ -253,6 +473,8 @@ function MetricsView() {
   const [serviceMetrics, setServiceMetrics] = useState<ServiceMetricsResponse | null>(null);
 
   const [selectedService, setSelectedService] = useState("");
+  const [owners, setOwners] = useState<MetricsOwner[]>([]);
+  const [selectedOwner, setSelectedOwner] = useState("");
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [serviceLoading, setServiceLoading] = useState(false);
   const [overviewError, setOverviewError] = useState("");
@@ -262,6 +484,20 @@ function MetricsView() {
 
   useEffect(() => {
     document.title = "OSCAR - Metrics";
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getMetricsOwnersApi()
+      .then((response) => {
+        if (!cancelled) setOwners(response.owners);
+      })
+      .catch(() => {
+        if (!cancelled) setOwners([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -276,6 +512,7 @@ function MetricsView() {
         const range = {
           start: appliedRange.start.toISOString(),
           end: appliedRange.end.toISOString(),
+          owner: selectedOwner || undefined,
         };
 
         const [summaryResponse, serviceResponse, countryResponse, userResponse] =
@@ -342,7 +579,7 @@ function MetricsView() {
     return () => {
       cancelled = true;
     };
-  }, [appliedRange.end.getTime(), appliedRange.start.getTime(), refreshNonce]);
+  }, [appliedRange.end.getTime(), appliedRange.start.getTime(), refreshNonce, selectedOwner]);
 
   useEffect(() => {
     if (!selectedService || metricsUnsupported) {
@@ -362,6 +599,7 @@ function MetricsView() {
           serviceName: selectedService,
           start: appliedRange.start.toISOString(),
           end: appliedRange.end.toISOString(),
+          owner: selectedOwner || undefined,
         });
 
         if (cancelled) return;
@@ -381,7 +619,7 @@ function MetricsView() {
     return () => {
       cancelled = true;
     };
-  }, [appliedRange.end.getTime(), appliedRange.start.getTime(), metricsUnsupported, refreshNonce, selectedService]);
+  }, [appliedRange.end.getTime(), appliedRange.start.getTime(), metricsUnsupported, refreshNonce, selectedOwner, selectedService]);
 
   function refreshAll() {
     if (selectedPreset !== "custom") {
@@ -397,7 +635,6 @@ function MetricsView() {
   function applyPreset(preset: RangePreset) {
     setSelectedPreset(preset);
     if (preset === "custom") {
-      setShowCustomRange(true);
       return;
     }
 
@@ -435,6 +672,10 @@ function MetricsView() {
   }
 
   const serviceItems = serviceBreakdown ? sortByRequests(serviceBreakdown.items).slice(0, 8) : [];
+  const serviceAxisWidth = Math.max(
+    220,
+    ...serviceItems.map((item) => item.key.length * 8 + 16),
+  );
   const countryItems = countryBreakdown ? sortByExecutions(countryBreakdown.items).slice(0, 8) : [];
   const userItems = userBreakdown ? sortByExecutions(userBreakdown.items).slice(0, 8) : [];
   const selectedServiceBreakdown = serviceBreakdown?.items.find((item) => item.key === selectedService) ?? null;
@@ -463,190 +704,129 @@ function MetricsView() {
     return userDisplayNamesBySub.get(userId) ?? userId;
   }
 
+  const userChartItems = userItems.map((item) => ({
+    name: getUserDisplayName(item.key),
+    executions: item.executions_count ?? 0,
+  }));
+  const userAxisWidth = Math.max(
+    220,
+    ...userChartItems.map((item) => item.name.length * 9 + 24),
+  );
+
   const sourceStatuses = summary?.sources ?? [];
   const sourceNotes = sourceStatuses.filter((source) => source.notes);
 
+  const timeRangeControls = (
+    <div
+      className={`grid w-full gap-2 px-3 py-2 md:items-end ${
+        owners.length > 0
+          ? "md:grid-cols-[360px_170px_minmax(0,220px)_minmax(0,220px)_auto]"
+          : "md:grid-cols-[170px_minmax(0,220px)_minmax(0,220px)_auto]"
+      }`}
+    >
+      {owners.length > 0 && (
+        <OwnerSearchSelect owners={owners} value={selectedOwner} onValueChange={setSelectedOwner} />
+      )}
+      <Select value={selectedPreset} onValueChange={(value: RangePreset) => applyPreset(value)}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select time range" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="1m">Last minute</SelectItem>
+          <SelectItem value="1h">Last hour</SelectItem>
+          <SelectItem value="24h">Last 24 hours</SelectItem>
+          <SelectItem value="7d">Last 7 days</SelectItem>
+          <SelectItem value="30d">Last 30 days</SelectItem>
+          <SelectItem value="custom">Custom range</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {selectedPreset === "custom" && (
+        <>
+          <Input
+            aria-label="Start date"
+            label="Start"
+            type="datetime-local"
+            value={filters.start}
+            onChange={(event) =>
+              setFilters((current) => ({ ...current, start: event.target.value }))
+            }
+          />
+          <Input
+            aria-label="End date"
+            label="End"
+            type="datetime-local"
+            value={filters.end}
+            onChange={(event) =>
+              setFilters((current) => ({ ...current, end: event.target.value }))
+            }
+          />
+          <Button variant="mainGreen" onClick={applyFilters}>
+            Apply
+          </Button>
+        </>
+      )}
+    </div>
+  );
+
   return (
-    <div className="h-full w-full">
+    <div className="flex h-full w-full flex-col">
       <GenericTopbar
         defaultHeader={{ title: "Metrics", linkTo: location.pathname }}
         refresher={() => {
           void refreshAll();
         }}
+        secondaryRow={timeRangeControls}
         triggerRefresherAtLoad={false}
       />
 
-      <div className="grid gap-6 px-6 pb-8 pt-6">
-        <Card
-          className="overflow-hidden border-none shadow-sm"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(0,150,136,0.12) 0%, rgba(31,95,166,0.10) 52%, rgba(255,255,255,1) 100%)",
-          }}
-        >
-          <CardContent className="grid gap-6 p-6">
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-white/90 text-slate-700" variant="secondary">
-                  Observability
-                </Badge>
-                {(overviewLoading || serviceLoading) && (
-                  <Badge variant="outline" className="border-slate-300 bg-white/70 text-slate-600">
-                    Refreshing
-                  </Badge>
-                )}
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="rounded-2xl bg-white/85 p-3 text-slate-700 shadow-sm">
-                  <Sparkles size={22} />
-                </div>
-                <div className="max-w-2xl space-y-2">
-                  <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-                    Metrics of your services
-                  </h1>
-                  <p className="text-sm leading-6 text-slate-600">
-                    Aggregated CPU/GPU usage, request traffic and geographic reach for your active services.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/70 bg-white/82 p-5 backdrop-blur">
-              <div className="grid gap-4 md:grid-cols-[minmax(0,360px)_auto] md:items-end">
-                <div className="flex max-w-[420px] items-end gap-2">
-                  <div className="min-w-0 flex-1">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                    Preset
-                  </p>
-                  <Select value={selectedPreset} onValueChange={(value: RangePreset) => applyPreset(value)}>
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue placeholder="Select time range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1m">Last minute</SelectItem>
-                      <SelectItem value="1h">Last hour</SelectItem>
-                      <SelectItem value="24h">Last 24 hours</SelectItem>
-                      <SelectItem value="7d">Last 7 days</SelectItem>
-                      <SelectItem value="30d">Last 30 days</SelectItem>
-                      <SelectItem value="custom">Custom range</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                  <div className="flex shrink-0 items-end">
-                    <Button
-                      className={`h-10 w-10 rounded-xl border transition-all ${
-                        showCustomRange
-                          ? "border-[#009688] bg-[#009688]/10 text-[#0f766e] hover:bg-[#009688]/15"
-                          : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800"
-                      }`}
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => setShowCustomRange((current) => !current)}
-                      tooltipLabel={showCustomRange ? "Hide custom range" : "Show custom range"}
-                    >
-                      <CalendarRange size={18} />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {showCustomRange && (
-                <div className="mt-4 grid gap-4 border-t border-slate-200 pt-4 md:grid-cols-[auto_auto_220px] xl:grid-cols-[auto_auto_220px_1fr] xl:items-end">
-                  <Input
-                    label="Start"
-                    type="datetime-local"
-                    value={filters.start}
-                    onChange={(event) => {
-                      setSelectedPreset("custom");
-                      setFilters((current) => ({ ...current, start: event.target.value }));
-                    }}
-                  />
-
-                  <Input
-                    label="End"
-                    type="datetime-local"
-                    value={filters.end}
-                    onChange={(event) => {
-                      setSelectedPreset("custom");
-                      setFilters((current) => ({ ...current, end: event.target.value }));
-                    }}
-                  />
-
-                  <div className="grid gap-1">
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-transparent select-none">
-                      Action
-                    </p>
-                    <Button className="w-full" variant="mainGreen" onClick={applyFilters}>
-                      Apply custom range
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-            </div>
-          </CardContent>
-        </Card>
+      <div className="w-full space-y-6 px-4 pb-6 pt-6">
 
         {metricsUnsupported && (
-          <Card className="border-amber-200 bg-amber-50 shadow-sm">
-            <CardContent className="flex items-start gap-4 p-6">
-              <AlertCircle className="mt-0.5 text-amber-600" size={24} />
-              <div className="space-y-1">
-                <p className="font-semibold text-amber-900">Metrics unavailable</p>
-                <p className="text-sm text-amber-800">
-                  This OSCAR cluster does not expose service activity metrics. The rest of the dashboard remains available.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+            <AlertCircle />
+            <AlertTitle>Metrics unavailable</AlertTitle>
+            <AlertDescription>
+              This cluster does not provide service activity metrics.
+            </AlertDescription>
+          </Alert>
         )}
 
         {!metricsUnsupported && overviewError && !summary && (
-          <Card className="border-red-200 bg-red-50 shadow-sm">
-            <CardContent className="flex items-start gap-4 p-6">
-              <AlertCircle className="mt-0.5 text-red-600" size={24} />
-              <div className="space-y-1">
-                <p className="font-semibold text-red-900">Failed to load metrics</p>
-                <p className="text-sm text-red-800">{overviewError}</p>
-              </div>
-            </CardContent>
-          </Card>
+          <Alert variant="destructive" className="bg-red-50">
+            <AlertCircle />
+            <AlertTitle>Failed to load metrics</AlertTitle>
+            <AlertDescription>{overviewError}</AlertDescription>
+          </Alert>
         )}
 
         {!metricsUnsupported && overviewError && summary && (
-          <Card className="border-amber-200 bg-amber-50 shadow-sm">
-            <CardContent className="flex items-start gap-4 p-6">
-              <AlertCircle className="mt-0.5 text-amber-600" size={24} />
-              <div className="space-y-1">
-                <p className="font-semibold text-amber-900">Latest refresh reported an issue</p>
-                <p className="text-sm text-amber-800">
-                  Showing the most recent successful dataset. Refresh error: {overviewError}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+            <AlertCircle />
+            <AlertTitle>Refresh failed</AlertTitle>
+            <AlertDescription>
+              Showing the last available data. {overviewError}
+            </AlertDescription>
+          </Alert>
         )}
 
         {!metricsUnsupported && sourceNotes.length > 0 && summary && (
-          <Card className="border-amber-200 bg-amber-50 shadow-sm">
-            <CardContent className="flex items-start gap-4 p-6">
-              <AlertCircle className="mt-0.5 text-amber-600" size={24} />
-              <div className="space-y-2">
-                <p className="font-semibold text-amber-900">Some telemetry sources reported warnings</p>
-                <div className="flex flex-wrap gap-2">
-                  {sourceNotes.map((source) => (
-                    <Badge
-                      key={`${source.name}-${source.status}-${source.notes ?? ""}`}
-                      variant={getSourceBadgeVariant(source.status)}
-                    >
-                      {source.name}: {source.status}
-                    </Badge>
-                  ))}
-                </div>
+          <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+            <AlertCircle />
+            <AlertTitle>Some metric sources reported warnings</AlertTitle>
+            <AlertDescription>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {sourceNotes.map((source) => (
+                  <Badge
+                    key={`${source.name}-${source.status}-${source.notes ?? ""}`}
+                    variant={getSourceBadgeVariant(source.status)}
+                  >
+                    {source.name}: {source.status}
+                  </Badge>
+                ))}
               </div>
-            </CardContent>
-          </Card>
+            </AlertDescription>
+          </Alert>
         )}
 
         {!metricsUnsupported && overviewLoading && !summary && (
@@ -659,52 +839,52 @@ function MetricsView() {
 
         {!metricsUnsupported && summary && (
           <>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <KpiCard
                 title="Active services"
                 value={formatNumber(summary.totals.services_count_active)}
-                subtitle={`${formatNumber(summary.totals.services_count_total)} of your services with recorded activity`}
-                icon={<Boxes size={20} />}
+                subtitle={`${formatNumber(summary.totals.services_count_total)} services with recorded activity`}
+                icon={<Boxes size={18} />}
               />
               <KpiCard
                 title="CPU hours"
                 value={formatHours(summary.totals.cpu_hours_total)}
-                subtitle="Prometheus aggregated usage"
-                icon={<Cpu size={20} />}
+                subtitle="Selected period"
+                icon={<Cpu size={18} />}
               />
               <KpiCard
                 title="GPU hours"
                 value={formatHours(summary.totals.gpu_hours_total)}
-                subtitle="GPU time consumed in range"
-                icon={<Sparkles size={20} />}
+                subtitle="Selected period"
+                icon={<Gpu size={18} />}
               />
               <KpiCard
                 title="Total requests"
                 value={formatNumber(summary.totals.requests_count_total)}
-                subtitle={`${formatNumber(summary.totals.requests_count_sync)} sync · ${formatNumber(summary.totals.requests_count_async)} async against your services`}
-                icon={<Waypoints size={20} />}
+                subtitle={`${formatNumber(summary.totals.requests_count_sync)} sync · ${formatNumber(summary.totals.requests_count_async)} async`}
+                icon={<Waypoints size={18} />}
               />
               <KpiCard
                 title="Exposed requests"
                 value={formatNumber(summary.totals.requests_count_exposed)}
-                subtitle="Ingress traffic reaching your exposed services"
-                icon={<Globe2 size={20} />}
+                subtitle="Requests received through ingress"
+                icon={<Globe2 size={18} />}
               />
               <KpiCard
                 title="Distinct users"
                 value={formatNumber(summary.totals.users_count)}
-                subtitle={`${formatNumber(summary.totals.countries_count)} countries interacting with your services`}
-                icon={<Users size={20} />}
+                subtitle={`From ${formatNumber(summary.totals.countries_count)} countries`}
+                icon={<Users size={18} />}
               />
             </div>
 
             <div className="grid gap-6">
               <div className="grid gap-6">
-                <Card className="border-slate-200/80 shadow-sm">
+                <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-xl">Breakdowns</CardTitle>
+                    <CardTitle className="text-xl">Activity breakdown</CardTitle>
                     <CardDescription>
-                      Compare where traffic is going, who is calling your services and how activity is distributed.
+                      Requests grouped by service, country or user.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -718,16 +898,17 @@ function MetricsView() {
                       <TabsContent value="services">
                         <BreakdownChartCard
                           title="Service activity"
-                          description="Your most active services ranked by request volume, split into sync, async and exposed traffic."
+                          description="Requests by service and invocation type."
                           emptyTitle="No service activity in this range"
-                          emptyDescription="Try expanding the time window or checking whether request logs are configured."
+                          emptyDescription="Choose a longer period or check the metrics configuration."
                           hasData={serviceItems.length > 0}
                         >
-                          <div className="h-[420px]">
+                          <div className="h-[360px] overflow-x-auto">
+                            <div className="h-full w-full" style={{ minWidth: serviceAxisWidth + 520 }}>
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart
                                 data={serviceItems.map((item) => ({
-                                  name: truncateLabel(item.key, 44),
+                                  name: item.key,
                                   sync: item.requests_count_sync ?? 0,
                                   async: item.requests_count_async ?? 0,
                                   exposed: item.requests_count_exposed ?? 0,
@@ -738,7 +919,12 @@ function MetricsView() {
                               >
                                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                                 <XAxis type="number" allowDecimals={false} />
-                                <YAxis type="category" dataKey="name" width={300} />
+                                <YAxis
+                                  type="category"
+                                  dataKey="name"
+                                  tick={<ServiceAxisTick onSelect={setSelectedService} />}
+                                  width={serviceAxisWidth}
+                                />
                                 <Tooltip
                                   formatter={(value: number, name: string) => [formatNumber(value), name]}
                                   labelFormatter={(label) => `Service: ${label}`}
@@ -749,6 +935,7 @@ function MetricsView() {
                                 <Bar dataKey="exposed" stackId="requests" name="Exposed" fill={SERVICE_BAR_COLORS[2]} radius={[0, 4, 4, 0]} />
                               </BarChart>
                             </ResponsiveContainer>
+                            </div>
                           </div>
                         </BreakdownChartCard>
                       </TabsContent>
@@ -756,12 +943,12 @@ function MetricsView() {
                       <TabsContent value="countries">
                         <BreakdownChartCard
                           title="Country reach"
-                          description="Countries sorted by execution count, highlighting how broadly your services are being used."
+                          description="Requests by country."
                           emptyTitle="No country-level activity available"
-                          emptyDescription="Country attribution depends on the request log source. Missing data usually means the source is not configured."
+                          emptyDescription="Country data is unavailable for this period."
                           hasData={countryItems.length > 0}
                         >
-                          <div className="h-[420px]">
+                          <div className="h-[360px]">
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart
                                 data={countryItems.map((item) => ({
@@ -796,31 +983,35 @@ function MetricsView() {
                       <TabsContent value="users">
                         <BreakdownChartCard
                           title="Most active users"
-                          description="Users ordered by total executions against your services over the selected window."
+                          description="Requests by user."
                           emptyTitle="No user activity found"
-                          emptyDescription="If there were requests in the selected range, verify the request logs include user identity."
+                          emptyDescription="User data is unavailable for this period."
                           hasData={userItems.length > 0}
                         >
-                          <div className="h-[420px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart
-                                data={userItems.map((item) => ({
-                                  name: truncateLabel(getUserDisplayName(item.key), 44),
-                                  executions: item.executions_count ?? 0,
-                                }))}
-                                layout="vertical"
-                                margin={{ left: 8, right: 16, top: 8, bottom: 8 }}
-                              >
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                                <XAxis type="number" allowDecimals={false} />
-                                <YAxis type="category" dataKey="name" width={300} />
-                                <Tooltip
-                                  formatter={(value: number, name: string) => [formatNumber(value), name]}
-                                  labelFormatter={(label) => `User: ${label}`}
-                                />
-                                <Bar dataKey="executions" fill={RANKING_BAR_COLOR} radius={[0, 4, 4, 0]} />
-                              </BarChart>
-                            </ResponsiveContainer>
+                          <div className="h-[360px] overflow-x-auto">
+                            <div className="h-full w-full" style={{ minWidth: userAxisWidth + 520 }}>
+                              <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                  data={userChartItems}
+                                  layout="vertical"
+                                  margin={{ left: 8, right: 16, top: 8, bottom: 8 }}
+                                >
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                                  <XAxis type="number" allowDecimals={false} />
+                                  <YAxis
+                                    type="category"
+                                    dataKey="name"
+                                    tick={<FullAxisTick />}
+                                    width={userAxisWidth}
+                                  />
+                                  <Tooltip
+                                    formatter={(value: number, name: string) => [formatNumber(value), name]}
+                                    labelFormatter={(label) => `User: ${label}`}
+                                  />
+                                  <Bar dataKey="executions" fill={RANKING_BAR_COLOR} radius={[0, 4, 4, 0]} />
+                                </BarChart>
+                              </ResponsiveContainer>
+                            </div>
                           </div>
                         </BreakdownChartCard>
                       </TabsContent>
@@ -830,11 +1021,11 @@ function MetricsView() {
               </div>
 
               <div className="grid gap-6">
-                <Card className="border-slate-200/80 shadow-sm">
+                <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-xl">Selected service</CardTitle>
+                    <CardTitle className="text-xl">Service details</CardTitle>
                     <CardDescription>
-                      Drill into one of your services.
+                      Metrics for one service in the selected period.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-4">
@@ -844,18 +1035,11 @@ function MetricsView() {
                           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                             Service
                           </p>
-                          <Select value={selectedService} onValueChange={setSelectedService}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select service" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {sortByRequests(serviceBreakdown.items).map((item) => (
-                                <SelectItem key={item.key} value={item.key}>
-                                  {item.key}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <ServiceSearchSelect
+                            items={sortByRequests(serviceBreakdown.items)}
+                            value={selectedService}
+                            onValueChange={setSelectedService}
+                          />
                         </div>
 
                         {serviceError && (
@@ -982,12 +1166,6 @@ function MetricsView() {
           </>
         )}
 
-        {!metricsUnsupported && (overviewLoading || serviceLoading) && summary && (
-          <div className="fixed bottom-6 right-6 z-20 flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-lg">
-            <LoaderPinwheel className="animate-spin" color={OscarColors.Green4} size={18} />
-            <span className="text-sm text-slate-700">Refreshing metrics</span>
-          </div>
-        )}
       </div>
     </div>
   );

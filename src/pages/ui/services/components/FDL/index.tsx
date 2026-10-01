@@ -16,21 +16,21 @@ import getServiceApi from "@/api/services/getServiceApi";
 import updateServiceApi from "@/api/services/updateServiceApi";
 import { alert } from "@/lib/alert";
 import RequestButton from "@/components/RequestButton";
-import yamlToServices from "./utils/yamlToService";
-import { useAuth } from "@/contexts/AuthContext";
-import { getFDLAndScriptText, isVersionLower } from "@/lib/utils";
+import { safeScriptExtractor, yamlToServicesOnly } from "./utils/yamlToService";
+import { Button } from "@/components/ui/button";
+import { Plus, X } from "lucide-react";
+import { errorMessage } from "@/lib/error";
 
 function FDLForm() {
   const { showFDLModal, setShowFDLModal, refreshServices, formService } =
     useServicesContext();
-  const [selectedTab, setSelectedTab] = useState<"fdl" | "script">("fdl");
+  const [selectedTab, setSelectedTab] = useState<string>("fdl");
   const [editorKey, setEditorKey] = useState(0);
-  const { clusterInfo } = useAuth();
 
   const existingService = formService && formService.name && formService.name !== "" && formService.script && formService.script !== "script.sh";
 
   const [fdl, setFdl] = useState("");
-  const [script, setScript] = useState("");
+  const [script, setScript] = useState<string[]>([""]);
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -41,10 +41,28 @@ function FDLForm() {
       if (selectedTab === "fdl") {
         setFdl(result);
       } else {
-        setScript(result);
+        const index = Number(selectedTab.replace("script", ""));
+        setScript((prev) => prev.map((s, i) => (i === index ? result : s)));
       }
     };
     reader.readAsText(file);
+  }
+
+  function handleDeleteScript(index: number) {
+    if (script.length <= 1) return;
+
+    if (selectedTab === `script${index}`) {
+      const newLength = script.length - 1;
+      const newIndex = Math.min(index, newLength - 1);
+      setSelectedTab(newIndex >= 0 ? `script${newIndex}` : "fdl");
+    } else if (selectedTab !== "fdl") {
+      const currentIndex = Number(selectedTab.replace("script", ""));
+      if (currentIndex > index) {
+        setSelectedTab(`script${currentIndex - 1}`);
+      }
+    }
+
+    setScript((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSave() {
@@ -58,8 +76,20 @@ function FDLForm() {
       return;
     }
 
-    const services = yamlToServices(fdl, script, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
+    const services = yamlToServicesOnly(fdl);
     if (!services) {
+      return;
+    }
+    if (script.length != services.length) {
+      alert.error("The number of scripts does not match the number of services defined in the FDL file.");
+      return;
+    }
+    try {
+      for (const service of services) {
+        service.script = safeScriptExtractor(service.script.toString(), script);
+      }
+    } catch (error) {
+      alert.error(`Error: ${errorMessage(error)}`);
       return;
     }
     if (existingService && services.length === 1) {
@@ -93,7 +123,7 @@ function FDLForm() {
     if (results.every((result) => result.status === "fulfilled")) {
       setShowFDLModal(false);
       setFdl("");
-      setScript("");
+      setScript([""]);
       setSelectedTab("fdl");
       refreshServices();
     }
@@ -113,15 +143,15 @@ function FDLForm() {
   useEffect(() => {
     if (!showFDLModal) {
       setFdl("");
-      setScript("");
+      setScript([""]);
       setSelectedTab("fdl");
-    } else {
+    } /*else {
       if (existingService){
-        const { fdlText, scriptText } = getFDLAndScriptText(formService);
+        //const { fdlText, scriptText } = getFDLAndScriptText(formService);
         setFdl(fdlText);
-        setScript(scriptText);
+        setScript({});
       }
-    }
+    }*/
   }, [showFDLModal]);
 
   return (
@@ -138,20 +168,49 @@ function FDLForm() {
           defaultValue="account"
           value={selectedTab}
           onValueChange={(value) => {
-            setSelectedTab(value as "fdl" | "script");
+            setSelectedTab(value);
           }}
         >
           <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-2 justify-items-start">
-            <TabsList>
-              <TabsTrigger style={{ padding: "7px 30px" }} value="fdl">
+            <TabsList className="flex h-auto flex-wrap justify-start">
+              <TabsTrigger className="px-8 py-2" value="fdl">
                 FDL
               </TabsTrigger>
-              <TabsTrigger style={{ padding: "7px 30px" }} value="script">
-                Script
-              </TabsTrigger>
+              {script.map((_, i) => (
+                <div key={`script-tab-${i}`} className="relative inline-flex items-center">
+                  <TabsTrigger className={script.length > 1 ? "pl-4 pr-8 py-2" : "px-4 py-2"} value={`script${i}`}>
+                    {`Script ${i + 1}`}
+                  </TabsTrigger>
+                  {script.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteScript(i);
+                      }}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-sm p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      title="Delete script"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => {
+                  setScript((prev) => [...prev, ""]);
+                  setSelectedTab(`script${script.length}`);
+                }}
+                title="Add Script"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             </TabsList>
 
-            <Input key={selectedTab} type="file" onChange={handleFileUpload} />
+            <Input className="min-w-[200px]" key={selectedTab} type="file" onChange={handleFileUpload} />
           </div>
           <TabsContent value="fdl" style={{ outline: "none", width: "100%" }}>
             <Editor
@@ -170,16 +229,18 @@ function FDLForm() {
               }}
             />
           </TabsContent>
-          <TabsContent
-            value="script"
-            style={{ outline: "none", width: "100%" }}
-          >
-            <Editor 
-              key={`script-${editorKey}`}
+          {script.map((s, i) => (
+            <TabsContent
+              key={`script-${i}`}
+              value={`script${i}`}
+              style={{ outline: "none", width: "100%" }}
+            >
+              <Editor 
+              key={`script-${i}-${editorKey}`}
               language="javascript"
-              value={script}
+              value={s}
               onChange={(e) => {
-                setScript(e || "");
+                setScript((prev) => prev.map((script, idx) => (idx === i ? (e || "") : script)));
               }}
               width="100%"
               height="100%"
@@ -190,6 +251,7 @@ function FDLForm() {
               }}
             />
           </TabsContent>
+          ))}
         </Tabs>
         <DialogFooter>
           <RequestButton request={handleSave}>{existingService ? "Update Service" : "Create Service"}</RequestButton>

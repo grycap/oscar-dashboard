@@ -369,16 +369,27 @@ function ServicesList() {
                 ),
               },
               {
-                button: (item) => (
-                  <Button
-                    variant={"link"}
-                    size="icon"
-                    onClick={() => setServicesToDelete([item])}
-                    tooltipLabel="Delete"
-                  >
+                button: (item) => {
+                  const isOwner = authData.egiSession?.sub === item.owner;
+                  if (!isOwner) {
+                    return <Button
+                        variant={"link"}
+                        size="icon"
+                        disabled
+                      >
+                    </Button>;
+                  }
+                  return (
+                    <Button
+                      variant={"link"}
+                      size="icon"
+                      onClick={() => setServicesToDelete([item])}
+                      tooltipLabel="Delete"
+                    >
                     <Trash2 color={OscarColors.Red} />
                   </Button>
-                ),
+                  );
+                },
               },
             ]}
             bulkActions={[

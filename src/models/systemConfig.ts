@@ -9,4 +9,5 @@ export type SystemConfig = {
   yunikorn_enable: boolean;
   interLink_available: boolean;
   oidc_groups: string[];
+  exposed_services_use_subdomain_route?: boolean;
 };

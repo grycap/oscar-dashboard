@@ -27,7 +27,9 @@ import {
   generateReadableName,
   genRandomString,
   getAllowedVOs,
-  isVersionLower,
+  getStorageProvider,
+  useArrayPorts,
+  usesDNSRoutes,
 } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
@@ -105,11 +107,17 @@ function FileBrowserFormPopover() {
   }, [isOpen]);
 
   const handleDeploy = async () => {
-
-    
+    if (!systemConfig || !clusterInfo) {
+      return;
+    }
 
     const storageValid = storageFormRef.current ? storageFormRef.current.validate() : false;
-    const storageConfig = storageFormRef.current ? storageFormRef.current!.getStorageConfig() : { mainStorage: "none", bucket: "", volume: "", volumeSize: "" };
+  
+    if (!storageValid) {
+      alert.error("Please fill in all required fields");
+      return;
+    }
+    const storageConfig = storageFormRef.current!.getStorageConfig();
     const selectedBucket = storageConfig.bucket.trim();
     const selectedVolume = storageConfig.volume.trim();
 
@@ -119,8 +127,6 @@ function FileBrowserFormPopover() {
       memoryRam: !formData.memoryRam,
       storage: formData.storageMode === "volume" ? !selectedVolume : !selectedBucket,
       vo: !formData.vo,
-      volume: formData.storageMode === "volume" && !storageConfig.volume,
-      bucket: formData.storageMode === "bucket" && !storageConfig.bucket,
     };
 
     setErrors(newErrors);
@@ -129,8 +135,12 @@ function FileBrowserFormPopover() {
       alert.error("Please fill in all required fields");
       return;
     }
-    
 
+    const storageProvider = getStorageProvider(storageConfig);
+    if (!storageProvider) {
+      alert.error("Invalid storage provider configuration");
+      return;
+    }
     try {
       const fdlResponse = await fetch(FILEBROWSER_FDL_URL, fetchFromGitHubOptions);
       const fdlText = await fdlResponse.text();
@@ -139,7 +149,7 @@ function FileBrowserFormPopover() {
         fetchFromGitHubOptions
       );
       const scriptText = await scriptResponse.text();
-      const services = yamlToServices(fdlText, scriptText, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
+      const services = yamlToServices(fdlText, scriptText, useArrayPorts(clusterInfo.version), usesDNSRoutes(systemConfig.config));
 
       if (!services?.length) {
         throw new Error("No services found");
@@ -175,7 +185,7 @@ function FileBrowserFormPopover() {
           mount: {
             ...service.mount,
             path: storageConfig.bucket ?? "/notebook",
-            storage_provider: service.mount?.storage_provider ?? "minio.default",
+            storage_provider: storageProvider.name
           },
         } : {}),
         volume: undefined,
@@ -186,6 +196,9 @@ function FileBrowserFormPopover() {
             mount_path: `/mnt/volumes/${storageConfig.volume}`,
           }
         } : {}),
+        storage_providers: {
+          ...storageProvider.provider,
+        },
       };
 
       await createServiceApi(modifiedService);

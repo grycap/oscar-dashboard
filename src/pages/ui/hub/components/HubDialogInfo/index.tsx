@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Info } from "lucide-react";
+import { ExternalLink, FileCode2, Info, FileTerminal } from "lucide-react";
 import HubCardHeader from "../HubCardHeader";
-import { getHubServiceTypeTagColor } from "@/lib/utils";
+import { downloadString, getHubServiceTypeTagColor, githubRawToTreeUrl } from "@/lib/utils";
 import { RoCrateServiceDefinition } from "@/lib/roCrate";
 import { Service } from "@/pages/ui/services/models/service";
 
@@ -19,6 +19,32 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
   
   const isKserveService = roCrateServiceDef.type.includes('kserve');
 
+  const handleOpenSource = () => {
+    if (roCrateServiceDef.fdlUrl) {
+      window.open(githubRawToTreeUrl(roCrateServiceDef.fdlUrl), "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const handleDownloadDefinition = async (type: "fdl" | "script") => {
+    const url = type === "fdl" ? roCrateServiceDef.fdlUrl : roCrateServiceDef.scriptUrl;
+    if (!url) return;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${type.toUpperCase()} file`);
+      }
+      const content = await response.text();
+      downloadString(
+        content,
+        type === "fdl" ? `${roCrateServiceDef.name}.yaml` : `${roCrateServiceDef.name}-script.sh`,
+        type === "fdl" ? "application/yaml" : "text/plain"
+      );
+    } catch (error) {
+      console.error(`Error downloading ${type}:`, error);
+    }
+  };
+
   return (
     <Dialog open={isInfoOpen} onOpenChange={setIsInfoOpen}>
       <DialogTrigger asChild className="self-start">
@@ -31,16 +57,54 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
           <Info size={16} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl ">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center flex-wrap gap-2 mr-4 justify-between">
             <HubCardHeader roCrateServiceDef={roCrateServiceDef} card="info" />
+            <div className="flex gap-2 ">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-[11px] gap-1.5"
+                onClick={handleOpenSource}
+                disabled={!roCrateServiceDef.fdlUrl}
+              >
+                <ExternalLink size={14} />
+                Source
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-[11px] gap-1.5"
+                onClick={() => void handleDownloadDefinition("fdl")}
+                disabled={!roCrateServiceDef.fdlUrl}
+              >
+                <FileCode2 size={14} />
+                FDL
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-[11px] gap-1.5"
+                onClick={() => void handleDownloadDefinition("script")}
+                disabled={!roCrateServiceDef.scriptUrl}
+              >
+                <FileTerminal size={14} />
+                Script
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
-        <div className="mt-2">
-          <h4 className="font-semibold text-gray-800 text-sm uppercase tracking-wide mb-1">
-            Service Details
-          </h4>
+        <div className="mt-2 max-h-[80vh]">
+          <div className="overflow-y-auto max-h-full">
+          <div>
+            <h4 className="font-semibold text-gray-800 text-sm uppercase tracking-wide mb-1">
+              Service Details
+            </h4>
+          </div>
           <div className="flex flex-wrap font-medium gap-x-8 gap-y-2 items-start">
             <div className="flex flex-col gap-1">
               <h4 className="text-xs text-gray-500 uppercase tracking-wide">
@@ -227,6 +291,7 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
           </div>
           </>
           }
+          </div>
 
           <div className="flex mt-6">
             <Button 

@@ -23,7 +23,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     return (
       <div
-        className="relative grid"
+        className="grid"
         style={{
           width: props.width,
           flex: props.flex,
@@ -36,32 +36,38 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {props.error && <Label className="text-red-500">{props.error}</Label>}
           </div>
         }
-        <input
-          type={type === "password" && showPassword ? "text" : type}
-          className={cn(
-            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:bg-white",
-            className,
-            (endIcon || type === "password") && "pr-10",
-            props.error && "border-red-500 focus:border-red-500"
+
+        <div className="relative">
+          <input
+            type={type === "password" && showPassword ? "text" : type}
+            className={cn(
+              "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:bg-white",
+              className,
+              (endIcon || type === "password") && "pr-10",
+              props.error && "border-red-500 focus:border-red-500"
+            )}
+            ref={ref}
+            {...props}
+          />
+          {type === "password" && (
+            <button
+              type="button"
+              className="absolute inset-y-0 right-3 flex items-center justify-center cursor-pointer text-slate-500 hover:text-slate-700"
+              onClick={togglePasswordVisibility}
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
           )}
-          ref={ref}
-          {...props}
-        />
-        {type === "password" && (
-          <div
-            className="absolute inset-y-0 right-0 flex justify-center items-end pr-3 pb-3 cursor-pointer"
-            onClick={togglePasswordVisibility}
-          >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </div>
-        )}
-        {endIcon && (
-          <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-            {endIcon}
-          </div>
-        )}
+          {endIcon && (
+            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+              {endIcon}
+            </div>
+          )}
+        </div>
+
         {props.error && (
-          <div className="text-red-400 text-sm mt-0">
+          <div className="text-red-400 text-sm mt-1">
             {props.error}
           </div>
         )}

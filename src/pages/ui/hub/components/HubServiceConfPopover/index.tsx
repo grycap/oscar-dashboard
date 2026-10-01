@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
-import { generateReadableName, genRandomString, getAllowedVOs } from "@/lib/utils";
+import { generateReadableName, genRandomString, getAllowedVOs, usesDNSRoutes } from "@/lib/utils";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import {
   ManagedVolume,
@@ -35,7 +35,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
   const {systemConfig, authData } = useAuth();
   const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
-  const buckets = useGetPrivateBuckets(isOpen);
+  const buckets = service.mount ? useGetPrivateBuckets(isOpen) : [];
 
   const oidcGroups = getAllowedVOs(systemConfig, authData);
 	const asyncService = roCrateServiceDef.type.some(t => t.toLowerCase() === "asynchronous");
@@ -109,10 +109,18 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       `/services/${serviceName}/exposed`
     );
     if (newValue.includes(`/services/${serviceName}/exposed`)) {
-      formData.enviromentVars = {
-        ...formData.enviromentVars,
-        [key]: newValue,
-      };
+      const dnsRoutesEnabled = usesDNSRoutes(systemConfig?.config);
+      if (dnsRoutesEnabled) {
+        formData.enviromentVars = {
+          ...formData.enviromentVars,
+          [key]: "/",
+        };
+      } else {
+        formData.enviromentVars = {
+          ...formData.enviromentVars,
+          [key]: newValue,
+        };
+      }
     }
     return newValue;
   }
@@ -142,11 +150,11 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
 
   useEffect(() => {
     if (!isOpen) return;
-
+    const serviceName = nameService();
     const initialVolume = serviceVolume?.name || "";
     setFormData((prev) => ({
       ...prev, 
-      name: nameService(),
+      name: serviceName,
       cpuCores: roCrateServiceDef.cpuRequirements,
       memoryRam: roCrateServiceDef.memoryRequirements,
       memoryUnit: roCrateServiceDef.memoryUnits,
@@ -155,8 +163,8 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       kserveMemoryUnit: roCrateServiceDef.kserveMemoryUnits ?? "",
       kserveEnv: service.kserve?.env || {},
       kserveArgs: service.kserve?.args || [],
-      bucket: "",
-      volume: "",
+      bucket: serviceName,
+      volume: serviceName,
       volumeSize: parseVolumeSize(serviceVolume?.size),
       token: genRandomString(128),
       enviromentVars: service.environment?.variables || {},

@@ -179,18 +179,25 @@ export default function BucketList() {
         actions={[
           {
             button: (bucket) => {
-              return (
-                <>
-                  <Button
-                    variant="link"
+              const isOwner = authData.egiSession?.sub === bucket.owner;
+              if (!isOwner) {
+                return <Button
+                    variant={"link"}
                     size="icon"
-                    onClick={() => {
-                      setItemsToDelete([...itemsToDelete, bucket]);
-                    }}
+                    disabled
                   >
-                    <Trash color={OscarColors.Red} />
-                  </Button>
-                </>
+                </Button>;
+              }
+              return (
+                <Button
+                  variant="link"
+                  size="icon"
+                  onClick={() => {
+                    setItemsToDelete([...itemsToDelete, bucket]);
+                  }}
+                >
+                  <Trash color={OscarColors.Red} />
+                </Button>
               );
             },
           },

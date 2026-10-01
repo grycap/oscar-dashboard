@@ -1,6 +1,6 @@
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { axiosExposedServiceIsAlive, exposedServiceIsAlive, isVersionLower } from "@/lib/utils";
+import { axiosExposedServiceIsAlive, exposedServiceIsAlive, getExposedServiceUrl, isVersionLower } from "@/lib/utils";
 import { Service } from "@/pages/ui/services/models/service";
 import { Link } from "react-router-dom";
 import OscarColors from "@/styles";
@@ -23,12 +23,12 @@ function SimpleServiceRedirectButton({
   axios?: boolean;
 }) {
   const [isAlive, setIsAlive] = useState<boolean | null>(null);
-  const { clusterInfo } = useAuth();
-  const redirectLink = `${endpoint}/system/services/${service.name}/exposed/${interpolateVariables(service, additionalExposedPathArgs)}`
+  const { systemConfig, clusterInfo } = useAuth();
+  const redirectLink = getExposedServiceUrl(endpoint, service.name, interpolateVariables(service, additionalExposedPathArgs), systemConfig?.config);
   const serviceIsStopped = service.deployment?.state === "stopped";
 
   const safeHealthcheckPath = healthcheckPath.startsWith("/") ? healthcheckPath.slice(1).trim() : healthcheckPath
-  const healthcheckLink = `${endpoint}/system/services/${service.name}/exposed/${safeHealthcheckPath}`;
+  const healthcheckLink = getExposedServiceUrl(endpoint, service.name, safeHealthcheckPath, systemConfig?.config);
       
   /**
    * Interpolate variables in the additionalExposedPathArgs string.

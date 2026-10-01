@@ -28,7 +28,9 @@ import {
   generateReadableName,
   genRandomString,
   getAllowedVOs,
-  isVersionLower,
+  getStorageProvider,
+  useArrayPorts,
+  usesDNSRoutes,
 } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
@@ -106,6 +108,9 @@ function TerminalFormPopover() {
   }, [isOpen]);
 
   const handleDeploy = async () => {
+    if (!systemConfig || !clusterInfo) {
+      return;
+    }
     const newErrors = {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
@@ -122,8 +127,8 @@ function TerminalFormPopover() {
       return;
     }
 
-    const storageConfig = withStorage ? storageFormRef.current!.getStorageConfig() : { mainStorage: "none", bucket: "", volume: "", volumeSize: "" };
-
+    const storageConfig = withStorage ? storageFormRef.current!.getStorageConfig() : { mainStorage: "", bucket: "", volume: "", volumeSize: "" };
+    const storageProvider = withStorage ? getStorageProvider(storageFormRef.current!.getStorageConfig()) : null;
     try {
       const fdlResponse = await fetch(TERMINAL_FDL_URL, fetchFromGitHubOptions);
       const fdlText = await fdlResponse.text();
@@ -134,7 +139,8 @@ function TerminalFormPopover() {
       );
       const scriptText = await scriptResponse.text();
 
-      const services = yamlToServices(fdlText, scriptText, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
+      const dnsRoutesEnabled = usesDNSRoutes(systemConfig.config);
+      const services = yamlToServices(fdlText, scriptText, useArrayPorts(clusterInfo.version), dnsRoutesEnabled);
 
       if (!services?.length) {
         throw new Error("No services found");
@@ -167,7 +173,9 @@ function TerminalFormPopover() {
           variables: {
             ...service.environment.variables,
             SERVICE_NAME: serviceName,
-            BASE_PATH: `/system/services/${serviceName}/exposed`,
+            BASE_PATH: dnsRoutesEnabled
+              ? "/"
+              : `/system/services/${serviceName}/exposed`,
             WORKSPACE_DIR: workspaceDir,
           },
           secrets: formData.refreshToken
@@ -182,20 +190,25 @@ function TerminalFormPopover() {
           terminal: "true",
         },
         mount: undefined,
-        ...(storageConfig.bucket ? {
+        ...(storageConfig.bucket && storageProvider ? {
           mount: {
             ...service.mount,
             path: storageConfig.bucket ?? "/notebook",
-            storage_provider: service.mount?.storage_provider ?? "minio.default",
+            storage_provider: storageProvider.name
           },
         } : {}),
         volume: undefined,
-        ...(storageConfig.volume ? { 
+        ...(storageConfig.volume && storageProvider ? { 
           volume: {
             name: storageConfig.volume,
             size: storageConfig.volumeSize ? `${storageConfig.volumeSize.trim()}Gi` : undefined,
             mount_path: `/mnt/volumes/${storageConfig.volume}`,
           }
+        } : {}),
+        ...(storageProvider ? {
+          storage_providers: {
+            ...storageProvider.provider,
+          },
         } : {}),
       };
 

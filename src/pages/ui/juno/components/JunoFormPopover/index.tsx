@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
-import { convertDockerImageToMap, fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs, isVersionLower } from "@/lib/utils";
+import { convertDockerImageToMap, fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs, getStorageProvider, useArrayPorts, usesDNSRoutes } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import { Service } from "@/pages/ui/services/models/service";
@@ -78,6 +78,9 @@ function JunoFormPopover() {
   }, [isOpen]);
 
   const handleDeploy = async () => {
+    if (!systemConfig || !clusterInfo) {
+      return;
+    }
     const newErrors = {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
@@ -94,7 +97,11 @@ function JunoFormPopover() {
       return;
     }
     const storageConfig = storageFormRef.current!.getStorageConfig();
-
+    const storageProvider = getStorageProvider(storageConfig);
+    if (!storageProvider) {
+      alert.error("Invalid storage provider configuration");
+      return;
+    }
     try {
       const fdlUrl =
         "https://raw.githubusercontent.com/grycap/oscar-juno/refs/heads/main/juno.yaml";
@@ -105,7 +112,8 @@ function JunoFormPopover() {
       const scriptResponse = await fetch(scriptUrl, fetchFromGitHubOptions);
       const scriptText = await scriptResponse.text();
 
-      const services = yamlToServices(fdlText, scriptText, (!!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")));
+      const dnsRoutesEnabled = usesDNSRoutes(systemConfig.config);
+      const services = yamlToServices(fdlText, scriptText, useArrayPorts(clusterInfo.version), dnsRoutesEnabled);
       if (!services?.length) throw Error("No services found");
       
       const service = services[0];
@@ -125,10 +133,16 @@ function JunoFormPopover() {
         vo: formData.vo,
         memory: `${formData.memoryRam}${formData.memoryUnit}`,
         cpu: formData.cpuCores,
+        expose: {
+          ...service.expose,
+          ...(dnsRoutesEnabled ? { rewrite_target: false } : {}),
+        },
         environment: {
           variables: {
             ...service.environment.variables,
-            JHUB_BASE_URL: `/system/services/${serviceName}/exposed`,
+            JHUB_BASE_URL: dnsRoutesEnabled
+              ? "/"
+              : `/system/services/${serviceName}/exposed`,
             JUPYTER_DIRECTORY: workspaceDir,
             GRANT_SUDO: "yes",
             OSCAR_ENDPOINT: authData.endpoint,
@@ -147,7 +161,7 @@ function JunoFormPopover() {
           mount: {
             ...service.mount,
             path: storageConfig.bucket ?? "/notebook",
-            storage_provider: service.mount?.storage_provider ?? "minio.default",
+            storage_provider: storageProvider.name
           },
         } : {}),
         volume: undefined,
@@ -158,6 +172,9 @@ function JunoFormPopover() {
             mount_path: `/mnt/volumes/${storageConfig.volume}`,
           }
         } : {}),
+        storage_providers: {
+          ...storageProvider.provider,
+        },
       };
       await createServiceApi(modifiedService);
       refreshServices();

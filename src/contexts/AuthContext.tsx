@@ -24,7 +24,10 @@ type EGISessionInfo = {
   sub: string; // Unique user identifier
   voperson_verified_email: string[]; // List of verified email addresses
 
-  group_membership: string[]; 
+  group_membership: string[];
+  realm_access?: {
+    roles?: string[];
+  };
 };
 
 export type AuthData = {
@@ -120,6 +123,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password: authData.password,
         token: authData?.token,
       }));
+      await handleGetSystemConfig();
     } catch (error) {
       setAuthData({
         user: "",

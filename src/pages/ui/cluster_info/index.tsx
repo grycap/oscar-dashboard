@@ -112,10 +112,10 @@ const Cluster = () => {
   const memTotal = hasNodes ? clusterStatusData.cluster.nodes.reduce((acc, node) => acc + node.memory.capacity_bytes, 0) : 0;
 
   return (
-    <div className="w-full h-full"> 
+    <div className="flex flex-col h-full w-full"> 
       <GenericTopbar defaultHeader={{title: "Status", linkTo: location.pathname}} refresher={fetchData} />
       {loading || !clusterStatusData || nodeCount < 0 ?
-      <div className="flex items-center justify-center h-[80vh]">
+      <div className="flex items-center justify-center h-full px-4 py-10">
         {nodeCount < 0 ? 
           <div className="max-w-md w-full p-8 text-center">
             <div className="flex justify-center mb-4">
@@ -136,9 +136,9 @@ const Cluster = () => {
         }
       </div>
       :
-      <div className="w-full max-w-full mx-auto px-4 pt-6 pb-6 space-y-6">
+      <div className="w-full h-full mx-auto px-4 pt-6 pb-6 space-y-6">
         {/* Cluster general info block */}
-        <Card className="w-full">
+        <Card className="w-full border-slate-200 shadow-sm">
           <CardHeader>
             <CardTitle>Cluster</CardTitle>
             <CardDescription className="text-sm text-gray-500">

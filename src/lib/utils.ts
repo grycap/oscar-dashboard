@@ -1,15 +1,88 @@
 import getBucketItemsApi from "@/api/buckets/getBucketItemsApi";
+import { StorageConfig, StorageProviderFormRef } from "@/components/StorageSelectForm";
+import { AWSProviderConfig } from "@/components/StorageSelectForm/components/AWSProvider";
+import { MinIOProviderConfig } from "@/components/StorageSelectForm/components/MinIOProvider";
+import { WebdavProviderConfig } from "@/components/StorageSelectForm/components/WebDavProvider";
 import { AuthData } from "@/contexts/AuthContext";
 import { SystemConfig } from "@/models/systemConfig";
-import { Service } from "@/pages/ui/services/models/service";
+import { Service, StorageProviders } from "@/pages/ui/services/models/service";
 import { _Object, CommonPrefix } from "@aws-sdk/client-s3";
 import axios from "axios";
 import { type ClassValue, clsx } from "clsx"
+import { MutableRefObject } from "react";
 import { twMerge } from "tailwind-merge"
 import { stringify } from "yaml";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function githubRawToTreeUrl(rawUrl: string): string {
+  try {
+    const url = new URL(rawUrl);
+    if (url.hostname !== "raw.githubusercontent.com") {
+      return rawUrl;
+    }
+
+    const segments = url.pathname.split("/").filter(Boolean);
+    if (segments.length < 5) {
+      return rawUrl;
+    }
+
+    const [owner, repo, ...rest] = segments;
+    if (!owner || !repo) {
+      return rawUrl;
+    }
+
+    let branch: string | undefined;
+    let remainingSegments: string[];
+
+    if (rest[0] === "refs" && rest.length >= 3 && (rest[1] === "heads" || rest[1] === "tags")) {
+      branch = rest[2];
+      remainingSegments = rest.slice(3);
+    } else if (rest[0] && !rest[0].includes(".")) {
+      branch = rest[0];
+      remainingSegments = rest.slice(1);
+    } else {
+      return rawUrl;
+    }
+
+    const pathWithoutFile = remainingSegments.length > 0 ? remainingSegments.slice(0, -1) : [];
+    const repoPath = pathWithoutFile.length > 0 ? `/${pathWithoutFile.join("/")}` : "";
+
+    return new URL(`https://github.com/${owner}/${repo}/tree/${branch}${repoPath}`).toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
+export const DNS_EXPOSED_SERVICES_VERSION = "v4.2.0";
+
+export function usesDNSRoutes(systemConfig: SystemConfig | null | undefined): boolean {
+  console.log("usesDNSRoutes: systemConfig", systemConfig?.exposed_services_use_subdomain_route);
+  return !!systemConfig && systemConfig.exposed_services_use_subdomain_route === true;
+}
+
+export function getExposedServiceUrl(
+  endpoint: string,
+  serviceName: string,
+  path = "",
+  systemConfig: SystemConfig | null | undefined,
+) {
+  const url = new URL(endpoint);
+  if (usesDNSRoutes(systemConfig)) {
+    url.hostname = `${serviceName}.${url.hostname}`;
+    url.pathname = "/";
+  } else {
+    url.pathname = `/system/services/${serviceName}/exposed/`;
+  }
+  url.search = "";
+  url.hash = "";
+  return new URL(`./${path.replace(/^\/+/, "")}`, url).toString();
+}
+
+export function useArrayPorts(version?: string | null) {
+  return !!version && !isVersionLower(version, "v4.1.0");
 }
 
 /**
@@ -167,8 +240,8 @@ export function getUserVOs(authData: AuthData): string[] {
       });
     });
   }
-  if ((authData.egiSession as any).realm_access?.roles) {
-    (authData.egiSession as any).realm_access.roles.forEach((role: string) => {
+  if (authData.egiSession?.realm_access?.roles) {
+    authData.egiSession.realm_access.roles.forEach((role: string) => {
       // "platform-access:vo.example.eu"
       const match = role.match(/^platform-access:(vo\..+?)$/);
       if (match && match[1]) {
@@ -528,4 +601,43 @@ export function downloadString(data: string, filename: string, type: string = "t
 
 export function textToLF(text: string): string {
   return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+}
+
+function buildStorageProviderName(provider: string): string {
+  switch (provider) {
+    case "minio.default":
+      return "minio.default";
+    case "webdav":
+      return `webdav.${provider}`;
+    case "s3":
+      return `s3.${provider}`;
+    case "minio":
+      return `minio.${provider}`;
+    default:
+      return "minio.default";
+  }
+}
+
+export function validateStorageConfig(storageProvider: MutableRefObject<StorageProviderFormRef|null>): boolean {
+  const storageConfig = storageProvider.current;
+  if (!storageConfig) {
+    return false;
+  }
+  return storageConfig.validate();  
+}
+
+export function getStorageProvider(storageConfig: StorageConfig): {name: string, provider?: StorageProviders} | undefined {
+  const provider = storageConfig.bucketStorageProvider.provider;
+  switch (provider) {
+    case "minio.default":
+      return {name: buildStorageProviderName(provider)};
+    case "webdav":
+      return {name: buildStorageProviderName(provider), provider: {webdav: {webdav: (storageConfig.bucketStorageProvider as WebdavProviderConfig).connection}}};
+    case "s3":
+      return {name: buildStorageProviderName(provider), provider: {s3: {s3: (storageConfig.bucketStorageProvider as AWSProviderConfig).connection}}};
+    case "minio":
+      return {name: buildStorageProviderName(provider), provider: {minio: {minio: (storageConfig.bucketStorageProvider as MinIOProviderConfig).connection}}};
+    default:
+      return undefined;
+  }
 }

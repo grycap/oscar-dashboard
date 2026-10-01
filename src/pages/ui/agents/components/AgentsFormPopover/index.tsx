@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
 import { errorMessage } from "@/lib/error";
-import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs, isVersionLower } from "@/lib/utils";
+import { fetchFromGitHubOptions, generateReadableName, genRandomString, getAllowedVOs, useArrayPorts, usesDNSRoutes } from "@/lib/utils";
 import yamlToServices from "@/pages/ui/services/components/FDL/utils/yamlToService";
 import { defaultService } from "@/pages/ui/services/components/ServiceForm/utils/initialData";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
@@ -99,6 +99,9 @@ function AgentFormPopover() {
   }, [isOpen]);
 
   const handleDeploy = async () => {
+    if (!systemConfig || !clusterInfo) {
+      return
+    }
     const newErrors = {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
@@ -131,7 +134,8 @@ function AgentFormPopover() {
       const services = yamlToServices(
         fdlText,
         scriptText,
-        !!clusterInfo && !isVersionLower(clusterInfo.version, "v4.1.0")
+        useArrayPorts(clusterInfo.version),
+        usesDNSRoutes(systemConfig.config),
       );
       if (!services?.length) throw Error("No services found");
 
@@ -366,7 +370,7 @@ function AgentFormPopover() {
           <>
             <div>
               <Label>Input/Output Storage</Label>
-              <InputOutputStorageForm ref={inputOutputBucketFormRef} />
+              <InputOutputStorageForm ref={inputOutputBucketFormRef} inOutStorageName={formData.name} />
             </div>
           </>
           :
