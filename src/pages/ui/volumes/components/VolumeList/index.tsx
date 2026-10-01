@@ -98,16 +98,19 @@ export default function VolumeList() {
     );
   }
 
+  async function handleDeleteVolume() {
+    const deletePromises = itemsToDelete.map((volume) =>
+      deleteVolume(volume.name)
+    );
+    await Promise.all(deletePromises);
+  }
+
   return (
     <>
       <DeleteDialog
         isOpen={itemsToDelete.length > 0}
         onClose={() => setItemsToDelete([])}
-        onDelete={() => {
-          itemsToDelete.forEach((volume) => {
-            void deleteVolume(volume.name);
-          });
-        }}
+        onDelete={handleDeleteVolume}
         itemNames={itemsToDelete.map((volume) => volume.name)}
       />
       {volumesAreLoading ? (

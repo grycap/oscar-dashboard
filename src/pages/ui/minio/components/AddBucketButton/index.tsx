@@ -20,6 +20,7 @@ import {
 import { AllowedUsersPopover } from "@/pages/ui/services/components/ServiceForm/components/GeneralTab/components/AllowedUsersPopover";
 import { useMediaQuery } from "react-responsive";
 import { useAuth } from "@/contexts/AuthContext";
+import RequestButton from "@/components/RequestButton";
 
 interface Props {
   bucket:Bucket;
@@ -153,12 +154,12 @@ export default function AddBucketButton({bucket, create, disabled = false}: Prop
               Cancel
             </Button>
             {createButtom? 
-            <Button onClick={handleCreateBucket} >
+            <RequestButton request={handleCreateBucket} >
               Create
-            </Button> :
-            <Button onClick={handleUpdateBucket} >
+            </RequestButton> :
+            <RequestButton request={handleUpdateBucket} >
               Update
-            </Button>}
+            </RequestButton>}
           </div>
         </div>
       </PopoverContent>

@@ -1,3 +1,4 @@
+import RequestButton from "@/components/RequestButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -133,12 +134,12 @@ export default function AddVolumeButton() {
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={() => void handleCreateVolume()}
+            <RequestButton
+              request={handleCreateVolume}
               disabled={!formIsValid}
             >
               Create
-            </Button>
+            </RequestButton>
           </div>
         </div>
       </PopoverContent>
