@@ -158,9 +158,15 @@ function formatNumber(value: number): string {
 }
 
 function formatHours(value: number): string {
+  if (value === 0) return "0";
+
+  const absValue = Math.abs(value);
+  const minimumFractionDigits = absValue > 0 && absValue < 1 ? 1 : 0;
+  const maximumFractionDigits = absValue >= 1 ? 2 : 3;
+
   return new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: value > 0 && value < 10 ? 1 : 0,
-    maximumFractionDigits: 2,
+    minimumFractionDigits,
+    maximumFractionDigits,
   }).format(value);
 }
 
