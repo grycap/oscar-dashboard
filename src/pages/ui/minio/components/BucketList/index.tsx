@@ -3,14 +3,13 @@ import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import GenericTable from "@/components/Table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { isUserOscar, shortenFullname } from "@/lib/utils";
 import { Bucket_visibility } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Bucket } from "@aws-sdk/client-s3";
-import { AlertCircle, ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-react";
+import { AlertCircle, ExternalLinkIcon, LoaderPinwheel, Trash, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -107,14 +106,19 @@ export default function BucketList() {
     );
   }
 
+  async function handleDeleteBucket() {
+    const deletePromises = itemsToDelete.map((bucket) =>
+      deleteBucket(bucket.Name!)
+    );
+    await Promise.all(deletePromises);
+  }
+
   return (
     <>
       <DeleteDialog
         isOpen={itemsToDelete.length > 0}
         onClose={() => setItemsToDelete([])}
-        onDelete={() => {
-          itemsToDelete.forEach((bucket) => deleteBucket(bucket.Name!));
-        }}
+        onDelete={handleDeleteBucket}
         itemNames={itemsToDelete.map((bucket) => bucket.Name!)}
       />
       {bucketsAreLoading ? 
@@ -206,18 +210,20 @@ export default function BucketList() {
           {
             button: (items) => {
               return (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      className="mt-[2px] ml-[4px]"
-                      onClick={() => setItemsToDelete(items)}
-                      variant={"destructive"}
-                    >
-                      <Trash  className="w-4 h-4 mr-2"/>
-                      Delete Buckets
-                    </Button>
-                  </TooltipTrigger>
-                </Tooltip>
+                <div>
+                  <Button
+                    variant={"destructive"}
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      gap: 8,
+                    }}
+                    onClick={() => setItemsToDelete(items)}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete services
+                  </Button>
+                </div>
               );
             },
           },

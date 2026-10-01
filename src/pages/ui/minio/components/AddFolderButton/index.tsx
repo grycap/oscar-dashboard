@@ -11,6 +11,7 @@ import { useMinio } from "@/contexts/Minio/MinioContext";
 import { Plus } from "lucide-react";
 import useSelectedBucket from "../../hooks/useSelectedBucket";
 import { useMediaQuery } from "react-responsive";
+import RequestButton from "@/components/RequestButton";
 
 interface Props {
   disabled?: boolean;
@@ -73,9 +74,9 @@ export default function AddFolderButton({ disabled = false }: Props) {
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateFolder} disabled={!folderName.trim()}>
+            <RequestButton request={handleCreateFolder} disabled={!folderName.trim()}>
               Create
-            </Button>
+            </RequestButton>
           </div>
         </div>
       </PopoverContent>
