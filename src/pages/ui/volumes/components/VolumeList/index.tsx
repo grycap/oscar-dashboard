@@ -13,6 +13,51 @@ import { AlertCircle, ExternalLinkIcon, LoaderPinwheel, Trash } from "lucide-rea
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+/**
+ * Normalizes Kubernetes quantity values to a human-readable binary size.
+ * Examples: 1Gi -> 1Gi, 1536Mi -> 1.5Gi, 1181116006400m -> 1.1Gi.
+ */
+function formatVolumeSize(size: string | undefined): string {
+  if (!size) return "-";
+
+  const trimmedSize = size.trim();
+  const match = trimmedSize.match(/^(\d+(?:\.\d+)?)(m|[KMGTP]i)?$/);
+  if (!match) return trimmedSize;
+
+  const value = Number(match[1]);
+  const unit = match[2] || "";
+
+  if (!unit) {
+    return `${value}`;
+  }
+
+  const unitFactors = {
+    Ki: 1024,
+    Mi: 1024 ** 2,
+    Gi: 1024 ** 3,
+    Ti: 1024 ** 4,
+    Pi: 1024 ** 5,
+  } as const;
+
+  const normalizedUnits = ["Pi", "Ti", "Gi", "Mi", "Ki"] as const;
+  const normalizedValue = unit === "m" ? value / 1000 : value * unitFactors[unit as keyof typeof unitFactors];
+
+  for (const candidate of normalizedUnits) {
+    const factor = unitFactors[candidate as keyof typeof unitFactors];
+    const candidateValue = normalizedValue / factor;
+
+    if (candidateValue >= 1 && candidateValue < 1024) {
+      return `${Number(candidateValue.toFixed(3)).toString()}${candidate}`;
+    }
+  }
+
+  if (unit === "m") {
+    return `${Number(normalizedValue.toFixed(3)).toString()}B`;
+  }
+
+  return `${value}${unit}`;
+}
+
 const statusColors: Record<string, string> = {
   ready: "bg-green-100 text-green-700 border-green-300",
   in_use: "bg-blue-100 text-blue-700 border-blue-300",
@@ -146,7 +191,7 @@ export default function VolumeList() {
             },
             {
               header: "Size",
-              accessor: (row) => row.size || "-",
+              accessor: (row) =>( formatVolumeSize(row.size) || "-"),
               sortBy: "size",
             },
             {
