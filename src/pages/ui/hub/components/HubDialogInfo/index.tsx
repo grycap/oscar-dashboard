@@ -134,7 +134,7 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
                 Docker Image
                 </h4>
               <div>
-                <code className="text-xs bg-gray-100 text-gray-700 rounded-xl font-mono py-1 px-2">
+                <code title={service?.image} className="flex text-xs bg-gray-100 text-gray-700 rounded-xl font-mono py-1 px-2 truncate max-w-[250px]">
                   {service?.image}
                 </code>
               </div>

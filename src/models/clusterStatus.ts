@@ -24,10 +24,14 @@ type ClusterMetrics = {
   cpu: {
     total_free_cores: number;
     max_free_on_node_cores: number;
+    total_schedulable_cores: number;
+    total_schedulable_on_node_cores: number;
   };
   memory: {
     total_free_bytes: number;
     max_free_on_node_bytes: number;
+    total_schedulable_bytes: number;
+    max_schedulable_on_node_bytes: number;
   };
   gpu: {
     total_gpu: number;
@@ -42,10 +46,12 @@ type Node = {
   cpu: {
     capacity_cores: number;
     usage_cores: number;
+    request_cores: number;
   };
   memory: {
     capacity_bytes: number;
     usage_bytes: number;
+    request_bytes: number;
   };
   gpu: number;
   is_interlink: boolean;

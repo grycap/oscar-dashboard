@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import getUserQuotaApi from "@/api/quotas/getQuotaApi";
 import GenericTopbar from "@/components/Topbar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -6,13 +7,12 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { errorMessage } from "@/lib/error";
 import { ClusterUserQuota } from "@/models/clusterUserQuota";
-import { CircleAlert, LoaderPinwheel, MessageSquareWarningIcon, Search } from "lucide-react";
-import { useState } from "react";
+import { CircleAlert, LoaderPinwheel, Search } from "lucide-react";
 import EditPopover from "./components/EditPopover";
 import QuotaEmptyState from "./components/QuotaEmptyState";
 import QuotaSummary from "./components/QuotaSummary";
-import OscarColors from "@/styles";
 import { ErrorAlert } from "@/components/ErrorAlert";
+import OscarColors from "@/styles";
 
 type LoadQuotaOptions = {
   userId?: string;
@@ -31,6 +31,10 @@ function Quotas() {
   const [inputError, setInputError] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = "OSCAR - User Quotas";
+  }, []);
 
   async function loadQuota({ userId, preserveExisting = false }: LoadQuotaOptions = {}) {
     const normalizedUserId = userId?.trim();
@@ -63,6 +67,13 @@ function Quotas() {
     }
   }
 
+  // Automatically load personal quota for OIDC logged-in users on mount
+  useEffect(() => {
+    if (personalMode && !quota && !loading && !hasSearched) {
+      void loadQuota();
+    }
+  }, [personalMode]);
+
   const refreshQuota = async () => {
     await loadQuota({
       userId: adminMode ? lastLoadedUid : undefined,
@@ -93,25 +104,19 @@ function Quotas() {
   ) : undefined;
 
   const topbarRefresher = personalMode || (adminMode && lastLoadedUid) ? refreshQuota : undefined;
-  const userId = quota?.user_id || lastLoadedUid;
+  const userId = quota?.user_id || lastLoadedUid || authData.egiSession?.sub || authData.user || "";
 
   return (
-    <div className="flex flex-col h-full w-full ">
+    <div className="flex flex-col h-full w-full min-h-0 overflow-hidden">
       <GenericTopbar
         defaultHeader={{ title: "Quotas", linkTo: "/ui/quotas" }}
         refresher={topbarRefresher}
         secondaryRow={topbarActions}
       />
-      {error ? (
-        <div className="flex items-center justify-center h-full">
-          <ErrorAlert description={"Quota could not be loaded"} variant="warning" icon={CircleAlert} />
-        </div>
-      ) : loading || (!quota && !adminMode) ? (
-        <div className="flex items-center justify-center h-full">
-          <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
-        </div>
-      ) : (
-        <div className="w-full h-full mx-auto px-4 pt-6 pb-6 space-y-6">
+
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className={`w-full h-full ${/*max-w-[1500px] mx-auto*/ ""} px-4 sm:px-6 py-6 pb-16 space-y-6`}>
+
           {!adminMode && !personalMode && (
             <Alert variant="destructive">
               <AlertTitle>Quotas unavailable</AlertTitle>
@@ -122,21 +127,41 @@ function Quotas() {
           )}
 
           {inputError && (
-            <ErrorAlert title="Missing user ID" description={inputError} variant="warning" icon={MessageSquareWarningIcon} />
+            <ErrorAlert
+              title="Invalid User Query"
+              description={inputError}
+              variant="warning"
+              icon={CircleAlert}
+            />
           )}
 
-          {quota ? (
+          {error && (
+            <div className="flex items-center justify-center py-6">
+              <ErrorAlert
+                title="Quota Query Error"
+                description={error || "Could not retrieve quota definitions from the cluster."}
+                variant="warning"
+                icon={CircleAlert}
+              />
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <LoaderPinwheel className="animate-spin" size={60} color={OscarColors.Green3} />
+            </div>
+          ) : quota ? (
             <QuotaSummary
               quota={quota}
               userId={userId}
               adminMode={adminMode}
               onEdit={() => setIsEditOpen(true)}
             />
-          ) : !inputError && (
-            <QuotaEmptyState hasSearched={hasSearched} adminMode={adminMode} />
+          ) : (
+            !inputError && <QuotaEmptyState hasSearched={hasSearched} adminMode={adminMode} />
           )}
         </div>
-      )}
+      </div>
 
       {adminMode && quota && (
         <EditPopover

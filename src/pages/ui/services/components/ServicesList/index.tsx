@@ -277,7 +277,12 @@ function ServicesList() {
                 },
                 sortBy: "visibility",
               },
-              { header: "Image", accessor: "image", sortBy: "image" },
+              { header: "Image", accessor: 
+                (row) => (
+                  <code title={row.image} className="flex text-xs bg-gray-100 text-gray-700 rounded-xl font-mono py-1 px-2 truncate max-w-[250px]">
+                    {row.image}
+                  </code>
+                ), sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
               { header: "Memory", accessor: "memory", sortBy: "memory" },
             ]}
