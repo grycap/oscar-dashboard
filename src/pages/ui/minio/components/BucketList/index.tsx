@@ -221,7 +221,7 @@ export default function BucketList() {
                     onClick={() => setItemsToDelete(items)}
                   >
                     <Trash2 className="h-5 w-5" />
-                    Delete services
+                    Delete buckets
                   </Button>
                 </div>
               );
