@@ -29,7 +29,7 @@ function HubCardHeader( { roCrateServiceDef, card } : { roCrateServiceDef: RoCra
         </TooltipTrigger>
         {gpuWarning() && (
           <TooltipContent>
-            <p>Warning: This service requires GPU but GPU is not available on this cluster</p>
+            <p>Warning: This service requires a GPU, but no GPU is available on this cluster.</p>
           </TooltipContent>
         )}
       </Tooltip>

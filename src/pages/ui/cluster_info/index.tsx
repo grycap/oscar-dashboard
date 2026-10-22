@@ -603,7 +603,7 @@ const Cluster = () => {
                       MinIO Object Storage
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Aggregated storage buckets and object counts across cluster's MinIO deployment
+                      Aggregated storage buckets and object counts across the cluster's MinIO deployment
                     </p>
                   </div>
                 </div>

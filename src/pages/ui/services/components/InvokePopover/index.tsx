@@ -277,7 +277,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="h-8 w-8" />
-              Drag and drop your file here or click to open file explorer
+              Drag and drop your file here or click to open the file explorer
               <Button>Upload file</Button>
             </div>
             <div className="flex justify-center items-center">

@@ -210,7 +210,7 @@ function StorageSelectForm({ manageBucket = true, manageVolume = true, ref }: St
                 <SelectItem value="minio.default">MinIO Default</SelectItem>
                 <SelectItem value="minio">MinIO External</SelectItem>
                 <SelectItem value="webdav">WebDAV</SelectItem>
-                <SelectItem value="s3">AWS S3</SelectItem>
+                <SelectItem value="s3">Amazon S3</SelectItem>
               </SelectContent>
             </Select>
           </div>

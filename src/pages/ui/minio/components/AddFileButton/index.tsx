@@ -152,7 +152,7 @@ export default function AddFileButton({ disabled = false, responsiveButton = "no
           className="border-2 border-dashed cursor-pointer border-gray-300 rounded-lg p-4 text-center flex flex-col items-center justify-center gap-2"
         >
           <Upload className="h-8 w-8" />
-          Drag and drop your files here or click to open file explorer
+          Drag and drop your files here or click to open the file explorer
           <Button>Select files</Button>
         </div>
       ) : (

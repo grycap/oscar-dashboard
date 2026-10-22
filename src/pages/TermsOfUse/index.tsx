@@ -22,7 +22,7 @@ export default function Component() {
           </a>{" "}
           at the{" "}
           <a href="http://www.upv.es" className="text-blue-600 hover:underline">
-            Universitat Politécnica de València (UPV)
+            Universitat Politècnica de València (UPV)
           </a>
           , located at Camino de Vera S/N, Spain (the "Provider"). These Terms
           of Use ("TOU") represent a binding legal contract between you and the

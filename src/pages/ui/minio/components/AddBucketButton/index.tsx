@@ -126,7 +126,7 @@ export default function AddBucketButton({bucket, create, disabled = false}: Prop
             }}
           >
             <SelectTrigger id="bucket-select-trigger">
-              <SelectValue placeholder="Select a Bucket Visibility" />
+              <SelectValue placeholder="Select bucket visibility" />
             </SelectTrigger>
             <SelectContent>
               {(Object.keys(Bucket_visibility) as Array<keyof typeof Bucket_visibility>)?.map((kind) => {

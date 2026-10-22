@@ -67,12 +67,12 @@ function FDLForm() {
 
   async function handleSave() {
     if (!fdl) {
-      alert.error("Please fill the FDL file");
+      alert.error("Please fill in the FDL file");
       return;
     }
 
     if (!script) {
-      alert.error("Please fill the script");
+      alert.error("Please fill in the script");
       return;
     }
 

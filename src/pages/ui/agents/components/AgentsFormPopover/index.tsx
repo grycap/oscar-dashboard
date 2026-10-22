@@ -270,7 +270,7 @@ function AgentFormPopover() {
                 type="number"
                 step={0.1}
                 value={formData.cpuCores}
-                error={errors.cpuCores ? "CPU Cores is required" : undefined}
+                error={errors.cpuCores ? "CPU cores are required" : undefined}
                 onChange={(e) => {
                   setFormData({ ...formData, cpuCores: e.target.value });
                   if (errors.cpuCores) setErrors({ ...errors, cpuCores: false });
