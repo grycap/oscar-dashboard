@@ -375,7 +375,7 @@ function ServicesList() {
               },
               {
                 button: (item) => {
-                  const isOwner = authData.egiSession?.sub === item.owner;
+                  const isOwner = authData.egiSession?.sub === item.owner || (authData?.user === "oscar" || authData?.user === "cluster_admin");
                   if (!isOwner) {
                     return <Button
                         variant={"link"}

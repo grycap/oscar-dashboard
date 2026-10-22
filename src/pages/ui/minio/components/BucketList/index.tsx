@@ -183,7 +183,7 @@ export default function BucketList() {
         actions={[
           {
             button: (bucket) => {
-              const isOwner = authData.egiSession?.sub === bucket.owner;
+              const isOwner = authData.egiSession?.sub === bucket.owner || (authData?.user === "oscar" || authData?.user === "cluster_admin");
               if (!isOwner) {
                 return <Button
                     variant={"link"}
