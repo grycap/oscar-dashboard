@@ -21,7 +21,6 @@ import DeleteDialog from "@/components/DeleteDialog";
 import FilePreviewModal from "./FilePreview";
 import {
   Tooltip,
-  TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { bytesSizeToHumanReadable } from "@/lib/utils";
@@ -152,10 +151,15 @@ export default function BucketContent() {
       singleFiles
     );
 
+    var zipName = bucketName;
+    if (items.length === 1 && folders.length === 1) {
+      zipName = folders[0].Prefix!.split('/').filter(Boolean).pop() || bucketName;
+    }
+
     if (zipBlob) {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(zipBlob);
-      a.download = `${bucketName}_files.zip`;
+      a.download = `${zipName}_files.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -306,7 +310,7 @@ export default function BucketContent() {
               button: (item) => {
                 return (
                   <>
-                    {item.Type === "file" && (
+                    {item.Type === "file" ? (
                       <>
                         <Button
                           variant="link"
@@ -326,6 +330,14 @@ export default function BucketContent() {
                         </Button>
                         <GenPresignedURLPopover bucketName={bucketName!} objectKey={path + item.Name} operation="download"/>
                       </>
+                    ) : (
+                      <Button
+                        variant="link"
+                        size="icon"
+                        onClick={() => handleBulkDownload([item] as BucketItem[])}
+                      >
+                        <Download />
+                      </Button>
                     )}
                     <Button
                       variant={"ghost"}
@@ -366,9 +378,6 @@ export default function BucketContent() {
                         </Button>
                       </div>
                     </TooltipTrigger>
-                    {items.some((item) => item.Type === "folder") && (
-                      <TooltipContent>Cannot download folders</TooltipContent>
-                    )}
                   </Tooltip>
                 );
               },
