@@ -10,7 +10,24 @@ export type MetricStatusColor =
   | "purple"
   | "slate";
 
+export interface MetricSegment {
+  label: string;
+  percentage: number;
+  /** Tailwind background classes, e.g. "bg-blue-500 dark:bg-blue-400" */
+  color: string;
+  /** Optional text shown in the legend instead of "<percentage>%" */
+  valueLabel?: string;
+}
+
 interface MetricCardProps {
+  /**
+   * Multi-segment progress bar with legend. When provided it replaces the
+   * single `percentage` bar and disables threshold-based colors.
+   * - "overlay": every segment is measured from 0 (later segments are drawn on top).
+   * - "stacked": segments are placed one after another.
+   */
+  segments?: MetricSegment[];
+  segmentsMode?: "overlay" | "stacked";
   title: string;
   value: string | number;
   subtitle?: ReactNode;
@@ -83,11 +100,15 @@ export function MetricCard({
   icon,
   percentage,
   percentageLabel,
+  segments,
+  segmentsMode = "overlay",
   colorScheme = "emerald",
   size = "md",
   className = "",
   onClick,
 }: MetricCardProps) {
+  const clamp = (n: number) => Math.min(100, Math.max(0, n));
+  const hasSegments = !!segments && segments.length > 0;
   const styles = COLOR_STYLES[colorScheme] || COLOR_STYLES.emerald;
   const isDanger = percentage !== undefined && percentage >= 85;
   const isWarning = percentage !== undefined && !isDanger && percentage >= 70;
@@ -109,7 +130,7 @@ export function MetricCard({
         onClick ? "cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm" : ""
       } ${className}`}
     >
-      <CardContent className={`p-0 ${isSmall ? "space-y-2" : "space-y-3"}`}>
+      <CardContent className={`p-0 ${isSmall ? "gap-2" : "gap-3"} h-full flex flex-col`}>
         {/* Header row: Label + Icon */}
         <div className="flex items-center justify-between gap-2">
           <span
@@ -140,7 +161,7 @@ export function MetricCard({
             {value}
           </div>
         </div>
-
+        
         {/* Subtitle / Contextual metadata */}
         {subtitle && (
           <div
@@ -152,9 +173,47 @@ export function MetricCard({
             {subtitle}
           </div>
         )}
+        <div className="mt-auto">
+        {/* Multi-segment progress bar with legend */}
+        {hasSegments && (
+          <div className="flex flex-col gap-1.5">
+            <div
+              className={`${isSmall ? "h-1.5" : "h-2"} w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden relative flex`}
+            >
+              {segments!.map((seg, i) => {
+                const width = clamp(seg.percentage);
+                return segmentsMode === "overlay" ? (
+                  <div
+                    key={i}
+                    className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${seg.color}`}
+                    style={{ width: `${width}%` }}
+                  />
+                ) : (
+                  <div
+                    key={i}
+                    className={`h-full transition-all duration-500 ${seg.color}`}
+                    style={{ width: `${width}%` }}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+              {[...segments!].reverse().map((seg, i) => (
+                <div
+                  key={i}
+                  className={`${isSmall ? "text-[11px]" : "text-xs"} flex items-center gap-1.5 text-slate-600 dark:text-slate-300`}
+                >
+                  <span className={`h-2 w-2 rounded-full shrink-0 ${seg.color}`} />
+                  <span>{seg.label}</span>
+                  <span className="font-mono font-bold">{seg.valueLabel ?? `${seg.percentage}%`}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Progress bar if percentage provided */}
-        {percentage !== undefined && (
+        {!hasSegments && percentage !== undefined && (
           <div className="flex flex-col">
             <span
               className={`${
@@ -177,6 +236,7 @@ export function MetricCard({
             </div>
           </div>
         )}
+        </div>
       </CardContent>
     </Card>
   );
