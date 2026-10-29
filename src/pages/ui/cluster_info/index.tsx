@@ -1,10 +1,9 @@
-// src/pages/cluster_info/index.tsx
+﻿// src/pages/cluster_info/index.tsx
 import { useEffect, useState } from "react";
 import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   CheckCircle2,
@@ -19,7 +18,6 @@ import {
   ShieldCheck,
   Layers,
   Server,
-  Boxes,
 } from "lucide-react";
 import GenericTopbar from "@/components/Topbar";
 import { useLocation } from "react-router-dom";
@@ -36,6 +34,9 @@ const formatBytes = (bytes: number) => `${(bytes / 1024 ** 3).toFixed(1)} GB`;
 
 // convert to Cores
 const formatCores = (millicores: number) => `${(millicores / 1000).toFixed(2)} Cores`;
+
+const inUseColor = "bg-blue-500 dark:bg-blue-400";
+const reservedColor = "bg-amber-400 dark:bg-amber-500";
 
 const Cluster = () => {
   const { authData } = useAuth();
@@ -118,46 +119,9 @@ const Cluster = () => {
       ) : (
         <div className="flex-1 min-h-0 overflow-y-auto">
           <div className={`w-full h-full ${/*max-w-[1500px] mx-auto*/ ""} px-4 sm:px-6 py-6 pb-16 space-y-6`}>
-            {/* Header Banner 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-              <div className="flex items-start gap-3.5">
-                <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 border border-emerald-200/60 dark:border-emerald-800/60">
-                  <Activity size={20} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                      Cluster Telemetry & Health Status
-                    </h1>
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>Operational</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-                    Live operational telemetry, worker node utilization gauges, and Kubernetes orchestration state.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 shrink-0 text-sm text-slate-500 dark:text-slate-400">
-                <span>Deployment: <strong className="font-mono text-slate-800 dark:text-slate-200">{clusterStatusData.oscar.deployment_name}</strong></span>
-              </div>
-            </div>*/}
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                  <Boxes size={18} className="text-emerald-600 dark:text-emerald-400" />
-                  Cluster General Information
-                </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Overview of the OSCAR cluster deployment, worker node count, and resource allocation metrics
-                </p>
-              </div>
-            </div>
             {/* KPI Metrics Grid */}
-            <div className="flex flex-wrap gap-4 ">
-              <div className="flex flex-col gap-4 w-full sm:w-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_2fr_2fr] gap-4 items-stretch">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4 md:col-span-2 xl:col-span-1">
                 <MetricCard
                   title="Active Nodes"
                   value={clusterStatusData.cluster.nodes_count}
@@ -177,46 +141,61 @@ const Cluster = () => {
               </div>
 
               <MetricCard
-                className="w-full sm:w-auto"
+                className="h-full"
                 title="Total CPU"
                 value={formatCores(totalCpuCores)}
-                percentage={Number((cpuUsedPct))}
-                percentageLabel={`${cpuUsedPct}% used`}
                 subtitle={<span>
-                            <span>{`In use: ${formatCores((totalCpuCores - freeCpuCores))}`}</span>
+                            <span>{`Total Free: ${formatCores(clusterStatusData.cluster.metrics.cpu.total_schedulable_cores)}`}</span>
                             <br />
-                            <span>{`Total Reserved: ${formatCores(totalCpuCores - clusterStatusData.cluster.metrics.cpu.total_schedulable_cores)}`}</span>
-                            <br />
-                            <span>{`Total Free to reserve: ${formatCores(clusterStatusData.cluster.metrics.cpu.total_schedulable_cores)}`}</span>
-                            <br />
-                            <span><strong>{`Max Free to reserve on one node: ${formatCores(clusterStatusData.cluster.metrics.cpu.total_schedulable_on_node_cores)}`}</strong></span>
-                          </span>}
+                            <span><strong>{`Max Free (single node): ${formatCores(clusterStatusData.cluster.metrics.cpu.total_schedulable_on_node_cores)}`}</strong></span>
+                          </span>
+                          }
+                segments={[
+                  {
+                    label: "Reserved",
+                    percentage: Math.round(((totalCpuCores - clusterStatusData.cluster.metrics.cpu.total_schedulable_cores) / totalCpuCores) * 100),
+                    valueLabel: formatCores(totalCpuCores - clusterStatusData.cluster.metrics.cpu.total_schedulable_cores),
+                    color: reservedColor,
+                  },
+                  {
+                    label: "In use",
+                    percentage: Number(cpuUsedPct),
+                    valueLabel: formatCores(totalCpuCores - freeCpuCores),
+                    color: inUseColor,
+                  },
+                ]}
                 icon={<Cpu size={18} />}
                 colorScheme="blue"
               />
 
               <MetricCard
-                className="w-full sm:w-auto"
-                title="Total RAM Memory"
+                className="h-full"
+                title="Total RAM"
                 value={formatBytes(memTotal)}
-                percentage={Number(memUsedPct)}
-                percentageLabel={`${memUsedPct}% used`}
                 subtitle={
                   <span>
-                    <span>{`In use: ${formatBytes((memTotal - freeMemBytes))}`}</span>
+                    <span>{`Total Free: ${formatBytes(clusterStatusData.cluster.metrics.memory.total_schedulable_bytes)}`}</span>
                     <br />
-                    <span>{`Total Reserved: ${formatBytes(memTotal - clusterStatusData.cluster.metrics.memory.total_schedulable_bytes)}`}</span>
-                    <br />
-                    <span>{`Total Free to reserve: ${formatBytes(clusterStatusData.cluster.metrics.memory.total_schedulable_bytes)}`}</span>
-                    <br />
-                    <span><strong>{`Max Free to reserve on one node: ${formatBytes(clusterStatusData.cluster.metrics.memory.max_schedulable_on_node_bytes)}`}</strong></span>
+                    <span><strong>{`Max Free (single node): ${formatBytes(clusterStatusData.cluster.metrics.memory.max_schedulable_on_node_bytes)}`}</strong></span>
                   </span>
                 }
+                segments={[
+                  {
+                    label: "Reserved",
+                    percentage: Math.round(((memTotal - clusterStatusData.cluster.metrics.memory.total_schedulable_bytes) / memTotal) * 100),
+                    valueLabel: formatBytes(memTotal - clusterStatusData.cluster.metrics.memory.total_schedulable_bytes),
+                    color: reservedColor,
+                  },
+                  {
+                    label: "In use",
+                    percentage: Number(memUsedPct),
+                    valueLabel: formatBytes(memTotal - freeMemBytes),
+                    color: inUseColor,
+                  },
+                ]}
                 icon={<MemoryStick size={18} />}
                 colorScheme="indigo"
               />
-
-              
             </div>
 
             {/* Deployment Details & Identity Grid */}
@@ -232,9 +211,6 @@ const Cluster = () => {
                       <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
                         OSCAR Deployment Controller
                       </CardTitle>
-                      <CardDescription className="text-[11px] text-slate-400 dark:text-slate-500">
-                        Kubernetes deployment specs and replica status
-                      </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -289,9 +265,6 @@ const Cluster = () => {
                       <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
                         OIDC & Identity Federation
                       </CardTitle>
-                      <CardDescription className="text-[11px] text-slate-400 dark:text-slate-500">
-                        Configured token issuers and authorized user groups
-                      </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -325,8 +298,8 @@ const Cluster = () => {
                     </div>
 
                     <div>
-                      <span className="font-semibold text-slate-400 block mb-1 text-[11px] uppercase tracking-wider">
-                        Authorized Groups (VOs)
+                      <span className="font-semibold text-slate-400 block mb-1 text-[11px] tracking-wider">
+                        AUTHORIZED GROUPS (VOs)
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {clusterStatusData.oscar.oidc.groups.length > 0 ? (
@@ -367,9 +340,6 @@ const Cluster = () => {
                       <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
                         Kubernetes Pods & Workload Lifecycle
                       </CardTitle>
-                      <CardDescription className="text-[11px] text-slate-400 dark:text-slate-500">
-                        Cluster workload queue states across synchronous and asynchronous jobs
-                      </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -433,7 +403,7 @@ const Cluster = () => {
                 <div>
                   <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <Server size={18} className="text-emerald-600 dark:text-emerald-400" />
-                    Cluster Worker Nodes ({clusterStatusData.cluster.nodes?.length ?? 0})
+                    Cluster Nodes ({clusterStatusData.cluster.nodes?.length ?? 0})
                   </h2>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     Individual node compute allocation, utilization gauges, and Kubernetes conditions
@@ -469,15 +439,10 @@ const Cluster = () => {
                             </span>
 
                             {/* 2. GPU Status Badge (Separado) */}
-                            {node.gpu > 0 ? (
+                            {node.gpu > 0 && (
                               <span className="inline-flex items-center gap-1 text-sm font-semibold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/60">
                                 <Gpu size={13} className="text-purple-600 dark:text-purple-400" />
-                                <span>{node.gpu} GPU{node.gpu > 1 ? "s" : ""}</span>
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-sm font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
-                                <Gpu size={13} className="text-slate-400" />
-                                <span>No GPU</span>
+                                <span>GPU</span>
                               </span>
                             )}
 
@@ -499,19 +464,25 @@ const Cluster = () => {
                               title="CPU Capacity"
                               size="sm"
                               value={`${formatCores(node.cpu.capacity_cores)}`}
-                              percentage={cpuPct}
-                              percentageLabel={`${cpuPct}% in use`}
+                              segments={[
+                                {
+                                  label: "Reserved",
+                                  percentage: Math.round((node.cpu.request_cores / node.cpu.capacity_cores) * 100),
+                                  valueLabel: formatCores(node.cpu.request_cores),
+                                  color: reservedColor,
+                                },
+                                {
+                                  label: "In use",
+                                  percentage: cpuPct,
+                                  valueLabel: formatCores(node.cpu.usage_cores),
+                                  color: inUseColor,
+                                },
+                              ]}
                               subtitle={
-                                <span>
-                                  In use: {formatCores(node.cpu.usage_cores)}
-                                  <br />
-                                  Reserved: {formatCores(node.cpu.request_cores)}
-                                  <br />
-                                  <strong>Free to reserve: {formatCores(node.cpu.capacity_cores - node.cpu.request_cores)}</strong>
-                                </span>
+                                <strong>Free: {formatCores(node.cpu.capacity_cores - node.cpu.request_cores)}</strong>
                               }
                               icon={<Cpu size={15} />}
-                              colorScheme={cpuPct >= 85 ? "rose" : cpuPct >= 70 ? "amber" : "blue"}
+                              colorScheme="blue"
                             />
 
                             {/* 2. RAM Memory MetricCard */}
@@ -519,19 +490,25 @@ const Cluster = () => {
                               title="RAM Memory"
                               size="sm"
                               value={`${formatBytes(node.memory.capacity_bytes)}`}
-                              percentage={memPct}
-                              percentageLabel={`${memPct}% in use`}
+                              segments={[
+                                {
+                                  label: "Reserved",
+                                  percentage: Math.round((node.memory.request_bytes / node.memory.capacity_bytes) * 100),
+                                  valueLabel: formatBytes(node.memory.request_bytes),
+                                  color: reservedColor,
+                                },
+                                {
+                                  label: "In use",
+                                  percentage: memPct,
+                                  valueLabel: formatBytes(node.memory.usage_bytes),
+                                  color: inUseColor,
+                                },
+                              ]}
                               subtitle={
-                                <span>
-                                  In use: {formatBytes(node.memory.usage_bytes)}
-                                  <br />
-                                  Reserved: {formatBytes(node.memory.request_bytes)}
-                                  <br />
-                                  <strong>Free to reserve: {formatBytes(node.memory.capacity_bytes - node.memory.request_bytes)}</strong>
-                                </span>
+                                <strong>Free: {formatBytes(node.memory.capacity_bytes - node.memory.request_bytes)}</strong>
                               }
                               icon={<MemoryStick size={15} />}
-                              colorScheme={memPct >= 85 ? "rose" : memPct >= 70 ? "amber" : "indigo"}
+                              colorScheme="indigo"
                             />
 
                             {/* 3. GPU Status MetricCard */}
@@ -539,7 +516,6 @@ const Cluster = () => {
                               title="GPU Accelerators"
                               size="sm"
                               value={node.gpu > 0 ? `${node.gpu} GPU${node.gpu > 1 ? "s" : ""}` : "No GPU"}
-                              subtitle={node.gpu > 0 ? "Hardware Passthrough Enabled" : "CPU compute only"}
                               icon={<Gpu size={15} />}
                               colorScheme={node.gpu > 0 ? "purple" : "slate"}
                             />
@@ -562,7 +538,8 @@ const Cluster = () => {
                             </span>
                             <div className="flex flex-wrap gap-2">
                               {node.conditions.map((condition, i) => {
-                                const isConditionBad = condition.type === "Ready" ? !condition.status : condition.status;
+                                if (condition.type === "Ready") return null; // Skip Ready condition as it's already displayed in the badge
+                                const isConditionBad = condition.status;
                                 return (
                                   <div
                                     key={i}
@@ -578,7 +555,7 @@ const Cluster = () => {
                                       <CheckCircle2 size={13} className="text-emerald-600 dark:text-emerald-400" />
                                     )}
                                     <span>
-                                      {condition.type === "Ready" ? <strong>Ready</strong> : condition.type}
+                                      {condition.type}
                                     </span>
                                   </div>
                                 );

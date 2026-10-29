@@ -43,7 +43,7 @@ export function QuotaSummary({ quota, userId, adminMode, onEdit }: QuotaSummaryP
               <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5 truncate">
                 <ResponsiveOwnerField owner={userId} copy />
               </div>
-              {quota.cluster_queue && (
+              {adminMode &&quota.cluster_queue && (
                 <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
                   <span>Assigned ClusterQueue:</span>
                   <span className="font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 truncate min-w-[100px]">
