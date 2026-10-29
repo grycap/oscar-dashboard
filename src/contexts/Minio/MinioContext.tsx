@@ -483,13 +483,17 @@ export const MinioProvider = ({ children }: { children: React.ReactNode }) => {
           // Add file to the ZIP archive
           if (fileData) {
             const safeData = new Uint8Array(fileData); 
-            zip.file(`${folder.Prefix}${relativePath}`, new Blob([safeData]));
+            var prefix = folder.Prefix
+            if (folders.length === 1 && singleFiles.length === 0) {
+              prefix = folder.Prefix!.split('/').filter(Boolean).pop() + '/';
+            }
+            zip.file(`${prefix}${relativePath}`, new Blob([safeData]));
           } else {
             throw new Error(`Error downloading file: ${object.Key}`);
           }
         }
       }
-
+      
       for (const file of singleFiles) {
         const fileData = await downloadFile(bucketName, file.Key!);
         if (fileData) {
