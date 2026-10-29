@@ -69,7 +69,7 @@ type FormFunctions = {
 export const serviceSchema = z.object({
   name: z.string().min(1, "Service name is required"),
   image: z.string().min(1, "Docker image is required"),
-  cpu: z.string().min(1, "CPU cores is required"),
+  cpu: z.string().min(1, "CPU cores are required"),
   memory: z.string().min(1, "Memory is required"),
   script: z.string().min(1, "Script is required"),
   visibility: z.nativeEnum(ServiceVisibility).optional(),

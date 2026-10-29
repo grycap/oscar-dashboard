@@ -20,7 +20,7 @@ function QuotaEmptyState({ hasSearched, adminMode }: QuotaEmptyStateProps) {
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             {adminMode
               ? "Enter the exact user ID and load the current quota from /system/quotas/user."
-              : "Use refresh to load your current quota from /system/quotas/user."}
+              : "Use the refresh button to load your current quota from /system/quotas/user."}
           </p>
         </div>
       </CardContent>

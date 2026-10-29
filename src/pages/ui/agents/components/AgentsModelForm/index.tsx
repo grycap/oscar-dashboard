@@ -135,7 +135,7 @@ function AgentsModelForm({ agentServiceType, noCustomSkillFiles = false, noCusto
         <Input
           id="api-key"
           type="password"
-          placeholder="API key (Leave empty to configure later)"
+          placeholder="API key (leave empty to configure later)"
           value={formData.apiKey}
           onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
         />

@@ -31,7 +31,7 @@ export function QuotaSummary({ quota, userId, adminMode, onEdit }: QuotaSummaryP
   const ephemeralStorageMax = quota.resources?.ephemeralStorage.max;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-6">
       {/* User Header Profile Card */}
       <Card className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs rounded-2xl overflow-hidden">
         <CardHeader className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">

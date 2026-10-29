@@ -277,7 +277,12 @@ function ServicesList() {
                 },
                 sortBy: "visibility",
               },
-              { header: "Image", accessor: "image", sortBy: "image" },
+              { header: "Image", accessor: 
+                (row) => (
+                  <code title={row.image} className="flex text-xs bg-gray-100 text-gray-700 rounded-xl font-mono py-1 px-2 truncate max-w-[250px]">
+                    {row.image}
+                  </code>
+                ), sortBy: "image" },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
               { header: "Memory", accessor: "memory", sortBy: "memory" },
             ]}
@@ -370,7 +375,7 @@ function ServicesList() {
               },
               {
                 button: (item) => {
-                  const isOwner = authData.egiSession?.sub === item.owner;
+                  const isOwner = authData.egiSession?.sub === item.owner || (authData?.user === "oscar" || authData?.user === "cluster_admin");
                   if (!isOwner) {
                     return <Button
                         variant={"link"}
