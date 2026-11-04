@@ -8,10 +8,10 @@ import HubDialogInfo from "../HubDialogInfo";
 
 interface HubCardProps {
 	roCrateServiceDef: RoCrateServiceDefinition;
-	service: Service;
+	services: Service[];
 }
 
-function HubCard( { roCrateServiceDef, service }: HubCardProps ) {
+function HubCard( { roCrateServiceDef, services }: HubCardProps ) {
 	const [isDeployDialogOpen, setIsDeployDialogOpen] = useState(false);
 	const [isInfoOpen, setIsInfoOpen] = useState(false);
 
@@ -21,7 +21,7 @@ function HubCard( { roCrateServiceDef, service }: HubCardProps ) {
 				<CardTitle className="text-md text-left text-gray-800">
 					<div className="flex flex-row items-center justify-between ">
 						{roCrateServiceDef.name}
-						<HubDialogInfo isInfoOpen={isInfoOpen} roCrateServiceDef={roCrateServiceDef} service={service} setIsDeployDialogOpen={setIsDeployDialogOpen} setIsInfoOpen={setIsInfoOpen} />
+						<HubDialogInfo isInfoOpen={isInfoOpen} roCrateServiceDef={roCrateServiceDef} services={services} setIsDeployDialogOpen={setIsDeployDialogOpen} setIsInfoOpen={setIsInfoOpen} />
 					</div>
 				</CardTitle>
 			</CardHeader>
@@ -58,7 +58,7 @@ function HubCard( { roCrateServiceDef, service }: HubCardProps ) {
 					<HubServiceConfPopover 
 						className="hover:opacity-90 text-white rounded-sm w-full h-8"
 						variant={"mainGreen"}
-						roCrateServiceDef={roCrateServiceDef} service={service!} isOpen={isDeployDialogOpen} setIsOpen={setIsDeployDialogOpen}
+						roCrateServiceDef={roCrateServiceDef} services={services} isOpen={isDeployDialogOpen} setIsOpen={setIsDeployDialogOpen}
 					/>
 				</div>
 			</CardContent>

@@ -9,16 +9,13 @@ import { Service } from "@/pages/ui/services/models/service";
 
 interface HubDialogInfoProps {
   roCrateServiceDef: RoCrateServiceDefinition;
-  service: Service | undefined;
+  services: Service[];
   setIsDeployDialogOpen: (open: boolean) => void;
   isInfoOpen: boolean;
   setIsInfoOpen: (open: boolean) => void;
 }
 
-function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isInfoOpen, setIsInfoOpen }: HubDialogInfoProps ) {
-  
-  const isModelServingService = roCrateServiceDef.type.includes('model-serving');
-
+function HubDialogInfo( { roCrateServiceDef, services, setIsDeployDialogOpen, isInfoOpen, setIsInfoOpen }: HubDialogInfoProps ) {
   const handleOpenSource = () => {
     if (roCrateServiceDef.fdlUrl) {
       window.open(githubRawToTreeUrl(roCrateServiceDef.fdlUrl), "_blank", "noopener,noreferrer");
@@ -57,7 +54,7 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
           <Info size={16} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-xl ">
+      <DialogContent className="max-w-xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center flex-wrap gap-2 mr-4 justify-between">
             <HubCardHeader roCrateServiceDef={roCrateServiceDef} card="info" />
@@ -98,8 +95,8 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
             </div>
           </DialogTitle>
         </DialogHeader>
-        <div className="mt-2 max-h-[80vh]">
-          <div className="overflow-y-auto max-h-full">
+        <div className="mt-2 flex flex-col min-h-0">
+          <div className="overflow-y-auto min-h-0">
           <div>
             <h4 className="font-semibold text-gray-800 text-sm uppercase tracking-wide mb-1">
               Service Details
@@ -128,19 +125,40 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
                 ))}
               </div>
             </div>
-            {service?.image &&
+          </div>
+          {services.length > 1 && (
+            <h4 className="mt-4 font-semibold text-gray-800 text-sm uppercase tracking-wide">
+              Services ({services.length})
+            </h4>
+          )}
+          {services.map((service, index) => (
+            <div key={index} className={services.length > 1 ? "mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3" : "mt-2"}>
+            {services.length > 1 && (
+              <div className="mb-2">
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  Service {index + 1} of {services.length}
+                </p>
+                {service.name && (
+                  <h5 className="font-semibold text-gray-800 text-sm break-words">
+                    {service.name}
+                  </h5>
+                )}
+              </div>
+            )}
+            <div className="flex flex-wrap font-medium gap-x-8 gap-y-2 items-start">
+            {service.image &&
             <div className="flex flex-col gap-1">
               <h4 className="text-xs text-gray-500 uppercase tracking-wide">
                 Docker Image
                 </h4>
               <div>
-                <code title={service?.image} className="flex text-xs bg-gray-100 text-gray-700 rounded-xl font-mono py-1 px-2 truncate max-w-[250px]">
-                  {service?.image}
+                <code title={service.image} className="flex text-xs bg-gray-100 text-gray-700 rounded-xl font-mono py-1 px-2 truncate max-w-[250px]">
+                  {service.image}
                 </code>
               </div>
             </div>
             }
-            {isModelServingService &&
+            {(service.model_serving?.inference || service.model_serving?.llm_inference) &&
             <>
             <div className="flex flex-col gap-1">
               <h4 className="text-xs text-gray-500 uppercase tracking-wide">
@@ -148,7 +166,7 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
                 </h4>
               <div>
                 <code className="text-xs rounded-xl font-mono py-1 px-2 bg-blue-100 text-blue-700">
-                  {service?.model_serving?.inference ? 'Inference' : service?.model_serving?.llm_inference ? 'LLM Inference' : 'Not specified'}
+                  {service.model_serving?.inference ? 'Inference' : 'LLM Inference'}
                 </code>
               </div>
             </div>
@@ -158,7 +176,7 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
               </h4>
               <div>
                 <code className="text-xs bg-gray-100 text-gray-700 rounded-xl font-mono py-1 px-2">
-                  {service?.model_serving?.inference?.runtime_image ?? service?.model_serving?.llm_inference?.runtime_image ?? 'Not specified'}
+                  {service.model_serving?.inference?.runtime_image ?? service.model_serving?.llm_inference?.runtime_image ?? 'Not specified'}
                 </code>
               </div>
             </div>
@@ -168,13 +186,15 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
               </h4>
               <div>
                 <code className="text-xs bg-gray-100 text-gray-700 rounded-xl font-mono py-1 px-2">
-                  {service?.model_serving?.inference?.source ?? service?.model_serving?.llm_inference?.source ?? 'Not specified'}
+                  {service.model_serving?.inference?.source ?? service.model_serving?.llm_inference?.source ?? 'Not specified'}
                 </code>
               </div>
             </div>
             </>
             }
           </div>
+          </div>
+          ))}
           <>
           <div className="mt-4">
             <h4 className="font-semibold text-gray-800 text-sm uppercase tracking-wide mb-3">
@@ -234,7 +254,7 @@ function HubDialogInfo( { roCrateServiceDef, service, setIsDeployDialogOpen, isI
           </div>
 
           <div className="flex mt-6">
-            <Button 
+            <Button
               className="hover:opacity-90 text-white rounded w-full h-8"
               variant={"mainGreen"}
               onClick={() => {setIsDeployDialogOpen(true); setIsInfoOpen(false);}}
