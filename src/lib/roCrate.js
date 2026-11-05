@@ -129,7 +129,7 @@ async function parseROCrateDataJScore(githubUser, githubRepo, githubBranch, crat
     headers: {
       'Accept': 'text/plain, application/x-yaml, */*',
       // Can be required for private repositories or higher rate limits
-      //'Authorization': `Bearer ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`
+     //'Authorization': `Bearer xxx`
     }
   };
   
@@ -181,60 +181,64 @@ async function parseROCrateDataJScore(githubUser, githubRepo, githubBranch, crat
       }
       
       const crateRoot = crate.getEntity(crate.rootId);
+      const roCrateContextList = Array.isArray(crate['@context']) ? crate['@context'] : [crate['@context']];
+      isAgentService = isAgentService || roCrateContextList.some(
+        (element) => element && typeof element === 'object' && element['Agent'] !== undefined
+      );
+      console.log(`Processing ROCrate: ${file.path} (Agent Service: ${isAgentService})`);
       // Process the crateRoot to extract service definition details
       crateRoot.hasPart.forEach((element) => {
         try {
           const type = crate.getEntity(element['@id'])['@type'];
           const encodingFormat = crate.getEntity(element['@id'])['encodingFormat'];
-          if (service.fdlUrl === "" && element['@id'].includes("fdl.yml") && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/yaml") {
+          const object = element['@id'];
+          if (service.fdlUrl === "" && object.includes("fdl.yml") && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/yaml") {
             //service.fdlUrl = crate.getEntity(element['@id'])['url'];
-            if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
-              service.fdlUrl = element['@id'];
-            else if (element['@id'].startsWith('../'))
-                service.fdlUrl = resolveGithubBlobUrl(`${folderRawFileUrl}/`, element['@id']);
+            if (object.startsWith('http://') || object.startsWith('https://'))
+              service.fdlUrl = object;
+            else if (object.startsWith('../'))
+                service.fdlUrl = resolveGithubBlobUrl(`${folderRawFileUrl}/`, object);
             else
               service.fdlUrl = `${folderRawFileUrl}/fdl.yml`;
-            
           }
-          if (service.scriptUrl === "" && element['@id'].includes("script.sh") && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/x-shellscript") {
-            //service.scriptUrl = crate.getEntity(element['@id'])['url'];
-            if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://')) {
-              service.scriptUrl = element['@id'];
+          if (service.scriptUrl === "" && object.includes("script.sh") && type.includes('File') && type.includes('SoftwareSourceCode') && encodingFormat === "text/x-shellscript") {
+            //service.scriptUrl = crate.getEntity(object)['url'];
+            if (object.startsWith('http://') || object.startsWith('https://')) {
+              service.scriptUrl = object;
             }
-            else if (element['@id'].startsWith('../')) {
-              service.scriptUrl = resolveGithubBlobUrl(`${folderRawFileUrl}/`, element['@id']);
+            else if (object.startsWith('../')) {
+              service.scriptUrl = resolveGithubBlobUrl(`${folderRawFileUrl}/`, object);
             }
             else {
               service.scriptUrl = `${folderRawFileUrl}/script.sh`;
             }
           }
-          if (isSupportedIcon(element['@id'], type)) {
+          if (isSupportedIcon(object, type)) {
             if (
-              element['@id'].startsWith('http://') ||
-              element['@id'].startsWith('https://')
+              object.startsWith('http://') ||
+              object.startsWith('https://')
             )
-              service.iconUrl = element['@id'];
+              service.iconUrl = object;
             else
-              service.iconUrl = `${folderRawFileUrl}/${element['@id']}`;
+              service.iconUrl = `${folderRawFileUrl}/${object}`;
           }
-          if (isAgentService) {
-            if (service.agentSoulUrl === "" && element['@id'].includes("SOUL.md") && type.includes('File') && type.includes('AgentSoul')){
-              if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
-                service.agentSoulUrl = element['@id'];
-              else if (element['@id'].startsWith('../'))
-                service.agentSoulUrl = resolveGithubBlobUrl(`${folderRawFileUrl}/`, element['@id']);
+         if (isAgentService) {
+            if (service.agentSoulUrl === "" && object.includes("SOUL.md") && type.includes('File') && type.includes('AgentSoul')){
+              if (object.startsWith('http://') || object.startsWith('https://'))
+                service.agentSoulUrl = object;
+              else if (isFolderPath(object))
+                service.agentSoulUrl = resolveGithubBlobUrl(`${folderRawFileUrl}/`, object);
               else
                 service.agentSoulUrl = `${folderRawFileUrl}/SOUL.md`;
             }
-            if (element['@id'].includes("SKILL.md") && type.includes('File') && type.includes('AgentSkill')){
-              if (element['@id'].startsWith('http://') || element['@id'].startsWith('https://'))
-                service.agentSkillUrl = service.agentSkillUrl.concat([element['@id']]);
-              else if (element['@id'].startsWith('../'))
-                service.agentSkillUrl = service.agentSkillUrl.concat([resolveGithubBlobUrl(`${folderRawFileUrl}/`, element['@id'])]);
+            if (object.includes("SKILL.md") && type.includes('File') && type.includes('AgentSkill')){
+              if (object.startsWith('http://') || object.startsWith('https://'))
+                service.agentSkillUrl = service.agentSkillUrl.concat([object]);
+              else if (isFolderPath(object))
+                service.agentSkillUrl = service.agentSkillUrl.concat([resolveGithubBlobUrl(`${folderRawFileUrl}/`, object)]);
               else
                 service.agentSkillUrl = service.agentSkillUrl.concat([`${folderRawFileUrl}/SKILL.md`]);
             }
-            
           }
         } catch (error) {
           console.error(`Skip invalid part in service definition file: ${file.path}`);
@@ -242,7 +246,8 @@ async function parseROCrateDataJScore(githubUser, githubRepo, githubBranch, crat
       });
 
       if (isAgentService) {
-        service.agentType = crateRoot.agentType;
+        console.log(`Agent service detected: ${file.path}, agentType: ${crateRoot.agentType}`);
+        service.agentType = crateRoot.agentMode;
       }
 
       if ((service.fdlUrl === "" || service.scriptUrl === "" || service.iconUrl === "") ||
@@ -283,6 +288,10 @@ function normalizeMemoryRequirement(requirement, unitMap = [{ match: /GiB/i, uni
     value,
     unit: match ? match.unit : defaultUnit,
   };
+}
+
+function isFolderPath(path) {
+  return path.split('/').length > 1;
 }
 
 export async function parseAgentsROCrateDataJS(githubUser, githubRepo, githubBranch, cratesFolder = "agents", validate = false) {

@@ -1,4 +1,4 @@
-import { Service } from "../../../../../services/models/service";
+import { Service } from "../../../services/models/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { RoCrateAgentServiceDefinition } from "@/lib/roCrate";

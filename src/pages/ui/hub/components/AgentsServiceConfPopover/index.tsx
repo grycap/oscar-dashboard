@@ -19,7 +19,7 @@ import { errorMessage } from "@/lib/error";
 import AgentsCardHeader from "../AgentsCardHeader";
 import InputOutputStorageForm, { InputOutputStorageFormRef } from "@/components/InputOutputBucketForm";
 import StorageSelectForm, { StorageSelectFormRef } from "@/components/StorageSelectForm";
-import AgentsModelForm, { AgentsModelFormRef } from "../../../AgentsModelForm";
+import AgentsModelForm, { AgentsModelFormRef } from "../../../agents/components/AgentsModelForm";
 
 interface AgentsServiceConfPopoverProps {
     roCrateServiceDef: RoCrateAgentServiceDefinition;

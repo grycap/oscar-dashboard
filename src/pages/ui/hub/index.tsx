@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import HubCard from "./components/HubCard/index";
-import {parseROCrateDataJS, RoCrateServiceDefinition } from "@/lib/roCrate";
+import {parseROCrateDataJS, RoCrateAgentServiceDefinition, RoCrateServiceDefinition } from "@/lib/roCrate";
 import { Input } from "@/components/ui/input";
 import { Filter, LoaderPinwheel, Search } from "lucide-react";
 import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
@@ -16,6 +16,8 @@ import LayoutSelect from "@/components/LayoutSelect";
 import { getHubServiceTypeTagColor, useArrayPorts, usesDNSRoutes } from "@/lib/utils";
 import HubSrcPopoverButton, { getSelectedSource, GitHubSource } from "./components/HubSrcPopoverButton";
 import { useAuth } from "@/contexts/AuthContext";
+import AgentsCard from "./components/AgentsCard";
+import AgentsTableActions from "../agents/components/AgentsTableActions";
 
 function HubView() {
   const [filteredServices, setFilteredServices] = useState<Record<string, [RoCrateServiceDefinition, Service]>>({});
@@ -205,14 +207,31 @@ function HubView() {
           {
             Object.keys(filteredServices).length > 0 ? (
               isGridView ? 
-                (Object.entries(filteredServices).map(([key, [roCrateServiceDef, service]]) => (
-                  <HubCard key={key} roCrateServiceDef={roCrateServiceDef} service={service} />
-                ))) 
+                (Object.entries(filteredServices).map(([key, [roCrateServiceDef, service]]) => {
+                  if (roCrateServiceDef.agentType) {
+                    console.log(`Rendering AgentsCard for service: ${roCrateServiceDef.name} (Agent Type: ${roCrateServiceDef.agentType})`);
+                    return (
+                      <AgentsCard key={key} roCrateServiceDef={roCrateServiceDef as RoCrateAgentServiceDefinition} service={service} />
+                    );
+                  }
+                  return (
+                    <HubCard key={key} roCrateServiceDef={roCrateServiceDef} service={service} />
+                  );
+                })) 
                 : (
                 <GenericTable
                   data={Object.entries(filteredServices).map(([key, [roCrateServiceDef, service]]) => ({
                     Name: roCrateServiceDef.name,
-                    Type: roCrateServiceDef.type,
+                    Type: function() {
+                      const type = [...roCrateServiceDef.type];
+                      if (roCrateServiceDef.agentType) {
+                        if (roCrateServiceDef.agentType !== "exposed") {
+                          type.push(roCrateServiceDef.agentType);
+                        }
+                        type.push("agent");
+                      }
+                      return type;
+                    }(),
                     Key: key,
                     DockerImage: service.image,
                     RoCrate: roCrateServiceDef,
@@ -250,11 +269,17 @@ function HubView() {
                     {
                       button: (item) => {
                         return (
-                          <>
+                          <>{item.RoCrate.agentType ?
+                            <AgentsTableActions 
+                              roCrateServiceDef={item.RoCrate as RoCrateAgentServiceDefinition}
+                              service={item.FDL}
+                            />
+                          :
                             <HubTableActions 
                               roCrateServiceDef={item.RoCrate} 
                               service={item.FDL} 
                             />
+                          }
                           </>
                         );
                       },
