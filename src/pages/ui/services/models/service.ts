@@ -222,7 +222,7 @@ export interface Service {
   };
   deployment?: DeploymentSummary;
   volume?: ServiceVolumeConfig;
-  kserve?: KServe;
+  model_serving?: ModelServing;
   expose: {
     min_scale: number,
     max_scale: number,
@@ -254,29 +254,31 @@ export interface TmpService extends Omit<Service, "expose"> {
   };
 }
 
-export interface KServe {
-  type: "inference" | "llm_inference";
+export interface ModelServing {
   inference?: KServeInference;
   llm_inference?: KServeLLMInference;
-  storage_uri: string;
-  min_scale?: number;
-  max_scale?: number;
-  cpu?: string;
-  memory?: string;
-  args?: string[];
-  env?: Record<string, string>;
-  enable_gpu?: boolean;
-  set_auth?: boolean;
 }
 
 export interface KServeInference {
   model_format: string;
-  runtime: string;
+  runtime_image: string;
   api_version: string;
+  
+  source: string;
+  min_scale?: number;
+  max_scale?: number;
+  args?: string[];
+  set_auth?: boolean;
 }
 
 export interface KServeLLMInference {
   runtime_image: string;
+
+  source: string;
+  min_scale?: number;
+  max_scale?: number;
+  args?: string[];
+  set_auth?: boolean;
 }
 
 export enum ServiceTab {
