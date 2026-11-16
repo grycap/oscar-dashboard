@@ -11,11 +11,6 @@ export interface RoCrateServiceDefinition {
     cpuRequirements: string;
     gpuRequirements: string;
     
-    kserveMemoryRequirements?: string;
-    kserveMemoryUnits?: string;
-    kserveCpuRequirements?: string;
-    kserveGpuRequirements?: string;
-
     agentSoulUrl?: string;
     agentSkillUrl?: Array<string>;
     agentType?: "exposed" | "on-demand",

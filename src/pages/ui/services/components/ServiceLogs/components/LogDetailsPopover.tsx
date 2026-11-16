@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { getLogApi } from "@/api/logs/getLog";
 import OscarColors from "@/styles";
-import { Editor } from "@monaco-editor/react";
+import Editor from "@/components/ThemedEditor";
 import { Loader } from "lucide-react";
 import { alert } from "@/lib/alert";
 

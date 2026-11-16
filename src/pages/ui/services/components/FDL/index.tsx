@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
-import Editor from "@monaco-editor/react";
+import Editor from "@/components/ThemedEditor";
 import { Input } from "@/components/ui/input";
 import createServiceApi from "@/api/services/createServiceApi";
 import getServiceApi from "@/api/services/getServiceApi";

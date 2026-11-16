@@ -6,22 +6,22 @@ import { RoCrateServiceDefinition } from "@/lib/roCrate";
 
 interface HubTableActionsProps {
 	roCrateServiceDef: RoCrateServiceDefinition;
-	service: Service;
+	services: Service[];
 }
 
-function HubTableActions( { roCrateServiceDef, service }: HubTableActionsProps ) {
+function HubTableActions( { roCrateServiceDef, services }: HubTableActionsProps ) {
 	const [isDeployDialogOpen, setIsDeployDialogOpen] = useState(false);
 	const [isInfoOpen, setIsInfoOpen] = useState(false);
 	return (
     <div className="flex flex-row gap-2">
       <HubServiceConfPopover 
         variant={"mainGreen"}
-        roCrateServiceDef={roCrateServiceDef} service={service!} isOpen={isDeployDialogOpen} setIsOpen={setIsDeployDialogOpen}
+        roCrateServiceDef={roCrateServiceDef} services={services} isOpen={isDeployDialogOpen} setIsOpen={setIsDeployDialogOpen}
       />
       <HubDialogInfo 
         isInfoOpen={isInfoOpen} 
         roCrateServiceDef={roCrateServiceDef} 
-        service={service} 
+        services={services}
         setIsDeployDialogOpen={setIsDeployDialogOpen} 
         setIsInfoOpen={setIsInfoOpen} 
       />

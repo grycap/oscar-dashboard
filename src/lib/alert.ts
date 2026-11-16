@@ -1,11 +1,8 @@
-import OscarColors from "@/styles";
 import { Copy } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
 class ToastAlert {
-  constructor() {}
-
   private formatMessage(message: React.ReactNode ) {
     if (typeof message === "string") {
       return React.createElement(
@@ -43,7 +40,7 @@ class ToastAlert {
     toast.success("Success", {
       description: this.formatMessage(message),
       style: {
-        backgroundColor: "#17A34B",
+        backgroundColor: "#15803d",
         color: "white",
         border: "none",
       },
@@ -60,12 +57,11 @@ class ToastAlert {
     toast.error("Error", {
       description: this.formatMessage(message),
       style: {
-        backgroundColor: OscarColors.Red,
+        backgroundColor: "#b42318",
         color: "white",
         border: "none",
       },
       actionButtonStyle: {
-        background: "transparent",
         backgroundColor: "transparent",
         border: "none",
         boxShadow: "none",
@@ -81,15 +77,15 @@ class ToastAlert {
     });
   }
 
-  warning(messsage: React.ReactNode | string) {
-    if (typeof messsage === "string") {
-      console.warn(messsage);
+  warning(message: React.ReactNode | string) {
+    if (typeof message === "string") {
+      console.warn(message);
     }
 
     toast.warning("Warning", {
-      description: this.formatMessage(messsage),
+      description: this.formatMessage(message),
       style: {
-        backgroundColor: "orange",
+        backgroundColor: "#9a4b00",
         color: "white",
         border: "none",
       },

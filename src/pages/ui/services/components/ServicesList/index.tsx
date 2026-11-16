@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import MoreActionsPopover from "./components/MoreActionsPopover";
 import ResponsiveOwnerField from "@/components/ResponsiveOwnerField";
 import { errorMessage } from "@/lib/error";
+import { visibilityBadgeClasses } from "@/lib/visibilityBadge";
 import DeploymentStatusBadge from "../DeploymentStatusBadge";
 import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
 import { DeploymentStatus } from "../../models/deployment";
@@ -32,12 +33,6 @@ interface DeploymentStatusCellProps {
   onDeploymentChange: (deployment: DeploymentStatus) => void;
   eagerLoad?: boolean;
 }
-
-const visibilityBadgeColors = {
-  [ServiceVisibility.private]: "bg-slate-100 text-slate-800 border-slate-200",
-  [ServiceVisibility.restricted]: "bg-amber-100 text-amber-900 border-amber-200",
-  [ServiceVisibility.public]: "bg-green-100 text-green-900 border-green-200",
-};
 
 function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, onDeploymentChange, eagerLoad }: DeploymentStatusCellProps) {
   const [deployment, setDeployment] = useState<DeploymentStatus | undefined>(initialDeployment);
@@ -74,13 +69,13 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, onDe
       }}
     >
       {deployment && !loading ? (
-        <div className="flex flex-row items-center gap-1 bg-gray-300 rounded-full pr-2">
+        <div className="flex flex-row items-center gap-1 bg-gray-300 dark:bg-slate-700 rounded-full pr-2">
         <div className="flex items-center" onClick={() => {
           onNavigate();
         }}>
           <DeploymentStatusBadge deployment={deployment} showTooltip className="cursor-pointer" />
         </div>
-          <RefreshCw className="h-3 w-3 text-gray-700 opacity-90 hover:text-gray-900 hover:opacity-100" />
+          <RefreshCw className="h-3 w-3 text-gray-700 dark:text-slate-300 opacity-90 hover:text-gray-900 dark:hover:text-slate-50 hover:opacity-100" />
         </div>
       ) : (
         <Badge variant="default" className="cursor-pointer">
@@ -267,19 +262,16 @@ function ServicesList() {
                   const visibility = row.visibility ?? ServiceVisibility.private;
 
                   return (
-                    <Badge
-                      variant="outline"
-                      className={visibilityBadgeColors[visibility]}
-                    >
+                    <span className={`font-bold px-2 py-1 rounded-full text-xs border ${visibilityBadgeClasses[visibility]}`}>
                       {visibility.toUpperCase()}
-                    </Badge>
+                    </span>
                   );
                 },
                 sortBy: "visibility",
               },
               { header: "Image", accessor: 
                 (row) => (
-                  <code title={row.image} className="flex text-xs bg-gray-100 text-gray-700 rounded-xl font-mono py-1 px-2 truncate max-w-[250px]">
+                  <code title={row.image} className="flex text-xs bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 rounded-xl font-mono py-1 px-2 truncate max-w-[250px]">
                     {row.image}
                   </code>
                 ), sortBy: "image" },

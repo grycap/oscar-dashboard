@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Editor from "@monaco-editor/react";
+import Editor from "@/components/ThemedEditor";
 import RequestButton from "@/components/RequestButton";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import updateServiceApi from "@/api/services/updateServiceApi";

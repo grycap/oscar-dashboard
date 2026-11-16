@@ -12,6 +12,7 @@ import { type ClassValue, clsx } from "clsx"
 import { MutableRefObject } from "react";
 import { twMerge } from "tailwind-merge"
 import { stringify } from "yaml";
+import { ModelServing } from "@/pages/ui/services/models/service";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -384,19 +385,19 @@ export function shortenFullname(fullname: string): string {
 export function getHubServiceTypeTagColor(type: string) {
   switch (type.toLowerCase()) {
     case "asynchronous":
-      return "bg-green-100 text-green-700";
+      return "bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-300";
     case "synchronous":
-      return "bg-blue-100 text-blue-700";
+      return "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300";
     case "exposed":
-      return "bg-yellow-100 text-yellow-700";
+      return "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-300";
     case "on-demand":
-      return "bg-purple-100 text-purple-700";
+      return "bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300";
     case "agent":
-      return "bg-pink-100 text-pink-700";
+      return "bg-pink-100 text-pink-700 dark:bg-pink-950/50 dark:text-pink-300";
     case "kserve":
-      return "bg-indigo-100 text-indigo-700";
+      return "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300";
     default:
-      return "bg-red-100 text-red-700";
+      return "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300";
   }
 }
 
@@ -640,4 +641,89 @@ export function getStorageProvider(storageConfig: StorageConfig): {name: string,
     default:
       return undefined;
   }
+}
+
+const memoryUnits = new Set(["", "m", "k", "K", "M", "G", "T", "P", "E", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei"]);
+const quantityPattern = /^\+?(?:\d+(?:\.\d*)?|\.\d+)$/;
+
+export function parseFdlCpu(value: string | number): string | null {
+  const cpu = String(value).trim();
+  const millicores = cpu.endsWith("m");
+  const amount = millicores ? cpu.slice(0, -1) : cpu;
+  if (!quantityPattern.test(amount) || !Number.isFinite(Number(amount)) || Number(amount) <= 0) {
+    return null;
+  }
+  return millicores ? String(Number(amount) / 1000) : amount.replace(/^\+/, "").replace(/\.$/, "");
+}
+
+export function parseFdlMemory(value: string | number): { amount: string; unit: string } | null {
+  const match = String(value).trim().match(/^(\+?(?:\d+(?:\.\d*)?|\.\d+))([a-zA-Z]*)$/);
+  if (!match || !memoryUnits.has(match[2]) || !Number.isFinite(Number(match[1])) || Number(match[1]) <= 0) {
+    return null;
+  }
+  return { amount: match[1].replace(/^\+/, "").replace(/\.$/, ""), unit: match[2] || "bytes" };
+}
+
+
+const MODEL_SERVING_ENDPOINT_REGEX =
+  /^(https?:\/\/)([a-z0-9](?:[-a-z0-9]*[a-z0-9])?)\.oscar-svc(\.svc\.cluster\.local)(.*)$/i;
+
+const NAMESPACE_PREFIX_LENGTH = 8;
+
+// The model serving namespace is the first 6 characters of the authenticated user's sub
+export function getModelServingNamespace(sub?: string): string | undefined {
+  const prefix = sub?.trim().slice(0, NAMESPACE_PREFIX_LENGTH);
+  return "oscar-svc-" + prefix || undefined;
+}
+
+const INFERENCE_SUFFIX = "-predictor";
+const LLM_INFERENCE_SUFFIX = "-kserve-workload-svc";
+
+// Host suffix depends on the model serving type (inference or llm_inference)
+export function getModelServingSuffix(modelServing?: ModelServing): string {
+  if (modelServing?.llm_inference) return LLM_INFERENCE_SUFFIX;
+  if (modelServing?.inference) return INFERENCE_SUFFIX;
+  return "";
+}
+
+// Detects http://<model_serving_name>.oscar-svc.svc.cluster.local
+export function isModelServingEndpoint(value: string): boolean {
+  return MODEL_SERVING_ENDPOINT_REGEX.test(value.trim());
+}
+
+export function replaceModelServingEndpointName(
+  value: string,
+  modelServingName: string,
+  suffix = "",
+  namespace = "oscar-svc",
+): string {
+  const match = value.trim().match(MODEL_SERVING_ENDPOINT_REGEX);
+
+  if (!match || !modelServingName) {
+    return value;
+  }
+
+  const [, protocol, , domain, rest] = match;
+
+  return `${protocol}${modelServingName}${suffix}.${namespace}${domain}${rest}`;
+}
+
+export function replaceModelServingEndpoints(
+  variables: Record<string, string>,
+  modelServingName?: string,
+  suffix = "",
+  namespace?: string,
+): Record<string, string> {
+  if (!modelServingName) {
+    return variables;
+  }
+
+  return Object.fromEntries(
+    Object.entries(variables).map(([key, value]) => [
+      key,
+      typeof value === "string"
+        ? replaceModelServingEndpointName(value, modelServingName, suffix, namespace)
+        : value,
+    ]),
+  );
 }

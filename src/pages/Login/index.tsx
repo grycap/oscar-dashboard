@@ -1,5 +1,6 @@
 import DocumentTitle from "@/components/DocumentTitle";
-import OscarColors, { ColorWithOpacity } from "@/styles";
+import ThemeToggle from "@/components/ThemeToggle";
+import OscarColors from "@/styles";
 import BigLogo from "@/assets/oscar-big.png";
 import AI4eoscLogo from "@/assets/ai4eosc-logo.png";
 import AI4eoscButon from "@/assets/ai4eosc-logo.svg";
@@ -181,9 +182,10 @@ function Login() {
           alignItems: "center",
           height: "100vh",
           width: "100vw",
-          backgroundColor: ColorWithOpacity(OscarColors.Green1, 0.75),
+          backgroundColor: "var(--login-background)",
         }}
       >
+        <div className="absolute right-4 top-4 z-10"><ThemeToggle /></div>
         <div
           style={{
             position: "relative",
@@ -193,7 +195,7 @@ function Login() {
           <div
             style={{
               position: "absolute",
-              background: "#FFFFFF50",
+              background: "var(--login-footer-background)",
               border: `1px solid ${OscarColors.Green1}`,
               width: "100%",
               height: "100px",
@@ -217,7 +219,7 @@ function Login() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 fontSize: "10px",
-                color: "rgba(0,0,0,0.5)",
+                color: "var(--muted-foreground)",
                 padding: "0 20px",
               }}
             >
@@ -236,7 +238,7 @@ function Login() {
               borderRadius: "30px",
               display: "flex",
               flexDirection: "column",
-              background: "white",
+              background: "var(--background)",
               alignItems: "center",
               padding: "36px 48px",
               gap: "26px",
@@ -285,8 +287,9 @@ function Login() {
                 name="normal"
                 type="submit"
                 size={"sm"}
+                className="!text-white"
                 style={{
-                  background: OscarColors.Green4,
+                  background: "var(--login-submit)",
                 }}
               >
                 Sign in
@@ -296,6 +299,7 @@ function Login() {
                 name="EGI"
                 type="submit"
                 size="sm"
+                className="!text-white"
                 style={{
                   width: "100%",
                   background: OscarColors.Blue,
@@ -315,6 +319,7 @@ function Login() {
                 name="Keycloak"
                 type="submit"
                 size="sm"
+                className="!text-white"
                 style={{
                   width: "100%",
                   background: OscarColors.Blue,
@@ -334,6 +339,7 @@ function Login() {
                 name="KeycloakGryCAP"
                 type="submit"
                 size="sm"
+                className="!text-white"
                 style={{
                   width: "100%",
                   background: OscarColors.Blue,

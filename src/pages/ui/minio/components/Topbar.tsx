@@ -82,7 +82,7 @@ function MinioTopbar() {
             <Slash size={12} className="pt-[2px] text-gray-400" aria-hidden="true" />
             <Link
               to={`/ui/minio/${name}/${currentPath}/`}
-              className="no-underline hover:text-gray-900 hover:underline transition-colors duration-200 text-gray-700 font-medium"
+              className="no-underline hover:text-gray-900 dark:text-slate-100 hover:underline transition-colors duration-200 text-gray-700 dark:text-slate-300 font-medium"
             >
               {segment}
             </Link>
@@ -111,15 +111,15 @@ function MinioTopbar() {
     secondaryRow={ 
       !isOnRoot ? ( 
         <div className="flex flex-col w-full ">
-          <nav className="grid grid-cols-[auto_1fr_auto] my-[6px] mx-1 items-center text-sm gap-0 border rounded-lg border-gray-300 bg-gray-50 shadow-sm overflow-hidden" aria-label="Breadcrumb">
+          <nav className="grid grid-cols-[auto_1fr_auto] my-[6px] mx-1 items-center text-sm gap-0 border rounded-lg border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 shadow-sm overflow-hidden" aria-label="Breadcrumb">
             <Link
               to={`/ui/minio/${name}`}
-              className="font-bold no-underline hover:text-gray-900 hover:bg-gray-100 px-0 py-2 transition-all duration-200 border-r border-gray-300 bg-white"
+              className="font-bold no-underline hover:text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-700 px-0 py-2 transition-all duration-200 border-r border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900"
               aria-label={`Navigate to bucket ${name}`}
             >
               <div className="flex flex-row items-center px-4 gap-2">
                 <FolderRoot size={19} className="text-gray-600"></FolderRoot>
-                <span className="text-gray-900 font-semibold">{name}</span>
+                <span className="text-gray-900 dark:text-slate-100 font-semibold">{name}</span>
               </div>
             </Link>
             <div className="flex flex-row items-center px-3 py-2 bg-gradient-to-r from-gray-60 to-gray-100">
@@ -205,7 +205,7 @@ function MinioTopbar() {
           <div className="flex flex-col">
             <Link
               to={`/ui/minio/${name}`}
-              className="font-bold text-black no-underline hover:text-gray-700 transition-colors duration-200 min-w-max"
+              className="font-bold text-black dark:text-slate-100 no-underline hover:text-gray-700 dark:text-slate-300 transition-colors duration-200 min-w-max"
               aria-label={`Navigate to bucket ${name}`}
             >
               <div className="flex flex-row items-center text-[16px]">

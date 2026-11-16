@@ -20,8 +20,8 @@ import AgentsCard from "./components/AgentsCard";
 import AgentsTableActions from "../agents/components/AgentsTableActions";
 
 function HubView() {
-  const [filteredServices, setFilteredServices] = useState<Record<string, [RoCrateServiceDefinition, Service]>>({});
-  const [serviceDefinitions, setServiceDefinitions] = useState<Record<string, [RoCrateServiceDefinition, Service]>>({});
+  const [filteredServices, setFilteredServices] = useState<Record<string, [RoCrateServiceDefinition, Service[]]>>({});
+  const [serviceDefinitions, setServiceDefinitions] = useState<Record<string, [RoCrateServiceDefinition, Service[]]>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<{serviceType: string}>({serviceType: "" });
   const [isLoading, setIsLoading] = useState(false);
@@ -32,11 +32,12 @@ function HubView() {
   const fetchService = useCallback(
     async (
       roCrateServiceDef: RoCrateServiceDefinition
-    ): Promise<Service | undefined> => {
+    ): Promise<Service[] | undefined> => {
       const response = await fetch(roCrateServiceDef.fdlUrl);
       if (response.ok) {
-        const service = yamlToServices(await response.text(), "", useArrayPorts(clusterInfo?.version), usesDNSRoutes(systemConfig?.config))![0];
-        const services: Service = {
+        const parsed = yamlToServices(await response.text(), "", useArrayPorts(clusterInfo?.version), usesDNSRoutes(systemConfig?.config)) ?? [];
+        if (parsed.length === 0) return undefined;
+        return parsed.map((service): Service => ({
           ...service,
           environment: {
             ...service.environment,
@@ -48,8 +49,7 @@ function HubView() {
               )
             ),
           },
-        };
-        return services;
+        }));
       }
       return undefined;
     },
@@ -75,8 +75,8 @@ function HubView() {
       })
     );
 
-    const services: Record<string, [RoCrateServiceDefinition, Service]> = Object.fromEntries(
-      servicesEntries.filter((entry): entry is [string, [RoCrateServiceDefinition, Service]] => entry !== null)
+    const services: Record<string, [RoCrateServiceDefinition, Service[]]> = Object.fromEntries(
+      servicesEntries.filter((entry): entry is [string, [RoCrateServiceDefinition, Service[]]] => entry !== null)
     );
 
     setServiceDefinitions(services);
@@ -207,20 +207,20 @@ function HubView() {
           {
             Object.keys(filteredServices).length > 0 ? (
               isGridView ? 
-                (Object.entries(filteredServices).map(([key, [roCrateServiceDef, service]]) => {
+                (Object.entries(filteredServices).map(([key,                 [roCrateServiceDef, services]]) => {
                   if (roCrateServiceDef.agentType) {
                     console.log(`Rendering AgentsCard for service: ${roCrateServiceDef.name} (Agent Type: ${roCrateServiceDef.agentType})`);
                     return (
-                      <AgentsCard key={key} roCrateServiceDef={roCrateServiceDef as RoCrateAgentServiceDefinition} service={service} />
+                                      <AgentsCard key={key} roCrateServiceDef={roCrateServiceDef as RoCrateAgentServiceDefinition} service={services[0]} />
                     );
                   }
                   return (
-                    <HubCard key={key} roCrateServiceDef={roCrateServiceDef} service={service} />
+                                    <HubCard key={key} roCrateServiceDef={roCrateServiceDef} services={services} />
                   );
                 })) 
                 : (
                 <GenericTable
-                  data={Object.entries(filteredServices).map(([key, [roCrateServiceDef, service]]) => ({
+                  data={Object.entries(filteredServices).map(([key, [roCrateServiceDef, services]]) => ({
                     Name: roCrateServiceDef.name,
                     Type: function() {
                       const type = [...roCrateServiceDef.type];
@@ -233,9 +233,9 @@ function HubView() {
                       return type;
                     }(),
                     Key: key,
-                    DockerImage: service.image,
+                    DockerImage: services.map((s) => s.image).join(", "),
                     RoCrate: roCrateServiceDef,
-                    FDL: service,
+                    FDL: services,
                   }))}
                   idKey={"Key"}
                   columns={
@@ -272,12 +272,12 @@ function HubView() {
                           <>{item.RoCrate.agentType ?
                             <AgentsTableActions 
                               roCrateServiceDef={item.RoCrate as RoCrateAgentServiceDefinition}
-                              service={item.FDL}
+                              service={item.FDL[0]}
                             />
                           :
                             <HubTableActions 
                               roCrateServiceDef={item.RoCrate} 
-                              service={item.FDL} 
+                              services={item.FDL}
                             />
                           }
                           </>

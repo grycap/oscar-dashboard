@@ -102,7 +102,7 @@ function GenericTable<T extends object>({
         <TableHeader id="table-header" className="sticky top-0 z-0 h-[34px]">
           <TableRow
             style={{
-              background: "white",
+              background: "var(--background)",
               padding: 0,
               height: "34px",
               borderBottom: OscarStyles.border,
@@ -200,7 +200,7 @@ function GenericTable<T extends object>({
               position: "sticky",
               bottom: 0,
               left: 0,
-              background: "white",
+              background: "var(--background)",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",

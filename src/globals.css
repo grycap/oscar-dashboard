@@ -16,6 +16,16 @@ body {
 
 @layer base {
   :root {
+    color-scheme: light;
+    --background: #ffffff;
+    --foreground: #2a3543;
+    --surface-muted: #f5f7fb;
+    --surface-border: #d7e0ea;
+    --muted-foreground: #4f5b6b;
+    --ring: #3a8f53;
+    --login-background: #b8ceb8bf;
+    --login-footer-background: #ffffff50;
+    --login-submit: #009688;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -23,17 +33,32 @@ body {
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 137 42% 39%;
   }
   .dark {
+    color-scheme: dark;
+    --background: #0b1016;
+    --foreground: #e8ecf2;
+    --surface-muted: #121821;
+    --surface-border: #2a3039;
+    --muted-foreground: #b8bfca;
+    --ring: #7bc47f;
+    --login-background: #101b18;
+    --login-footer-background: #1c2928;
+    --login-submit: #007f73;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 123 39% 62%;
+    --sidebar-primary-foreground: 216 33% 6%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 123 39% 62%;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
   }
 }
 

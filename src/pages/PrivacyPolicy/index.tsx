@@ -53,9 +53,9 @@ export function PrivacyPolicy() {
     <div className="container mx-auto px-4 py-8 overflow-auto max-h-screen">
       <h1 className="text-3xl font-bold mb-6">Privacy Policy for OSCAR</h1>
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-300">
+        <table className="min-w-full bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700">
           <thead>
-            <tr className="bg-gray-100">
+            <tr className="bg-gray-100 dark:bg-slate-800">
               <th className="py-2 px-4 border-b text-left">Category</th>
               <th className="py-2 px-4 border-b text-left">Details</th>
             </tr>
@@ -64,7 +64,7 @@ export function PrivacyPolicy() {
             {privacyData.map((item, index) => (
               <tr
                 key={index}
-                className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                className={index % 2 === 0 ? "bg-gray-50 dark:bg-slate-800" : "bg-white dark:bg-slate-900"}
               >
                 <td className="py-2 px-4 border-b font-medium">
                   {item.category}

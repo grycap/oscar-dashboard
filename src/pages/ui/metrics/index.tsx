@@ -208,9 +208,9 @@ function EmptyPanel({
   description: string;
 }) {
   return (
-    <div className="flex min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 text-center">
+    <div className="flex min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-6 text-center">
       <AlertCircle className="mb-3 text-slate-400" size={32} />
-      <p className="text-sm font-semibold text-slate-700">{title}</p>
+      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{title}</p>
       <p className="mt-1 max-w-md text-sm text-slate-500">{description}</p>
     </div>
   );
@@ -222,10 +222,10 @@ function KpiCard({ title, value, subtitle, icon }: KpiCardProps) {
       <CardContent className="flex items-start justify-between gap-3 p-4">
         <div className="space-y-1">
           <p className="text-sm font-medium text-slate-500">{title}</p>
-          <p className="text-2xl font-semibold text-slate-950">{value}</p>
+          <p className="text-2xl font-semibold text-slate-950 dark:text-slate-50">{value}</p>
           <p className="text-sm text-slate-500">{subtitle}</p>
         </div>
-        <div className="text-slate-900">{icon}</div>
+        <div className="text-slate-900 dark:text-slate-100">{icon}</div>
       </CardContent>
     </Card>
   );
@@ -242,7 +242,7 @@ function BreakdownChartCard({
   return (
     <div>
       <div className="mb-4">
-        <h4 className="font-semibold text-slate-950">{title}</h4>
+        <h4 className="font-semibold text-slate-950 dark:text-slate-50">{title}</h4>
         <p className="mt-1 text-sm text-slate-500">{description}</p>
       </div>
       {hasData ? children : <EmptyPanel title={emptyTitle} description={emptyDescription} />}
@@ -260,7 +260,7 @@ function ServiceAxisTick({ x = 0, y = 0, payload, onSelect }: ServiceAxisTickPro
   return (
     <text
       aria-label={`Show details for ${serviceName}`}
-      className="cursor-pointer fill-slate-700 hover:fill-slate-950 hover:underline"
+      className="cursor-pointer fill-slate-700 dark:fill-slate-300 hover:fill-slate-950 dark:hover:fill-slate-50 hover:underline"
       dominantBaseline="central"
       onClick={selectService}
       onKeyDown={(event) => {
@@ -285,7 +285,7 @@ function FullAxisTick({ x = 0, y = 0, payload }: AxisTickProps) {
 
   return (
     <text
-      className="fill-slate-700"
+      className="fill-slate-700 dark:fill-slate-300"
       dominantBaseline="central"
       textAnchor="end"
       x={x}
@@ -789,7 +789,7 @@ function MetricsView() {
       <div className="w-full space-y-6 px-4 pb-6 pt-6">
 
         {metricsUnsupported && (
-          <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+          <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
             <AlertCircle />
             <AlertTitle>Metrics unavailable</AlertTitle>
             <AlertDescription>
@@ -799,7 +799,7 @@ function MetricsView() {
         )}
 
         {!metricsUnsupported && overviewError && !summary && (
-          <Alert variant="destructive" className="bg-red-50">
+          <Alert variant="destructive">
             <AlertCircle />
             <AlertTitle>Failed to load metrics</AlertTitle>
             <AlertDescription>{overviewError}</AlertDescription>
@@ -807,7 +807,7 @@ function MetricsView() {
         )}
 
         {!metricsUnsupported && overviewError && summary && (
-          <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+          <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
             <AlertCircle />
             <AlertTitle>Refresh failed</AlertTitle>
             <AlertDescription>
@@ -817,7 +817,7 @@ function MetricsView() {
         )}
 
         {!metricsUnsupported && sourceNotes.length > 0 && summary && (
-          <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+          <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
             <AlertCircle />
             <AlertTitle>Some metric sources reported warnings</AlertTitle>
             <AlertDescription>
@@ -923,8 +923,8 @@ function MetricsView() {
                                 layout="vertical"
                                 margin={{ left: 8, right: 16, top: 8, bottom: 8 }}
                               >
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                                <XAxis type="number" allowDecimals={false} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
+                                <XAxis type="number" allowDecimals={false} tick={{ fill: "var(--muted-foreground)" }} />
                                 <YAxis
                                   type="category"
                                   dataKey="name"
@@ -932,6 +932,7 @@ function MetricsView() {
                                   width={serviceAxisWidth}
                                 />
                                 <Tooltip
+                                  contentStyle={{ background: "var(--background)", color: "var(--foreground)", border: "1px solid var(--surface-border)" }}
                                   formatter={(value: number, name: string) => [formatNumber(value), name]}
                                   labelFormatter={(label) => `Service: ${label}`}
                                 />
@@ -965,10 +966,11 @@ function MetricsView() {
                                 layout="vertical"
                                 margin={{ left: 8, right: 16, top: 8, bottom: 8 }}
                               >
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                                <XAxis type="number" allowDecimals={false} />
-                                <YAxis type="category" dataKey="name" width={140} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
+                                <XAxis type="number" allowDecimals={false} tick={{ fill: "var(--muted-foreground)" }} />
+                                <YAxis type="category" dataKey="name" width={140} tick={{ fill: "var(--muted-foreground)" }} />
                                 <Tooltip
+                                  contentStyle={{ background: "var(--background)", color: "var(--foreground)", border: "1px solid var(--surface-border)" }}
                                   formatter={(value: number, name: string) => [formatNumber(value), name]}
                                   labelFormatter={(label) => `Country: ${label}`}
                                 />
@@ -1002,8 +1004,8 @@ function MetricsView() {
                                   layout="vertical"
                                   margin={{ left: 8, right: 16, top: 8, bottom: 8 }}
                                 >
-                                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                                  <XAxis type="number" allowDecimals={false} />
+                                  <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
+                                  <XAxis type="number" allowDecimals={false} tick={{ fill: "var(--muted-foreground)" }} />
                                   <YAxis
                                     type="category"
                                     dataKey="name"
@@ -1011,6 +1013,7 @@ function MetricsView() {
                                     width={userAxisWidth}
                                   />
                                   <Tooltip
+                                  contentStyle={{ background: "var(--background)", color: "var(--foreground)", border: "1px solid var(--surface-border)" }}
                                     formatter={(value: number, name: string) => [formatNumber(value), name]}
                                     labelFormatter={(label) => `User: ${label}`}
                                   />
@@ -1063,21 +1066,21 @@ function MetricsView() {
                         ) : (
                           <>
                             <div className="grid gap-3 sm:grid-cols-2">
-                              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
                                 <p className="text-sm text-slate-500">CPU hours</p>
-                                <p className="mt-1 text-2xl font-semibold text-slate-900">
+                                <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
                                   {formatHours(getMetricValue(selectedServiceMetrics, "cpu-hours"))}
                                 </p>
                               </div>
-                              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
                                 <p className="text-sm text-slate-500">GPU hours</p>
-                                <p className="mt-1 text-2xl font-semibold text-slate-900">
+                                <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
                                   {formatHours(getMetricValue(selectedServiceMetrics, "gpu-hours"))}
                                 </p>
                               </div>
-                              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
                                 <p className="text-sm text-slate-500">Sync requests</p>
-                                <p className="mt-1 text-2xl font-semibold text-slate-900">
+                                <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
                                   {formatNumber(
                                     getMetricValue(
                                       selectedServiceMetrics,
@@ -1086,9 +1089,9 @@ function MetricsView() {
                                   )}
                                 </p>
                               </div>
-                              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
                                 <p className="text-sm text-slate-500">Async requests</p>
-                                <p className="mt-1 text-2xl font-semibold text-slate-900">
+                                <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
                                   {formatNumber(
                                     getMetricValue(
                                       selectedServiceMetrics,
@@ -1097,9 +1100,9 @@ function MetricsView() {
                                   )}
                                 </p>
                               </div>
-                              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
                                 <p className="text-sm text-slate-500">Exposed requests</p>
-                                <p className="mt-1 text-2xl font-semibold text-slate-900">
+                                <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
                                   {formatNumber(
                                     getMetricValue(
                                       selectedServiceMetrics,
@@ -1108,9 +1111,9 @@ function MetricsView() {
                                   )}
                                 </p>
                               </div>
-                              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
                                 <p className="text-sm text-slate-500">Distinct users</p>
-                                <p className="mt-1 text-2xl font-semibold text-slate-900">
+                                <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
                                   {formatNumber(
                                     getMetricValue(selectedServiceMetrics, "users-per-service"),
                                   )}
@@ -1119,8 +1122,8 @@ function MetricsView() {
                             </div>
 
                             {selectedServiceBreakdown && (
-                              <div className="rounded-xl border border-slate-200 bg-white p-4">
-                                <p className="text-sm font-medium text-slate-900">
+                              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                                   Known users
                                 </p>
                                 <p className="mt-1 text-sm text-slate-600">
@@ -1130,19 +1133,19 @@ function MetricsView() {
                                 </p>
 
                                 <div className="mt-4 grid gap-2">
-                                  <p className="text-sm font-medium text-slate-900">
+                                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                                     Top countries
                                   </p>
                                   {selectedServiceBreakdown.countries.length > 0 ? (
                                     selectedServiceBreakdown.countries.slice(0, 4).map((country) => (
                                       <div
                                         key={`${selectedServiceBreakdown.key}-${country.country}`}
-                                        className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm"
+                                        className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm"
                                       >
-                                        <span className="text-slate-700">
+                                        <span className="text-slate-700 dark:text-slate-300">
                                           {country.country === "unknown" ? "Unknown" : country.country}
                                         </span>
-                                        <span className="font-medium text-slate-900">
+                                        <span className="font-medium text-slate-900 dark:text-slate-100">
                                           {formatNumber(country.request_count)}
                                         </span>
                                       </div>

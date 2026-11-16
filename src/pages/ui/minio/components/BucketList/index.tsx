@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMinio } from "@/contexts/Minio/MinioContext";
 import { isUserOscar, shortenFullname } from "@/lib/utils";
+import { visibilityBadgeClasses } from "@/lib/visibilityBadge";
 import { Bucket_visibility } from "@/pages/ui/services/models/service";
 import OscarColors from "@/styles";
 import { Bucket } from "@aws-sdk/client-s3";
@@ -20,23 +21,6 @@ interface BucketList extends Bucket {
   owner_name?: string;
 }
 
-const visibilityColors = {
-  [Bucket_visibility.private]: {
-    bg: "bg-red-100",
-    text: "text-red-700",
-    border: "border-red-300"
-  },
-  [Bucket_visibility.public]: {
-    bg: "bg-green-100",
-    text: "text-green-700",
-    border: "border-green-300"
-  },
-  [Bucket_visibility.restricted]: {
-    bg: "bg-blue-100",
-    text: "text-blue-700",
-    border: "border-blue-300"
-  }
-};
 
 function isBucketVisibility(value: unknown): boolean {
   return (value === Bucket_visibility.private || value === Bucket_visibility.public || value === Bucket_visibility.restricted);
@@ -93,7 +77,7 @@ export default function BucketList() {
   function loadingErrorView() {
     return (
       <div className="flex items-center justify-center h-full w-full">
-        <Alert variant="destructive" className="max-w-md bg-red-50 text-red-400">
+        <Alert variant="destructive" className="max-w-md">
           <div className="flex flex-col items-center text-center">
           <AlertCircle className="h-6 w-6 mb-2" />
           <AlertTitle>Failed to load buckets</AlertTitle>
@@ -170,9 +154,9 @@ export default function BucketList() {
           {
             header: "Visibility",
             accessor: (row) => {
-              const colors = visibilityColors[row.visibility] || visibilityColors.private;
+              const colors = visibilityBadgeClasses[row.visibility] || visibilityBadgeClasses.private;
               return (
-                <span className={`font-bold px-2 py-1 rounded-full text-xs border ${colors.bg} ${colors.text} ${colors.border}`}>
+                <span className={`font-bold px-2 py-1 rounded-full text-xs border ${colors}`}>
                   {row.visibility.toUpperCase()}
                 </span>
               );

@@ -150,7 +150,7 @@ export default function UploadFromPresignedURL() {
         backgroundColor: ColorWithOpacity(OscarColors.Green1, 0.75),
       }}
     >
-      <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md"
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-8 w-full max-w-md"
         style={{
           zIndex: 1,
         }}

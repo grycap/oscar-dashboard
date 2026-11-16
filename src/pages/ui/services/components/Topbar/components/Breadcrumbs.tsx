@@ -23,7 +23,7 @@ function ServiceBreadcrumb() {
           <Link
             to="/ui/services/create"
             style={{
-              color: "black",
+              color: "var(--foreground)",
               fontSize: 18,
               textDecoration: "none",
             }}

@@ -1,7 +1,6 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { RoCrateServiceDefinition } from "@/lib/roCrate";
-import OscarColors from "@/styles";
 import { AlertTriangle, Info } from "lucide-react";
 
 
@@ -22,7 +21,7 @@ function HubCardHeader( { roCrateServiceDef, card } : { roCrateServiceDef: RoCra
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="flex flex-row items-center gap-2" style={{ color: gpuWarning() ? "red" : OscarColors.DarkGrayText }} >
+          <span className="flex flex-row items-center gap-2" style={{ color: gpuWarning() ? "red" : "var(--muted-foreground)" }} >
             {gpuWarning() ? <AlertTriangle color="red" /> : card === 'info' ? <Info size={20} /> : null}
             {`${roCrateServiceDef.name}`}
           </span>

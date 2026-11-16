@@ -1,6 +1,6 @@
 import AppSidebar from "@/components/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import OscarColors, { ColorWithOpacity, OscarStyles } from "@/styles";
+import { OscarStyles } from "@/styles";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 function AppLayout() {
@@ -21,7 +21,7 @@ function AppLayout() {
             display: "flex",
             marginTop: 10,
             borderTopLeftRadius: 8,
-            background: ColorWithOpacity(OscarColors.Gray1, 0.5),
+            background: "var(--surface-muted)",
             border: OscarStyles.border,
           }}
           className="overflow-y-auto"

@@ -37,6 +37,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import env from "@/env";
+import ThemeToggle from "@/components/ThemeToggle";
 
 function AppSidebar() {
   const authContext = useAuth();
@@ -144,12 +145,14 @@ function AppSidebar() {
   }
 
   function handleLogout() {
+    const savedTheme = localStorage.getItem("oscar-dashboard-theme");
     if(authContext.authData.token) {
       window.location.href = buildLogoutRedirectUrl(authContext.authData.token);
     }
     // Clear all local and session storage before redirecting
     localStorage.removeItem("authData");
     localStorage.clear();
+    if (savedTheme) localStorage.setItem("oscar-dashboard-theme", savedTheme);
     sessionStorage.clear();
     // Delay redirect slightly context clean
     setTimeout(() => {
@@ -219,7 +222,7 @@ function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex justify-center gap-4 mb-2 min-w-o truncate">
+            <div className="flex justify-center items-center gap-4 mb-2 min-w-0 group-data-[collapsible=icon]:flex-wrap group-data-[collapsible=icon]:gap-2">
               <a
                 href="https://oscar.grycap.net"
                 target="_blank"
@@ -250,6 +253,7 @@ function AppSidebar() {
               >
                 <Github size={18} />
               </a>
+              <ThemeToggle compact />
             </div>
           </SidebarMenuItem>
           <SidebarMenuItem>

@@ -46,20 +46,14 @@ function parseMemoryRequirements(requirements, service) {
 
   for (const req of memoryRequirements) {
     const { value, unit } = normalizeMemoryRequirement(req, [
-      { match: /kserve-?GiB/i, unit: 'Gi' },
       { match: /GiB/i, unit: 'Gi' },
       { match: /MiB/i, unit: 'Mi' }
     ], 'Mi');
 
     if (!value) continue;
-
-    if (/kserve-?GiB/i.test(String(req))) {
-      service.kserveMemoryRequirements = value;
-      service.kserveMemoryUnits = unit;
-    } else {
-      service.memoryRequirements = value;
-      service.memoryUnits = unit;
-    }
+    
+    service.memoryRequirements = value;
+    service.memoryUnits = unit;
   }
 }
 
@@ -76,10 +70,6 @@ function parseProcessorRequirements(requirements, service) {
       service.cpuRequirements = value;
     } else if (/^GPU$/i.test(procType)) {
       service.gpuRequirements = value;
-    } else if (/^kserve-vCPU$/i.test(procType)) {
-      service.kserveCpuRequirements = value;
-    } else if (/^kserve-GPU$/i.test(procType)) {
-      service.kserveGpuRequirements = value;
     }
   }
 }
@@ -99,11 +89,6 @@ const RoCrateServiceDefinition = {
     agentSoulUrl: "",
     agentSkillUrl: [],
     agentType: "", // "exposed" | "on-demand",
-
-    kserveMemoryRequirements: "2",
-    kserveMemoryUnits: "Mi",
-    kserveCpuRequirements: "1",
-    kserveGpuRequirements: "0",
 };
 
 /* With validation
@@ -129,7 +114,7 @@ async function parseROCrateDataJScore(githubUser, githubRepo, githubBranch, crat
     headers: {
       'Accept': 'text/plain, application/x-yaml, */*',
       // Can be required for private repositories or higher rate limits
-     //'Authorization': `Bearer xxx`
+      //'Authorization': `Bearer xxx`
     }
   };
   

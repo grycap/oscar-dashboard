@@ -1,5 +1,5 @@
 import UserInfo from "@/components/UserInfo";
-import OscarColors, { OscarStyles } from "@/styles";
+import { OscarStyles } from "@/styles";
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import AnimatedRefreshCw from "../ui/animatedRefreshCw";
@@ -29,7 +29,7 @@ function GenericTopbar({ customHeader, defaultHeader, refresher, children, secon
           <Link
             to={defaultHeader.linkTo}
             style={{
-              color: OscarColors.DarkGrayText,
+              color: "var(--muted-foreground)",
               fontSize: 18,
               textDecoration: "none",
             }}

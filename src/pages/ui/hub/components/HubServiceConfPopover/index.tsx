@@ -8,14 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
-import { generateReadableName, genRandomString, getAllowedVOs, usesDNSRoutes } from "@/lib/utils";
+import { generateReadableName, genRandomString, getAllowedVOs, usesDNSRoutes, parseFdlCpu, parseFdlMemory, getModelServingNamespace, getModelServingSuffix, isModelServingEndpoint, replaceModelServingEndpoints } from "@/lib/utils";
 import useServicesContext from "@/pages/ui/services/context/ServicesContext";
 import {
   ManagedVolume,
   Service,
 } from "@/pages/ui/services/models/service";
 import { PlusIcon, RefreshCcwIcon, Trash2Icon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoCrateServiceDefinition } from "@/lib/roCrate";
 import HubCardHeader from "../HubCardHeader";
 import useGetPrivateBuckets from "@/hooks/useGetPrivateBuckets";
@@ -23,7 +24,7 @@ import { errorMessage } from "@/lib/error";
 
 interface HubServiceConfPopoverProps {
     roCrateServiceDef: RoCrateServiceDefinition;
-    service: Service;
+    services: Service[];
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
 		className?: ButtonProps["className"];
@@ -31,19 +32,29 @@ interface HubServiceConfPopoverProps {
 		title?: string;
 }
 
-function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, setIsOpen, className = "", variant = "default", title = "Deploy Service" }: HubServiceConfPopoverProps) {
+interface ServiceDeployFormHandle {
+  buildService: () => Promise<Service | null>;
+}
+
+interface ServiceDeployFormProps {
+  roCrateServiceDef: RoCrateServiceDefinition;
+  service: Service;
+  isOpen: boolean;
+  modelServingName?: string;
+  modelServingSuffix?: string;
+  onNameChange?: (name: string) => void;
+}
+
+const ServiceDeployForm = forwardRef<ServiceDeployFormHandle, ServiceDeployFormProps>(function ServiceDeployForm({ roCrateServiceDef, service, isOpen, modelServingName, modelServingSuffix, onNameChange }, ref) {
   const {systemConfig, authData } = useAuth();
-  const { refreshServices } = useServicesContext();
   const [newBucket, setNewBucket] = useState(false);
-  const buckets = service.mount ? useGetPrivateBuckets(isOpen) : [];
-
+  const isModelServingService = !!service.model_serving;
   const oidcGroups = getAllowedVOs(systemConfig, authData);
-	const asyncService = roCrateServiceDef.type.some(t => t.toLowerCase() === "asynchronous");
-  const mountBucket = service?.mount;
-  const serviceVolume = service?.volume;
+	const asyncService = !isModelServingService && roCrateServiceDef.type.some(t => t.toLowerCase() === "asynchronous");
+  const mountBucket = isModelServingService ? undefined : service.mount;
+  const serviceVolume = isModelServingService ? undefined : service.volume;
+  const buckets = useGetPrivateBuckets(isOpen && !!mountBucket);
   const canCreateManagedVolume = !!serviceVolume;
-
-  const isKserveService = roCrateServiceDef.type.includes('kserve');
 
 
   function parseVolumeSize(size?: string): string {
@@ -86,10 +97,6 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
     cpuCores: "1.0",
     memoryRam: "2",
     memoryUnit: "Gi",
-    kserveCpuCores: "1.0",
-    kserveMemoryRam: "2",
-    kserveMemoryUnit: "Gi",
-    kserveEnv: {} as Record<string, string>,
     kserveArgs: [] as string[],
     bucket: "",
     volume: "",
@@ -129,9 +136,6 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
     name: false,
     cpuCores: false,
     memoryRam: false,
-    kserveCpuCores: false,
-    kserveMemoryRam: false,
-    kserveMemoryUnit: false,
     bucket: false,
     volume: false,
     volumeSize: false,
@@ -149,20 +153,29 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
   }, [oidcGroups]);
 
   useEffect(() => {
+    onNameChange?.(formData.name);
+  }, [formData.name]);
+
+  useEffect(() => {
     if (!isOpen) return;
     const serviceName = nameService();
     const initialVolume = serviceVolume?.name || "";
+    const hasCpu = service.cpu != null && String(service.cpu).trim() !== "";
+    const hasMemory = service.memory != null && String(service.memory).trim() !== "";
+    const cpu = hasCpu ? parseFdlCpu(service.cpu) : roCrateServiceDef.cpuRequirements;
+    const memory = hasMemory
+      ? parseFdlMemory(service.memory)
+      : { amount: roCrateServiceDef.memoryRequirements, unit: roCrateServiceDef.memoryUnits };
+    if (cpu === null || memory === null) {
+      alert.error(`Invalid FDL resources for ${service.name || roCrateServiceDef.name}. Please enter valid values.`);
+    }
     setFormData((prev) => ({
       ...prev, 
       name: serviceName,
-      cpuCores: roCrateServiceDef.cpuRequirements,
-      memoryRam: roCrateServiceDef.memoryRequirements,
-      memoryUnit: roCrateServiceDef.memoryUnits,
-      kserveCpuCores: roCrateServiceDef.kserveCpuRequirements ?? "",
-      kserveMemoryRam: roCrateServiceDef.kserveMemoryRequirements ?? "",
-      kserveMemoryUnit: roCrateServiceDef.kserveMemoryUnits ?? "",
-      kserveEnv: service.kserve?.env || {},
-      kserveArgs: service.kserve?.args || [],
+      cpuCores: cpu ?? "",
+      memoryRam: memory?.amount ?? "",
+      memoryUnit: memory?.unit ?? "Gi",
+      kserveArgs: service.model_serving?.inference?.args || service.model_serving?.llm_inference?.args || [],
       bucket: serviceName,
       volume: serviceName,
       volumeSize: parseVolumeSize(serviceVolume?.size),
@@ -178,9 +191,6 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       name: false,
       cpuCores: false,
       memoryRam: false,
-      kserveCpuCores: false,
-      kserveMemoryRam: false,
-      kserveMemoryUnit: false,
       bucket: false,
       volume: false,
       volumeSize: false,
@@ -235,14 +245,13 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
     };
   }, [isOpen, roCrateServiceDef, service, serviceVolume]);
 
-  const handleDeploy = async () => {
+  useImperativeHandle(ref, () => ({ buildService }));
+
+  const buildService = async (): Promise<Service | null> => {
     const newErrors = {
       name: !formData.name,
       cpuCores: !formData.cpuCores,
       memoryRam: !formData.memoryRam,
-      kserveCpuCores: isKserveService && !formData.kserveCpuCores,
-      kserveMemoryRam: isKserveService && !formData.kserveMemoryRam,
-      kserveMemoryUnit: isKserveService && !formData.kserveMemoryUnit,
       bucket: !formData.bucket && (asyncService || !!mountBucket),
       volume: !formData.volume && !!serviceVolume,
       volumeSize:
@@ -264,15 +273,17 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       }
       return error;
     })) {
-      alert.error("Please fill in all fields");
-      return;
+      alert.error(`Please fill in all fields of ${service.name || roCrateServiceDef.name}`);
+      return null;
     }
 
-    try {
-      const scriptResponse = await fetch(roCrateServiceDef.scriptUrl);
-      const scriptText = await scriptResponse.text();
+    {
+      let scriptText = "";
+      if (!isModelServingService) {
+        const scriptResponse = await fetch(roCrateServiceDef.scriptUrl);
+        scriptText = await scriptResponse.text();
+      }
 
-      service.script = scriptText
       const serviceName = formData.name || nameService();
 
       const serviceVolumeConfig = serviceVolume
@@ -291,8 +302,9 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
       const modifiedService: Service = {
         ...service,
         name: serviceName,
+        script: scriptText,
         vo: formData.vo,
-        memory: `${formData.memoryRam}${formData.memoryUnit}`,
+        memory: `${formData.memoryRam}${formData.memoryUnit === "bytes" ? "" : formData.memoryUnit}`,
         cpu: formData.cpuCores.toString(),
         input: asyncService ? 
 					[{
@@ -315,9 +327,7 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
         volume: serviceVolumeConfig,
         environment: {
           ...service.environment,
-          variables: {
-            ...formData.enviromentVars,
-          },
+          variables: replaceModelServingEndpoints(formData.enviromentVars, modelServingName, modelServingSuffix, getModelServingNamespace(authData?.egiSession?.sub)),
           secrets: {
             ...formData.enviromentSecrets,
           },
@@ -330,46 +340,27 @@ function HubServiceConfPopover({ roCrateServiceDef, service, isOpen = false, set
           ...service.expose,
           nodePort: formData.nodePort,
         },
-        kserve: isKserveService && service.kserve ? {
-          ...service.kserve,
-          cpu: formData.kserveCpuCores,
-          memory: `${formData.kserveMemoryRam}${formData.kserveMemoryUnit}`,
-          env: {
-            ...formData.kserveEnv,
-          },
-          args: formData.kserveArgs.length > 0 ? formData.kserveArgs : service.kserve?.args,
+        model_serving: isModelServingService && service.model_serving ? {
+          ...service.model_serving,
+          inference: service.model_serving.inference ? {
+            ...service.model_serving.inference,
+            args: formData.kserveArgs.length > 0 ? formData.kserveArgs : service.model_serving.inference?.args,
+          } : undefined,
+          llm_inference: service.model_serving.llm_inference ? {
+            ...service.model_serving.llm_inference,
+            args: formData.kserveArgs.length > 0 ? formData.kserveArgs : service.model_serving.llm_inference?.args,
+          } : undefined,
         } : undefined,
       };
-      await createServiceApi(modifiedService);
-      refreshServices();
-			
-      alert.success(`Service ${roCrateServiceDef.name} instance deployed`);
-      setIsOpen(false);
-    } catch (error) {
-      console.log(error)
-      alert.error(`Error deploying ${roCrateServiceDef.name} instance: ${errorMessage(error)}`);
+      return modifiedService;
     }
   };
 
+const visibleEnvVars = Object.entries(formData?.enviromentVars ?? {}).filter(
+    ([, value]) => !(modelServingName && isModelServingEndpoint(value))
+  );
+
 return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button 
-					className={className}
-          variant={variant}
-          tooltipLabel={title}
-          onClick={() => {setIsOpen(false)}}
-        >
-          Deploy
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
-        <DialogHeader>
-        <DialogTitle>
-          <HubCardHeader roCrateServiceDef={roCrateServiceDef} card="deploy" />
-        </DialogTitle>
-        </DialogHeader>
-          <hr></hr>
           <div className="grid grid-cols-1 gap-y-2 sm:gap-x-2 overflow-y-auto">
             <div>
               <div className="flex flex-row items-center">
@@ -396,14 +387,13 @@ return (
                 }}
               ></Input>
             </div>
-            {service?.image &&
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
               <div>
                 <Label htmlFor="cpu-cores">CPU Cores</Label>
                 <Input
                   id="cpu-cores"
                   type="number"
-                  step={0.1}
+                  step="any"
                   placeholder="Enter CPU Cores"
                   value={formData.cpuCores}
                   className={errors.cpuCores ? "border-red-500 focus:border-red-500" : ""}
@@ -419,7 +409,7 @@ return (
                     <Input
                       id="memory-ram"
                       type="number"
-                      step={formData.memoryUnit === "Gi" ? 1 : 256}
+                      step="any"
                       placeholder="Enter RAM"
                       value={formData.memoryRam}
                       className={errors.memoryRam ? "border-red-500 focus:border-red-500" : ""}
@@ -441,61 +431,15 @@ return (
                     <SelectContent>
                       <SelectItem value="Gi">Gi</SelectItem>
                       <SelectItem value="Mi">Mi</SelectItem>
+                      {formData.memoryUnit !== "Gi" && formData.memoryUnit !== "Mi" && (
+                        <SelectItem value={formData.memoryUnit}>
+                          {formData.memoryUnit === "bytes" ? "Bytes" : formData.memoryUnit}
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
               </div>
             </div>
-            }
-            {isKserveService && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
-              <div>
-                <Label htmlFor="kserve-cpu-cores">Kserve CPU Cores</Label>
-                <Input
-                  id="kserve-cpu-cores"
-                  type="number"
-                  step={0.1}
-                  placeholder="Enter CPU Cores"
-                  value={formData.kserveCpuCores}
-                  className={errors.kserveCpuCores ? "border-red-500 focus:border-red-500" : ""}
-                  onChange={(e) => {
-                    setFormData({ ...formData, kserveCpuCores: e.target.value });
-                    if (errors.kserveCpuCores) setErrors({ ...errors, kserveCpuCores: false });
-                  }}
-                ></Input>
-              </div>
-              <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
-                  <div>
-                    <Label htmlFor="kserve-memory-ram">Kserve RAM</Label>
-                    <Input
-                      id="kserve-memory-ram"
-                      type="number"
-                      step={formData.kserveMemoryUnit === "Gi" ? 1 : 256}
-                      placeholder="Enter RAM"
-                      value={formData.kserveMemoryRam}
-                      className={errors.kserveMemoryRam ? "border-red-500 focus:border-red-500" : ""}
-                      onChange={(e) => {
-                        setFormData({ ...formData, kserveMemoryRam: e.target.value });
-                        if (errors.kserveMemoryRam) setErrors({ ...errors, kserveMemoryRam: false });
-                      }}
-                    />
-                  </div>
-                  <Select
-                    value={formData.kserveMemoryUnit}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, kserveMemoryUnit: value })
-                    }
-                  >
-                    <SelectTrigger className="w-[80px]">
-                      <SelectValue id="kserve-memory-unit" placeholder="Unit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Gi">Gi</SelectItem>
-                      <SelectItem value="Mi">Mi</SelectItem>
-                    </SelectContent>
-                  </Select>
-              </div>
-            </div>
-            )}
             <div>
                 <Label htmlFor="vo">VO</Label>
                 <Select
@@ -705,12 +649,12 @@ return (
               </div>
             </div>
             }
-            {Object.keys(formData?.enviromentVars ?? {}).length > 0 && (
+            {visibleEnvVars.length > 0 && (
             <div>
               <Label>Environment Variables</Label>
               <hr className="mb-2"/>
 
-              {Object.entries(formData.enviromentVars).map(([key, value]) => (
+              {visibleEnvVars.map(([key, value]) => (
               <div key={`var-${key}`}>
                 <Label>{key}</Label>
                 <Input
@@ -769,36 +713,10 @@ return (
             </div>
             )}
             
-            {Object.keys(service.kserve?.env ?? {}).length > 0 && (
-            <div>
-              <Label>Kserve Environment Variables</Label>
-              <hr className="mb-2"/>
-              {Object.entries(service.kserve?.env ?? {}).map(([key, value]) => (
-              <div key={`kserve-var-${key}`}>
-                <Label>{key}</Label>
-                <Input
-                  type="text"
-                  value={formData.kserveEnv?.[key] ?? value}
-                  onChange={(e) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      kserveEnv: {
-                        ...prev.kserveEnv,
-                        [key]: e.target.value,
-                      },
-                    }));
-                  }}
-                  placeholder={`Enter ${key}`}
-                />
-              </div>
-              ))}
-            </div>
-            )}
-            
-            {isKserveService && (
+            {isModelServingService && (
             <div>
               <div className="flex items-center justify-between gap-2">
-                <Label>Kserve Arguments</Label>
+                <Label>Model Serving Arguments</Label>
                 <Button
                   variant="lightGreen"
                   size="sm"
@@ -853,11 +771,125 @@ return (
             )}
             
           </div>
-        <DialogFooter>
-          <RequestButton className="grid grid-cols-[auto] sm:grid-cols-1 gap-2" variant={"mainGreen"} request={handleDeploy}>
-            Deploy
-          </RequestButton>
-        </DialogFooter>
+  );
+});
+
+function HubServiceConfPopover({ roCrateServiceDef, services, isOpen = false, setIsOpen, className = "", variant = "default", title = "Deploy Service" }: HubServiceConfPopoverProps) {
+  const { refreshServices } = useServicesContext();
+  const formRefs = useRef<(ServiceDeployFormHandle | null)[]>([]);
+  const isMulti = services.length > 1;
+  const [activeTab, setActiveTab] = useState("0");
+  const [serviceNames, setServiceNames] = useState<string[]>([]);
+  const modelServingIndex = services.findIndex((svc) => !!svc.model_serving);
+  const modelServingName = modelServingIndex >= 0 ? serviceNames[modelServingIndex] || undefined : undefined;
+  const modelServingSuffix = modelServingIndex >= 0 ? getModelServingSuffix(services[modelServingIndex].model_serving) : "";
+
+  const handleNameChange = (index: number, name: string) => {
+    setServiceNames((prev) => {
+      if (prev[index] === name) return prev;
+      const next = [...prev];
+      next[index] = name;
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (isOpen) setActiveTab("0");
+  }, [isOpen]);
+
+  const handleDeploy = async () => {
+    try {
+      const built: Service[] = [];
+      for (let i = 0; i < services.length; i++) {
+        const built_i = await formRefs.current[i]?.buildService();
+        if (!built_i) {
+          setActiveTab(String(i));
+          return;
+        }
+        built.push(built_i);
+      }
+      for (const svc of built) {
+        await createServiceApi(svc);
+      }
+      refreshServices();
+      alert.success(`Service ${roCrateServiceDef.name} instance deployed`);
+      setIsOpen(false);
+    } catch (error) {
+      console.log(error)
+      alert.error(`Error deploying ${roCrateServiceDef.name} instance: ${errorMessage(error)}`);
+    }
+  };
+
+  const deployButton = (
+    <RequestButton className="grid grid-cols-[auto] sm:grid-cols-1 gap-2 w-full sm:w-auto" variant={"mainGreen"} request={handleDeploy}>
+      Deploy
+    </RequestButton>
+  );
+
+  const lastIndex = services.length - 1;
+
+  const renderAction = (index: number) =>
+    index < lastIndex ? (
+      <Button variant="outline" className="w-full sm:w-auto" onClick={() => setActiveTab(String(index + 1))}>
+        Next
+      </Button>
+    ) : (
+      deployButton
+    );
+
+  const renderForm = (index: number) => (
+    <ServiceDeployForm
+      ref={(handle) => { formRefs.current[index] = handle; }}
+      roCrateServiceDef={roCrateServiceDef}
+      service={services[index]}
+      isOpen={isOpen}
+      modelServingName={modelServingName}
+      modelServingSuffix={modelServingSuffix}
+      onNameChange={(name) => handleNameChange(index, name)}
+    />
+  );
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button
+					className={className}
+          variant={variant}
+          tooltipLabel={title}
+          onClick={() => {setIsOpen(false)}}
+        >
+          Deploy
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-[600px] max-h-[90%] gap-4 flex flex-col">
+        <DialogHeader>
+        <DialogTitle>
+          <HubCardHeader roCrateServiceDef={roCrateServiceDef} card="deploy" />
+        </DialogTitle>
+        </DialogHeader>
+        <hr></hr>
+        {isMulti ? (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col min-h-0 overflow-hidden">
+            <TabsList className="flex-wrap h-auto justify-start">
+              {services.map((svc, index) => (
+                <TabsTrigger key={index} value={String(index)}>
+                  {svc.name || `Service ${index + 1}`}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {services.map((_, index) => (
+              <TabsContent key={index} value={String(index)} forceMount className="overflow-y-auto data-[state=inactive]:hidden">
+                {renderForm(index)}
+                <div className="mt-4 flex justify-end">{renderAction(index)}</div>
+              </TabsContent>
+            ))}
+          </Tabs>
+        ) : (
+          <>
+            {renderForm(0)}
+            <DialogFooter>{deployButton}</DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

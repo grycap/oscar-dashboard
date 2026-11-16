@@ -14,7 +14,7 @@ enum OscarColors {
 }
 
 export enum OscarStyles {
-  border = `1px solid ${OscarColors.Gray2}`,
+  border = "1px solid var(--surface-border)",
 }
 
 /**

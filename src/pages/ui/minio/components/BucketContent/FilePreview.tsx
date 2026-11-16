@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { BucketItem } from ".";
 import { useMinio } from "@/contexts/Minio/MinioContext";
-import Editor from "@monaco-editor/react";
+import Editor from "@/components/ThemedEditor";
 import fileExtensionToLanguage from "./fileExtensionToLanguage.json";
 import { Button } from "@/components/ui/button";
 import { DownloadIcon } from "lucide-react";

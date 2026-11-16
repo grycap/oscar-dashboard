@@ -1,5 +1,5 @@
 import { useEffect, useImperativeHandle, useState } from "react";
-import Editor from "@monaco-editor/react";
+import Editor from "@/components/ThemedEditor";
 import { alert } from "@/lib/alert";
 import { textToLF } from "@/lib/utils";
 import { Input } from "@/components/ui/input";

@@ -11,7 +11,7 @@ function ServiceFormTabs({ tab: activeTab, setTab }: Props) {
   return (
     <div
       style={{
-        background: "white",
+        background: "var(--background)",
         borderBottom: OscarStyles.border,
         display: "flex",
         flexDirection: "row",
@@ -46,7 +46,7 @@ function ServiceFormTabs({ tab: activeTab, setTab }: Props) {
                     left: 0,
                     height: 1,
                     width: "100%",
-                    background: "black",
+                    background: "var(--foreground)",
                   }}
                 ></div>
               )}

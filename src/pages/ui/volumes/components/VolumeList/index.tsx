@@ -64,7 +64,7 @@ const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700 border-yellow-300",
   error: "bg-red-100 text-red-700 border-red-300",
   deleting: "bg-orange-100 text-orange-700 border-orange-300",
-  deleted: "bg-gray-100 text-gray-700 border-gray-300",
+  deleted: "bg-gray-100 text-gray-700 border-gray-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
 };
 
 const creationModeColors: Record<string, string> = {
@@ -75,7 +75,7 @@ const creationModeColors: Record<string, string> = {
 function formatBadge(value: string, colors: Record<string, string>) {
   const normalized = value?.toLowerCase() || "unknown";
   const badgeColors =
-    colors[normalized] || "bg-gray-100 text-gray-700 border-gray-300";
+    colors[normalized] || "bg-gray-100 text-gray-700 border-gray-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700";
 
   return (
     <span
@@ -130,7 +130,7 @@ export default function VolumeList() {
   function loadingErrorView() {
     return (
       <div className="flex items-center justify-center h-full w-full">
-        <Alert variant="destructive" className="max-w-md bg-red-50 text-red-400">
+        <Alert variant="destructive" className="max-w-md">
           <div className="flex flex-col items-center text-center">
           <AlertCircle className="h-6 w-6 mb-2" />
           <AlertTitle>Failed to load volumes</AlertTitle>

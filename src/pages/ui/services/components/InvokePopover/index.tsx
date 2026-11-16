@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Editor from "@monaco-editor/react";
+import Editor from "@/components/ThemedEditor";
 import {
   Upload,
   FileText,
@@ -112,7 +112,7 @@ export function InvokePopover({ service, triggerRenderer }: Props) {
   function fileFormatWarrgingView() {
     return (
       <div className="flex items-center justify-center h-full w-full">
-        <Alert variant="destructive" className="max-w-md bg-orange-50 text-orange-400">
+        <Alert variant="destructive" className="max-w-md border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-800 dark:bg-orange-950/40 dark:text-orange-200">
           <div className="flex flex-col items-center text-center">
           <FileWarningIcon className="h-6 w-6 mb-2" />
           <AlertDescription className="mt-1 text-sm">

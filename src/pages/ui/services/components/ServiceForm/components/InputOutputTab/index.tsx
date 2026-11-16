@@ -92,7 +92,7 @@ export default function InputOutputEditor() {
           key={item.storage_provider + '-' + index}
           style={{
             border: OscarStyles.border,
-            background: "white",
+            background: "var(--background)",
             height: 74,
             borderRadius: 8,
             display: "flex",

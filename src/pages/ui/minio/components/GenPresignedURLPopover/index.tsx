@@ -147,7 +147,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
                 id="object-key"
                 placeholder="e.g., path/to/file.txt"
                 value={formData.object_key}
-                className={`${errors.object_key ? "border-red-500 focus:border-red-500" : ""} disabled:text-gray-500 disabled:bg-gray-50 disabled:cursor-not-allowed`}
+                className={`${errors.object_key ? "border-red-500 focus:border-red-500" : ""} disabled:text-gray-500 disabled:bg-gray-50 dark:bg-slate-800 disabled:cursor-not-allowed`}
                 onChange={(e) => {
                   setFormData({ ...formData, object_key: e.target.value });
                   if (errors.object_key) setErrors({ ...errors, object_key: false });
@@ -205,7 +205,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
                 />
 
               </div>
-              <div className="mt-2 p-3 bg-gray-100 rounded border border-gray-300 overflow-x-auto whitespace-nowrap text-sm font-mono">
+              <div className="mt-2 p-3 bg-gray-100 dark:bg-slate-800 rounded border border-gray-300 dark:border-slate-700 overflow-x-auto whitespace-nowrap text-sm font-mono">
                 {presignedUrl.url}
                 {/*location.origin + "/#/upload?presignedUrl=" + presignedUrl.url+ "&content-type=application/json&object-key=path/to/file.json"*/}
               </div>
@@ -222,7 +222,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
                   onClick={() => handleCopyUrl(dashboardUploadUrl, "Dashboard Upload URL copied to clipboard")}
                 />
               </div>
-              <div className="mt-2 p-3 bg-gray-100 rounded border border-gray-300 overflow-x-auto whitespace-nowrap text-sm font-mono">
+              <div className="mt-2 p-3 bg-gray-100 dark:bg-slate-800 rounded border border-gray-300 dark:border-slate-700 overflow-x-auto whitespace-nowrap text-sm font-mono">
                 {dashboardUploadUrl}
               </div>
             </div>
@@ -245,7 +245,7 @@ function GenPresignedURLPopover({ bucketName, objectKey, operation, owerrideButt
             {presignedUrl.headers && (
               <div>
                 <Label>Required Headers</Label>
-                <div className="mt-2 p-3 bg-gray-100 rounded border border-gray-300">
+                <div className="mt-2 p-3 bg-gray-100 dark:bg-slate-800 rounded border border-gray-300 dark:border-slate-700">
                   {Object.entries(presignedUrl.headers).map(([key, value]) => (
                     <div key={key} className="text-sm font-mono">
                       <span className="font-bold">{key}:</span> {value}

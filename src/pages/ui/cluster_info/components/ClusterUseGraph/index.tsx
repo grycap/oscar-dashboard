@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import zoomPlugin from 'chartjs-plugin-zoom';
 import OscarColors from "@/styles";
+import { useTheme } from "next-themes";
 
 ChartJS.register(
   CategoryScale,
@@ -45,14 +46,6 @@ export interface LineProps {
 
 const lineChartOptions: ChartOptions<'line'> = {
   responsive: true,
-  scales: {
-    y: {
-      ticks: {
-        stepSize: 1,
-        callback: (value) => Number.isInteger(value) ? value : null,
-      },
-    },
-  },
   plugins: {
     legend: {
       position: 'top' as const,
@@ -84,6 +77,26 @@ const lineChartOptions: ChartOptions<'line'> = {
 
 
 function ClusterUseGraph() {
+  const { resolvedTheme } = useTheme();
+  const chartOptions = useMemo<ChartOptions<'line'>>(() => {
+    const color = resolvedTheme === 'dark' ? '#b8bfca' : '#4f5b6b';
+    const grid = resolvedTheme === 'dark' ? '#2a3039' : '#d7e0ea';
+    return {
+      ...lineChartOptions,
+      color,
+      scales: {
+        x: { ticks: { color }, grid: { color: grid } },
+        y: {
+          ticks: {
+            color,
+            stepSize: 1,
+            callback: (value) => Number.isInteger(value) ? value : null,
+          },
+          grid: { color: grid },
+        },
+      },
+    };
+  }, [resolvedTheme]);
   const [expandedSections, setExpandedSections] = useState(false);
   const [logs, setLogs] = useState<Array<ClusterLog>>([]);
   const [loading, setLoading] = useState(false);
@@ -107,7 +120,7 @@ function ClusterUseGraph() {
     }
 
     return {
-      options: lineChartOptions,
+      options: chartOptions,
       data: {
         labels,
         datasets: [
@@ -120,7 +133,7 @@ function ClusterUseGraph() {
         ],
       },
     };
-  }, [logs, scale, datasetType]);
+  }, [logs, scale, datasetType, chartOptions]);
 
   function loadLogs() {
     setLoading(true);
@@ -169,7 +182,7 @@ function ClusterUseGraph() {
           <CardContent className="p-4 flex flex-col gap-4 overflow-x-auto">
             <div className="grid grid-rows-[auto_1fr_auto] gap-4 min-h-[300px] min-w-[500px]">
               {/* Top toolbar */}
-              <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
+              <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 px-3 py-2">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-xs font-medium text-gray-400 uppercase tracking-wide pr-1">Info</span>
                   <Separator orientation="vertical" className="h-5" />
@@ -179,7 +192,7 @@ function ClusterUseGraph() {
                       variant={datasetType === d ? 'default' : 'ghost'}
                       size="sm"
                       onClick={() => setDatasetType(d)}
-                      className={datasetType === d ? '' : 'text-gray-500 hover:text-gray-800'}
+                      className={datasetType === d ? '' : 'text-gray-500 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'}
                     >
                       {DATASET_LABELS[d]}
                     </Button>
@@ -205,7 +218,7 @@ function ClusterUseGraph() {
               )}
 
               {/* Bottom toolbar */}
-              <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
+              <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 px-3 py-2">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-xs font-medium text-gray-400 uppercase tracking-wide pr-1">Scale</span>
                   <Separator orientation="vertical" className="h-5" />
@@ -215,7 +228,7 @@ function ClusterUseGraph() {
                       variant={scale === s ? 'default' : 'ghost'}
                       size="sm"
                       onClick={() => setScale(s)}
-                      className={`capitalize ${scale === s ? '' : 'text-gray-500 hover:text-gray-800'}`}
+                      className={`capitalize ${scale === s ? '' : 'text-gray-500 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'}`}
                     >
                       {s}
                     </Button>

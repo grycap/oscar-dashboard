@@ -48,7 +48,7 @@ function ProvidersListItem({
         maxWidth: "32.8%",
         height: 72,
         border: OscarStyles.border,
-        background: "white",
+        background: "var(--background)",
         borderRadius: 8,
         display: "flex",
         flexDirection: "row",

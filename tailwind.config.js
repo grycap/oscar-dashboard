@@ -40,6 +40,13 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       colors: {
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        border: "var(--surface-border)",
+        input: "var(--surface-border)",
+        ring: "var(--ring)",
+        muted: "var(--surface-muted)",
+        "muted-foreground": "var(--muted-foreground)",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

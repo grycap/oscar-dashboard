@@ -78,7 +78,7 @@ function ScriptButton() {
             id="script-file-input"
             type="file"
             onChange={handleFileUpload}
-            className="bg-white"
+            className="bg-white dark:bg-slate-900"
           />
         </div>
       ) : (
