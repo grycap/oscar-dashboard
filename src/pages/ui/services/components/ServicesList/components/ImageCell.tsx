@@ -21,7 +21,8 @@ function ImageCell({ service }: ImageCellProps) {
   const runtimeImage =
     service.model_serving?.inference?.runtime_image ||
     service.model_serving?.llm_inference?.runtime_image ||
-    (service.model_serving?.llm_inference ? "default" : undefined);
+    (service.model_serving?.llm_inference ? "vllm - default" : undefined) ||
+    (service.model_serving?.inference && service.model_serving?.inference.runtime_image === undefined ? service.model_serving?.inference.model_format + " - default" : undefined);
   const source =
     service.model_serving?.inference?.source ||
     service.model_serving?.llm_inference?.source;
