@@ -1,4 +1,5 @@
 {
+  "log": "restructuredtext",
   "_coffee": "coffeescript",
   "_js": "javascript",
   "adp": "tcl",
