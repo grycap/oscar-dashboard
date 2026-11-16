@@ -46,6 +46,12 @@ function ServiceGeneralTab() {
   
   const selectedVo = formService?.vo ?? "";
   const selectedLogLevel = formService?.log_level ?? LOG_LEVEL.INFO;
+  const modelServingInfo = formService?.model_serving?.inference ?? formService?.model_serving?.llm_inference;
+  const modelServingType = formService?.model_serving?.inference
+    ? "Inference"
+    : formService?.model_serving?.llm_inference
+      ? "LLM Inference"
+      : undefined;
   const memoryUnits =
     (formService?.memory?.replace(/[0-9]/g, "") as "Mi" | "Gi" | "") ||
     "Mi";
@@ -95,6 +101,7 @@ const serviceToDownload = getFDLAndScriptText(formService)
               />
             </div>
             <div className="col-span-1 lg:col-span-2">
+              {formService?.image &&
               <Input
                 id="docker-image-input"
                 flex={2}
@@ -107,6 +114,7 @@ const serviceToDownload = getFDLAndScriptText(formService)
                 onBlur={() => onBlur("image")}
                 required
               />
+              }
             </div>
           </div>
           
@@ -242,7 +250,7 @@ const serviceToDownload = getFDLAndScriptText(formService)
             >
               <div className="flex flex-row gap-2 items-center">
                 <strong>Exposed:</strong>
-                {formService.expose?.api_port ? (
+                {formService.expose?.api_port || formService.model_serving ? (
                   <Link
                     to={getExposedServiceUrl(authData.endpoint, formService.name, "", systemConfig?.config)}
                     target="_blank"
@@ -283,6 +291,65 @@ const serviceToDownload = getFDLAndScriptText(formService)
           )}
         </div>
       </ServiceFormCell>
+      {modelServingInfo && (
+        <>
+          <Divider />
+          <ServiceFormCell title="Model Serving">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 w-full max-w-6xl min-w-[720px]">
+              {modelServingType && (
+                <div className="rounded-md border border-sky-200 bg-sky-50 p-3 dark:border-sky-900/60 dark:bg-sky-950/20">
+                  <Label>
+                    Type
+                  </Label>
+                  <div className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    {modelServingType}
+                  </div>
+                </div>
+              )}
+              {formService.model_serving?.inference?.model_format && (
+                <div className="rounded-md border border-border bg-muted/40 p-3">
+                  <Label>
+                    Model format
+                  </Label>
+                  <div className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">
+                    {formService.model_serving.inference.model_format}
+                  </div>
+                </div>
+              )}
+              {formService.model_serving?.inference?.api_version && (
+                <div className="rounded-md border border-border bg-muted/40 p-3">
+                  <Label>
+                    API version
+                  </Label>
+                  <div className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">
+                    {formService.model_serving.inference.api_version}
+                  </div>
+                </div>
+              )}
+              {modelServingInfo.runtime_image && (
+                <div className="rounded-md border border-border bg-muted/40 p-3 ">
+                  <Label>
+                    Runtime image
+                  </Label>
+                  <div className="mt-1 line-clamp-2 text-sm font-medium text-slate-800 dark:text-slate-100 break-all">
+                    {modelServingInfo.runtime_image}
+                  </div>
+                </div>
+              )}
+              {modelServingInfo.source && (
+                <div className="rounded-md border border-border bg-muted/40 p-3">
+                  <Label>
+                    Model Source
+                  </Label>
+                  <div className="mt-1 line-clamp-2 text-sm font-medium text-slate-800 dark:text-slate-100 break-all">
+                    {modelServingInfo.source}
+                  </div>
+                </div>
+              )}
+            </div>
+          </ServiceFormCell>
+        </>
+      )}
       <Divider />
       <ServiceFormCell title="Service Resources">
         <div className="grid grid-cols-1 gap-5 w-full max-w-6xl min-w-[720px]">
