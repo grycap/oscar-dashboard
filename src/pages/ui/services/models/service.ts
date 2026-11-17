@@ -254,8 +254,8 @@ export interface TmpService extends Omit<Service, "expose"> {
   };
 }
 
-export interface ModelServing {
-  inference?: KServeInference;
+export interface ModelServing { // Inference or LLM Inference can be specified, but not both at the same time
+  inference?: KServeInference; 
   llm_inference?: KServeLLMInference;
 }
 

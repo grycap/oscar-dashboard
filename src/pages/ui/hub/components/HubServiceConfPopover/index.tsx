@@ -278,7 +278,7 @@ const ServiceDeployForm = forwardRef<ServiceDeployFormHandle, ServiceDeployFormP
     }
 
     {
-      let scriptText = "";
+      let scriptText = "echo 'No script provided'";
       if (!isModelServingService) {
         const scriptResponse = await fetch(roCrateServiceDef.scriptUrl);
         scriptText = await scriptResponse.text();

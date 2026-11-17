@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowDownToLine, ExternalLink, LoaderPinwheel, Pencil, RefreshCw, Terminal, Trash2, WrapText } from "lucide-react";
 import OscarColors from "@/styles";
 import { Link, useNavigate } from "react-router-dom";
-import GenericTable, { ColumnDef } from "@/components/Table";
+import GenericTable from "@/components/Table";
 import { InvokePopover } from "../InvokePopover";
 import { handleFilterServices } from "./domain/filterUtils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,9 +22,10 @@ import DeploymentStatusBadge from "../DeploymentStatusBadge";
 import getDeploymentStatusApi from "@/api/deployment/getDeploymentStatusApi";
 import { DeploymentStatus } from "../../models/deployment";
 import ServiceRedirectButton from "@/components/ServiceRedirectButton";
-import { isVersionLower, shortenFullname } from "@/lib/utils";
+import { shortenFullname } from "@/lib/utils";
 import lifecycleServiceApi, { ServiceLifecycleAction } from "@/api/services/lifecycleServiceApi";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import ImageCell from "./components/ImageCell";
 
 interface DeploymentStatusCellProps {
   initialDeployment?: DeploymentStatus;
@@ -96,10 +97,11 @@ function DeploymentStatusCell({ initialDeployment, serviceName, onNavigate, onDe
   );
 }
 
+
 function ServicesList() {
   const { services, servicesAreLoading, setServices, setFormService, filter, eagerLoadDeployment } =
     useServicesContext();
-  const { authData, clusterInfo } = useAuth();
+  const { authData } = useAuth();
   const [servicesToDelete, setServicesToDelete] = useState<Service[]>([]);
   const [lifecycleServiceName, setLifecycleServiceName] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -228,16 +230,20 @@ function ServicesList() {
             idKey="name"
             columns={[
               { header: "Name", accessor: (row) => (
-                  < Link 
-                    to={`/ui/services/${row.name}/settings`} 
-                    onClick={() => {
-                      setFormService(row);
-                    }}>
+                  <div className="flex flex-col"> 
+                    <Link 
+                      to={`/ui/services/${row.name}/settings`} 
+                      onClick={() => {
+                        setFormService(row);
+                      }}>
                       {row.name}
                     </Link>
-                  ), sortBy: "name" },
-              // CHANGE ON NEW RELEASE
-              ...(clusterInfo && !isVersionLower(clusterInfo.version, "v3.8.0") ? [{
+                    <span className="text-xs text-muted-foreground">
+                      {row.model_serving? "model serving" : row.expose?.api_port ? "exposed" : ""}
+                    </span>
+                  </div>
+                ), sortBy: "name" },
+              {
                 header: "Deployment",
                 accessor: (row) => (
                   <DeploymentStatusCell
@@ -254,7 +260,7 @@ function ServicesList() {
                   />
                 ),
                 sortBy: "deployment",
-              }] as ColumnDef<Service>[] : []),
+              },
               { header: "Owner", accessor: (row) => (<ResponsiveOwnerField owner={row.labels["owner_name"] ? shortenFullname(row.labels["owner_name"].replace("_", " ")) : row.owner} sub={row.owner} />), sortBy: "owner" },
               {
                 header: "Visibility",
@@ -269,12 +275,11 @@ function ServicesList() {
                 },
                 sortBy: "visibility",
               },
-              { header: "Image", accessor: 
-                (row) => (
-                  <code title={row.image} className="flex text-xs bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 rounded-xl font-mono py-1 px-2 truncate max-w-[250px]">
-                    {row.image}
-                  </code>
-                ), sortBy: "image" },
+              {
+                header: "Image",
+                accessor: (row) => <ImageCell service={row} />,
+                sortBy: "image",
+              },
               { header: "CPU", accessor: "cpu", sortBy: "cpu" },
               { header: "Memory", accessor: "memory", sortBy: "memory" },
             ]}

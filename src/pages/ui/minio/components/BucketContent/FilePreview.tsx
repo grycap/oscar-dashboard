@@ -13,6 +13,7 @@ import fileExtensionToLanguage from "./fileExtensionToLanguage.json";
 import { Button } from "@/components/ui/button";
 import { DownloadIcon } from "lucide-react";
 import { getMimeTypeFromPath } from "@/lib/mimeType";
+import { errorMessage } from "@/lib/error";
 
 interface FilePreviewModalProps {
   isOpen: boolean;
@@ -34,13 +35,25 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
   const isImage = fileType === "image";
   const isPdf = fileType === "pdf";
 
-  function handleDownload() {
-    if (!url) return;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = bucketItem.Name;
-    a.click();
-  }
+  const handleDownload = async (item: BucketItem) => {
+    if (item.Type === "file") {
+      try {
+        const blob = await getFileBlob(item.BucketName, item.Key.Key!);
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = item.Name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+      } catch (error) {
+        console.error(`Error downloading file: ${errorMessage(error)}`);
+      }
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -141,7 +154,7 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
           )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={handleDownload}>
+          <Button variant="outline" onClick={() => handleDownload(bucketItem)}>
             <DownloadIcon className="w-4 h-4 mr-2" />
             Download
           </Button>
