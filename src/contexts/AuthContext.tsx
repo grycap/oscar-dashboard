@@ -2,7 +2,7 @@ import getSystemConfigApi from "@/api/config/getSystemConfig";
 import { getInfoApi } from "@/api/info/getInfoApi";
 import { setAxiosInterceptor } from "@/lib/axiosClient";
 import { ClusterInfo } from "@/models/clusterInfo";
-import { SystemConfig } from "@/models/systemConfig";
+import { SystemConfig, ClusterConfig } from "@/models/systemConfig";
 import { MinioStorageProvider } from "@/pages/ui/services/models/service";
 import React, {
   createContext,
@@ -48,10 +48,8 @@ export const AuthContext = createContext({
     authenticated: false,
   } as AuthData,
   setAuthData: (_: AuthData) => {},
-  systemConfig: null as {
-    config: SystemConfig;
-    minio_provider: MinioStorageProvider;
-  } | null,
+  refreshSystemConfig: async () => {},
+  systemConfig: null as ClusterConfig | null,
   clusterInfo: null as ClusterInfo | null,
 });
 
@@ -76,19 +74,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const [authData, setAuthDataState] = useState(initialData);
-  const [systemConfig, setSystemConfig] = useState<{
-    config: SystemConfig;
-    minio_provider: MinioStorageProvider;
-  } | null>(null);
+  const [systemConfig, setSystemConfig] = useState<ClusterConfig | null>(null);
   const [clusterInfo, setClusterInfo] = useState<ClusterInfo | null>(null);
 
-  async function handleGetSystemConfig() {
-    if (!authData.authenticated) return;
+  async function refreshSystemConfig() {
+    if (!authData.authenticated) {
+      setSystemConfig(null);
+      return;
+    }
 
     const response = await getSystemConfigApi() as {
       config: SystemConfig;
       minio_provider: MinioStorageProvider;
+      allowed_image_repositories: string[];
     } | null;
+
     if (response && authData.token === undefined && response.config.oidc_groups.length === 1 && response.config.oidc_groups[0] === "") {
       response.config.oidc_groups[0] = " ";
     } else if (response && response.config.oidc_groups.length > 1) {
@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   useEffect(() => {
-    handleGetSystemConfig();
+    void refreshSystemConfig();
   }, [authData]);
 
   function setAuthData(data: AuthData) {
@@ -123,7 +123,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password: authData.password,
         token: authData?.token,
       }));
-      await handleGetSystemConfig();
+      await refreshSystemConfig();
     } catch (error) {
       setAuthData({
         user: "",
@@ -144,6 +144,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         authData,
         setAuthData,
+        refreshSystemConfig,
         systemConfig,
         clusterInfo,
       }}
