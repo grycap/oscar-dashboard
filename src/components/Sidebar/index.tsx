@@ -194,7 +194,7 @@ function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="mt-8">
         <SidebarGroup>
-          <SidebarGroupContent>
+          <SidebarGroupContent className="overflow-y-auto">
             {items.map((item) => {
               const isActive = location.pathname.includes(item.path);
               return (
