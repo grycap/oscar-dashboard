@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useEffect, useId, useState } from "react";
+import { AlertTriangle, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -23,8 +25,10 @@ interface Props {
 export function AllowedImageRepositoriesEditDialog({ repositories = [] }: Props) {
   const { systemConfig, refreshSystemConfig } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [items, setItems] = useState<string[]>(repositories);
+  const confirmationDescriptionId = useId();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -65,8 +69,23 @@ export function AllowedImageRepositoriesEditDialog({ repositories = [] }: Props)
     }
   }
 
+  async function saveRepositories(updatedRepositories: string[]) {
+    const saved = await handleSave(updatedRepositories);
+    if (!saved) return;
+
+    await refreshSystemConfig();
+    setIsConfirmationOpen(false);
+    setIsOpen(false);
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) setIsConfirmationOpen(false);
+      }}
+    >
       <DialogTrigger asChild>
         <Button
           variant="ghost"
@@ -141,16 +160,43 @@ export function AllowedImageRepositoriesEditDialog({ repositories = [] }: Props)
             type="button"
             variant="mainGreen"
             request={async () => {
-              const saved = await handleSave(items);
-              if (!saved) return;
-
-              await refreshSystemConfig();
-              setIsOpen(false);
+              if (items.length === 0) {
+                setIsConfirmationOpen(true);
+                return;
+              }
+              await saveRepositories(items);
             }}
           >
             Save
           </RequestButton>
         </div>
+
+        <Dialog open={isConfirmationOpen} onOpenChange={setIsConfirmationOpen}>
+          <DialogContent className="sm:max-w-[425px]" aria-describedby={confirmationDescriptionId}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                Disable Repository Restriction?
+              </DialogTitle>
+              <DialogDescription id={confirmationDescriptionId}>
+                Saving an empty list will disable the image repository restriction,
+                allowing images from any registry. Are you sure you want to continue?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsConfirmationOpen(false)}>
+                Cancel
+              </Button>
+              <RequestButton
+                type="button"
+                variant="destructive"
+                request={() => saveRepositories([])}
+              >
+                Disable Restriction
+              </RequestButton>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );
