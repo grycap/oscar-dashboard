@@ -156,7 +156,7 @@ export default function AddFileButton({ disabled = false, responsiveButton = "no
           <Button>Select files</Button>
         </div>
       ) : (
-        <div className="bg-muted rounded-lg w-[100%] overflow-hidden">
+        <div className="rounded-lg w-[100%] overflow-hidden">
           {singleImageFile && (
             <div className="mb-4">
               <div

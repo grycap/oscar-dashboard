@@ -26,6 +26,7 @@ import { ClusterStatus } from "@/models/clusterStatus";
 import { useAuth } from "@/contexts/AuthContext";
 import ExpandCard from "@/components/ExpandCard";
 import ClusterUseGraph from "./components/ClusterUseGraph";
+import { AllowedImageRepositoriesEditDialog } from "./components/AllowedImageRepositoriesEditDialog";
 import { MetricCard } from "@/components/MetricCard";
 import OscarColors from "@/styles";
 
@@ -39,11 +40,13 @@ const inUseColor = "bg-blue-500 dark:bg-blue-400";
 const reservedColor = "bg-amber-400 dark:bg-amber-500";
 
 const Cluster = () => {
-  const { authData } = useAuth();
+  const { authData, systemConfig } = useAuth();
   const location = useLocation();
 
   const [clusterStatusData, setClusterStatusData] = useState<ClusterStatus | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const isAdmin = authData.user && authData.user === "oscar";
 
   useEffect(() => {
     document.title = "OSCAR - Cluster Status";
@@ -257,15 +260,20 @@ const Cluster = () => {
               {/* OIDC & Federation */}
               <Card className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-2xl overflow-hidden">
                 <CardHeader className="px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-800/20">
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-200/50 dark:border-blue-800/50">
-                      <ShieldCheck size={16} />
+                  <div className="flex items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-200/50 dark:border-blue-800/50">
+                        <ShieldCheck size={16} />
+                      </div>
+                      <div>
+                        <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          OIDC & Identity Federation
+                        </CardTitle>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                        OIDC & Identity Federation
-                      </CardTitle>
-                    </div>
+                    {isAdmin && 
+                    <AllowedImageRepositoriesEditDialog repositories={systemConfig?.allowed_image_repositories ?? []} />
+                    }
                   </div>
                 </CardHeader>
 
@@ -317,19 +325,39 @@ const Cluster = () => {
                       </div>
                     </div>
                   </div>
+
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                    <span className="font-semibold text-slate-400 block mb-2 text-[11px] tracking-wider uppercase">
+                      Allowed Image Repositories
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {systemConfig?.allowed_image_repositories?.length ? (
+                        systemConfig.allowed_image_repositories.map((repo, i) => (
+                          <span
+                            key={i}
+                            className="text-[11px] px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/60 font-mono text-emerald-700 dark:text-emerald-300"
+                          >
+                            {repo}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-slate-400">None</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </Card>
             </div>
 
             {/* Cluster Usage History Chart (admin) */}
-            {authData.user && authData.user === "oscar" && (
+            {isAdmin && (
               <div className="">
                 <ClusterUseGraph />
               </div>
             )}
 
             {/* Admin-only Pods and Jobs Execution Status */}
-            {authData.user && authData.user === "oscar" && (
+            {isAdmin && (
               <Card className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-2xl overflow-hidden">
                 <CardHeader className="px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-800/20">
                   <div className="flex items-center gap-2.5">
@@ -571,7 +599,7 @@ const Cluster = () => {
 
             {/* MinIO Object Storage Statistics */}
             
-            {authData.user && authData.user === "oscar" && clusterStatusData.minio && (
+            {isAdmin && clusterStatusData.minio && (
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div>

@@ -5,7 +5,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { ClusterLog } from "@/models/clusterLogs";
-import { AlertCircle, LoaderPinwheel, RefreshCw } from "lucide-react";
+import { Activity, AlertCircle, LoaderPinwheel, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChartData, ChartOptions } from 'chart.js';
 import {
@@ -176,7 +176,18 @@ function ClusterUseGraph() {
   }
 
   return (
-    <ExpandCard title="Usage" className="w-full mt-6" setExpandedState={setExpandedSections}>
+    <ExpandCard
+      title={
+        <span className="flex items-center gap-2.5">
+          <span className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-200/50 dark:border-emerald-800/50">
+            <Activity size={16} aria-hidden="true" />
+          </span>
+          Usage
+        </span>
+      }
+      className="w-full mt-6"
+      setExpandedState={setExpandedSections}
+    >
       <CardContent className="grid grid-cols-1 gap-4 mt-5">
         <Card>
           <CardContent className="p-4 flex flex-col gap-4 overflow-x-auto">

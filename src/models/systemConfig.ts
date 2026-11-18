@@ -11,3 +11,11 @@ export type SystemConfig = {
   oidc_groups: string[];
   exposed_services_use_subdomain_route?: boolean;
 };
+
+export type ClusterConfig = {
+  config: SystemConfig;
+  minio_provider?: MinioStorageProvider;
+  allowed_image_repositories?: string[];
+};
+
+export type ClusterConfigUpdate = Partial<ClusterConfig>;
