@@ -43,7 +43,7 @@ function ImageCell({ service }: ImageCellProps) {
               title={value}
               aria-label={`Copy ${label} image: ${value}`}
               onClick={() => handleCopyImage(value)}
-              className="inline-flex w-full min-w-0 max-w-[250px] items-center rounded-md border border-border bg-muted/70 px-2 py-1 text-left font-mono text-xs text-gray-700 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-slate-300"
+              className="inline-flex w-full min-w-0 items-center rounded-md border border-border bg-muted/70 px-2 py-1 text-left font-mono text-xs text-gray-700 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-slate-300"
             >
               <span className="block min-w-0 truncate">{value}</span>
             </button>
