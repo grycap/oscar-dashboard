@@ -13,7 +13,9 @@ export type SystemConfig = {
 };
 
 export type ClusterConfig = {
-  config?: SystemConfig;
+  config: SystemConfig;
   minio_provider?: MinioStorageProvider;
   allowed_image_repositories?: string[];
 };
+
+export type ClusterConfigUpdate = Partial<ClusterConfig>;

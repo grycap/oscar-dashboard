@@ -253,8 +253,8 @@ export function getUserVOs(authData: AuthData): string[] {
   return vos;
 }
 
-export function getAllowedVOs(systemConfig: {config: SystemConfig} | null, authData: AuthData): string[] {
-  if (!systemConfig || !systemConfig.config || !systemConfig.config.oidc_groups || systemConfig.config.oidc_groups.length === 0) return [];
+export function getAllowedVOs(systemConfig: { config: SystemConfig } | null, authData: AuthData): string[] {
+  if (!systemConfig || !systemConfig.config.oidc_groups || systemConfig.config.oidc_groups.length === 0) return [];
   // If user is oscar, return all allowed VOs from system config
   if (authData.user === "oscar") return systemConfig.config.oidc_groups;
   // Get user's VOs

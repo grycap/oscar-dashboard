@@ -26,6 +26,7 @@ function InfoView() {
   const isBigScreen = useMediaQuery({maxWidth: open ? 1697 : 1824});
 
   const isLoading = !systemConfig || !authData.authenticated || !clusterInfo || !providerInfo || !providerInfo?.endpoint;
+  const oidcGroups = systemConfig?.config.oidc_groups ?? [];
 
   function refreshPage() {
     window.location.reload();
@@ -79,15 +80,15 @@ function InfoView() {
             </CardHeader>
             <div className="divide-y divide-slate-100">
               <InfoItem label="Endpoint" value={endpoint} enableCopy link={{ url: endpoint, enableRedirectIcon: true }} />
-              {systemConfig.config.oidc_groups.length > 1 ? (
+              {oidcGroups.length > 1 ? (
                 <InfoListItems
                   label="Supported VOs"
-                  placeholder={systemConfig.config.oidc_groups[0] + "... "}
-                  values={systemConfig.config.oidc_groups}
+                  placeholder={oidcGroups[0] + "... "}
+                  values={oidcGroups}
                   enableCopy
                 />
               ) : (
-                <InfoItem label="Supported VOs" value={systemConfig.config.oidc_groups.toString()} enableCopy />
+                <InfoItem label="Supported VOs" value={oidcGroups.toString()} enableCopy />
               )}
               <InfoItem label="Version" value={clusterInfo?.version!} enableCopy />
               <InfoItem

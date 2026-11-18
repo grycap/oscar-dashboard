@@ -135,7 +135,7 @@ function AgentFormPopover() {
         fdlText,
         scriptText,
         useArrayPorts(clusterInfo.version),
-        usesDNSRoutes(systemConfig.config),
+        usesDNSRoutes(systemConfig?.config),
       );
       if (!services?.length) throw Error("No services found");
 

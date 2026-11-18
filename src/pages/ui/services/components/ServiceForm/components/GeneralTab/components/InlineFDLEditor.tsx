@@ -77,7 +77,7 @@ function InlineFDLEditor({ mode = "api" }: { mode?: "api" | "inline-edit" }) {
       fdl,
       script,
       useArrayPorts(clusterInfo.version),
-      usesDNSRoutes(systemConfig.config)
+      usesDNSRoutes(systemConfig?.config)
     );
     if (!services || services.length === 0) {
       return;

@@ -139,7 +139,7 @@ function TerminalFormPopover() {
       );
       const scriptText = await scriptResponse.text();
 
-      const dnsRoutesEnabled = usesDNSRoutes(systemConfig.config);
+      const dnsRoutesEnabled = usesDNSRoutes(systemConfig?.config);
       const services = yamlToServices(fdlText, scriptText, useArrayPorts(clusterInfo.version), dnsRoutesEnabled);
 
       if (!services?.length) {

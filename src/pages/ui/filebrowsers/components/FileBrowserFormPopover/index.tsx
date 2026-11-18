@@ -149,7 +149,7 @@ function FileBrowserFormPopover() {
         fetchFromGitHubOptions
       );
       const scriptText = await scriptResponse.text();
-      const services = yamlToServices(fdlText, scriptText, useArrayPorts(clusterInfo.version), usesDNSRoutes(systemConfig.config));
+      const services = yamlToServices(fdlText, scriptText, useArrayPorts(clusterInfo.version), usesDNSRoutes(systemConfig?.config));
 
       if (!services?.length) {
         throw new Error("No services found");
