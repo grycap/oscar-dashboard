@@ -346,6 +346,16 @@ const serviceToDownload = getFDLAndScriptText(formService)
                   </div>
                 </div>
               )}
+              {modelServingInfo.args && modelServingInfo.args.length > 0 && (
+                <div className="rounded-md border border-border bg-muted/40 p-3">
+                  <Label>
+                    Arguments
+                  </Label>
+                  <pre className="mt-1 whitespace-pre-wrap break-all text-sm font-medium text-slate-800 dark:text-slate-100">
+                    {modelServingInfo.args.join("\n")}
+                  </pre>
+                </div>
+              )}
             </div>
           </ServiceFormCell>
         </>
