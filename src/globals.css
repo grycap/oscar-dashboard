@@ -88,3 +88,12 @@ body {
 .toast-message-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(20, 20, 20, 0.9);
 }
+
+[data-collapsible="icon"] [data-sidebar="content"] {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[data-collapsible="icon"] [data-sidebar="content"]::-webkit-scrollbar {
+  display: none;
+}
