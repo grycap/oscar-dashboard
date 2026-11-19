@@ -341,7 +341,7 @@ const Cluster = () => {
                           </span>
                         ))
                       ) : (
-                        <span className="text-slate-400">None</span>
+                        <span className="text-slate-400">All</span>
                       )}
                     </div>
                   </div>
