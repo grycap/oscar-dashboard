@@ -32,6 +32,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { alert } from "@/lib/alert";
 import { errorMessage } from "@/lib/error";
 import { shortenFullname } from "@/lib/utils";
+import OscarColors from "@/styles";
 import {
   BreakdownItem,
   MetricKey,
@@ -50,6 +51,7 @@ import {
   Cpu,
   Gpu,
   Globe2,
+  LoaderPinwheel,
   Users,
   Waypoints,
 } from "lucide-react";
@@ -816,7 +818,7 @@ function MetricsView() {
           </Alert>
         )}
 
-        {!metricsUnsupported && sourceNotes.length > 0 && summary && (
+        {!metricsUnsupported && !overviewLoading && sourceNotes.length > 0 && summary && (
           <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
             <AlertCircle />
             <AlertTitle>Some metric sources reported warnings</AlertTitle>
@@ -835,15 +837,17 @@ function MetricsView() {
           </Alert>
         )}
 
-        {!metricsUnsupported && overviewLoading && !summary && (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <Skeleton key={index} className="h-32 rounded-xl" />
-            ))}
+        {!metricsUnsupported && overviewLoading && (
+          <div className="flex min-h-[320px] items-center justify-center" role="status" aria-label="Loading metrics">
+            <LoaderPinwheel
+              className="animate-spin"
+              size={60}
+              color={OscarColors.Green3}
+            />
           </div>
         )}
 
-        {!metricsUnsupported && summary && (
+        {!metricsUnsupported && !overviewLoading && summary && (
           <>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <KpiCard
