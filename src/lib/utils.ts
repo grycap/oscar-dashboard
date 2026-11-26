@@ -228,6 +228,19 @@ export function getUserVOs(authData: AuthData): string[] {
       if (match && match[1]) {
         vos.push(match[1]);
       }
+      // New AI4EOSC entitlements arrive URL-encoded, e.g.
+      // "urn%3Ageant%3Aeosc-portal.eu:group:Platform%20Access:vo.example.eu:role=Access-AP-U"
+      // Only the "ap-u" and "ap-d" levels are relevant for OSCAR.
+      try {
+        const entitlementMatch = decodeURIComponent(entitlement).match(
+          /^urn:geant:eosc-portal\.eu:group:[^:]+:(vo\..+?):role=Access-AP-(U|D)$/
+        );
+        if (entitlementMatch && entitlementMatch[1]) {
+          vos.push(entitlementMatch[1]);
+        }
+      } catch {
+        // Ignore entitlements that cannot be decoded
+      }
     });
   }
   if (authData.egiSession?.group_membership) {
